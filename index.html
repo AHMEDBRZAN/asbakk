@@ -218,7 +218,7 @@ function computeIncome(){
  const granted=R.disc?discParse('grant').total:(m['الحسم الممنوح']||0);
  const earned=R.disc?discParse('earn').total:(m['الحسم المكتسب']||0);
  const exp=pl?pl.expenses.reduce((s,x)=>s+x[1],0):(m['مجموع المصاريف']||0);
- const netSales=sales-ret-granted,costSales=cogs-earned,gross=netSales-costSales,net=gross-exp;
+ ولأنهconst netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
   mtGranted:mt.granted,mtNet:mt.netSales,plGross:pl?pl.gross:null};}
 
