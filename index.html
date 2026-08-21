@@ -71,7 +71,7 @@ section{margin:14px 0}
 
 <script>
 /* 🔖 الإصدار — يتغير مع كل تحديث */
-const VERSION='v2';
+const VERSION='v3';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
 
 /* ===== أدوات ===== */
@@ -122,12 +122,18 @@ function blockTable(g,s,e){
   if(vals.some(v=>v!=null&&String(v).includes('مجموع'))){totals=vals;break;}
   data.push(vals);}
  return{headers,data,totals,title};}
+
+/* ===== ✅ v3: تصنيف اليومية من محتوى الحسابات الفعلية ===== */
 function classify(t){
  const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
  if(has('وارد نقدي'))return 'fin';
  if(has('قيمة المبيع')&&has('الربح'))return 'ip';
  if(has('حسم الفاتورة'))return 'disc';
- if(has('رقم السند')&&has('مدين'))return T.includes('الحركة المالية')?'journal':'cust';
+ if(has('رقم السند')&&has('مدين')){
+  const ai=ci(H,['اسم الحساب']);
+  const names=t.data.slice(0,400).map(r=>String(r[ai]??'')).join('|');
+  if(names.includes('تكلفة البضاعة')||names.includes('المخزون')||names.includes('صندوق الكاشير'))return 'journal';
+  return T.includes('الحركة المالية')?'journal':'cust';}
  if(has('الموضوع')&&has('نسبة'))return 'rat';
  if(has('المبلغ')){
   const f=t.data[0]?String(t.data[0][1]??''):'';
@@ -158,9 +164,10 @@ document.getElementById('fMonthly').addEventListener('change',e=>{
   }
   if(R.inc){const m={};R.inc.data.forEach(x=>{m[String(x[1]).trim()]=num(x[2]);});R.m=m;}
   const names={sales:'المبيعات',fin:'الحركة المالية',inc:'قائمة الدخل',sum:'صافي الدخل',rat:'النسب',
-   cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'الحركة التفصيلية'};
+   cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'اليومية التفصيلية'};
   document.getElementById('pm').innerHTML='✅ '+VERSION+' تم استخراج: '
    +Object.keys(names).filter(k=>R[k]).map(k=>names[k]).join(' + ')
+   +(R.journal?` — <b>${R.journal.data.length} حركة يومية</b>`:'')
    +(R.sales?` — <b>${R.sales.data.length} يوم مبيعات</b>`:'');
   render();
  }catch(err){showErr('فشل: '+err.message);}};
@@ -203,7 +210,7 @@ function plVals(){
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
 
-/* ===== ارباح المواد (تقبل صفوف مفلترة) ===== */
+/* ===== ارباح المواد ===== */
 function ipVals(rows){
  if(!R.ip)return null;
  const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
@@ -214,7 +221,7 @@ function ipVals(rows){
   sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
  return{sale,cost,prof,skipped};}
 
-/* ===== تجميع اليومية للفترة ===== */
+/* ===== ✅ v3: أرقام الفترة الفعلية من اليومية ===== */
 function journalSums(){
  if(!R.journal)return null;
  const H=R.journal.headers;
@@ -251,13 +258,15 @@ function finPeriod(){
 /* ===== قائمة الدخل ===== */
 function computeIncome(){
  if(P.start&&R.journal){
-  const j=journalSums();if(j){
+  const j=journalSums();
+  if(j){
    const sales=salesTotal()??j.salesJ;
    const granted=discParse('grant').total;
    const earned=discParse('earn').total;
    const netSales=sales-j.ret-granted,costSales=j.cogs,gross=netSales-costSales,net=gross-j.exp;
    return{sales,ret:j.ret,granted,earned,cogs:j.cogs,exp:j.exp,netSales,costSales,gross,net,
-    expList:j.expList,filtered:true,chkSales:j.salesJ,chkGranted:j.grantedJ,chkEarned:j.earnedJ};}
+    expList:j.expList,filtered:true,chkSales:j.salesJ,chkGranted:j.grantedJ,chkEarned:j.earnedJ};
+  }
  }
  const mt=mutajVals()||{},m=R.m||{},pl=plVals();
  const sales=mt.sales??m['المبيعات']??0;
@@ -300,7 +309,7 @@ const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')')
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();
- let h=`<p class="tag" style="text-align:center">${VERSION} — ${periodLabel()}${ic.filtered?' — كل البطاقات مفلترة 📅':''}</p>`;
+ let h=`<p class="tag" style="text-align:center">${VERSION} — ${periodLabel()}${ic.filtered?' — أرقام الفترة من اليومية الفعلية 📒':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
@@ -314,7 +323,7 @@ function render(){
  const gp=discParse('grant'),ep=discParse('earn');
  h+=`<div class="card"><h2>🎁 الحسم الممنوح والمكتسب</h2>`
   +row('الممنوح',fmt(gp.total)+' د.ع','bad')+row('المكتسب',fmt(ep.total)+' د.ع','ok')
-  +row(ic.filtered?'مطابقة اليومية':'مطابقة 41103',ic.filtered?chk(gp.total,ic.chkGranted):chk(gp.total,ic.mtGranted))
+  +row(ic.filtered?'مطابقة اليومية للفترة':'مطابقة 41103',ic.filtered?chk(gp.total,ic.chkGranted):chk(gp.total,ic.mtGranted))
   +`<button class="btn r" onclick="openDisc('grant')">تفاصيل الممنوح</button>
      <button class="btn g" onclick="openDisc('earn')">تفاصيل المكتسب</button></div>`;
 
@@ -342,7 +351,7 @@ function render(){
   +(!ic.filtered?row('مطابقة المجمل',chk(ip.prof,ic.gross)):'')
   +`<button class="btn" onclick="openT('ارباح المواد',R.ip)">التفاصيل</button></div>`;}
 
- if(R.journal)h+=`<div class="card"><h2>📒 الحركة التفصيلية</h2>`
+ if(R.journal)h+=`<div class="card"><h2>📒 اليومية التفصيلية</h2>`
   +row('حركات الفترة',filtered(R.journal).length)
   +`<button class="btn" onclick="openT('الحركة المالية',R.journal)">عرض</button></div>`;
 
@@ -379,8 +388,8 @@ function openIncome(){
  t1+='</table>';
  const checks=ic.filtered?`
   <tr><td>المبيعات = اليومية للفترة</td><td>${chk(ic.sales,ic.chkSales)||'—'}</td></tr>
-  <tr><td>الممنوح = اليومية للفترة</td><td>${chk(ic.granted,ic.chkGranted)||'—'}</td></tr>
-  <tr><td>المكتسب = اليومية للفترة</td><td>${chk(ic.earned,ic.chkEarned)||'—'}</td></tr>`:`
+  <tr><td>الممنوح (ورقة٢) = اليومية للفترة</td><td>${chk(ic.granted,ic.chkGranted)||'—'}</td></tr>
+  <tr><td>المكتسب (ورقة٢) = اليومية للفترة</td><td>${chk(ic.earned,ic.chkEarned)||'—'}</td></tr>`:`
   <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
   <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
   <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
