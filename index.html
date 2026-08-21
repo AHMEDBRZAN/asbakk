@@ -12,7 +12,7 @@ body{background:var(--bg);color:var(--txt);margin:0;padding:14px}
 h1{font-size:19px;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
 .card{background:var(--card);border-radius:14px;padding:14px}
-.card h2{font-size:15px;margin:0 10px 10px 0;color:var(--acc)}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
 .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #334155;font-size:13px}
 .row b{direction:ltr}
 .btn{display:block;width:100%;margin-top:10px;background:var(--acc);border:0;color:#0f172a;font-weight:700;padding:9px;border-radius:10px;font-size:13px}
@@ -82,7 +82,7 @@ function toDate(v){if(v==null)return null;if(v instanceof Date)return v;
  const d=new Date(s);return isNaN(d)?null:d;}
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 
-/* ===== محرك القراءة العميقة: فصل الجداول بالأعمدة ===== */
+/* ===== محرك القراءة العميقة ===== */
 const IDX=['#','ت'];
 const COLK=['النوع','التاريخ','القيمة','اسم الحساب','مدين','دائن','وارد نقدي','وارد أجل','صادر نقدي','صادر أجل','رقم السند','المبلغ','البيان','الرصيد','الموضوع','نسبة','حسم','الكمية','الوحدة','المادة','رقم الفاتورة','الحساب','تكلفة','الربح','قيمة المبيع','السعر الاجمالي','السعر النهائي','اسم العميل'];
 function colBlocks(g){
@@ -183,7 +183,7 @@ function discParse(mode){
   if(fi>=0&&r[fi]!=null&&String(r[fi]).trim()!=='')invoices++;});
  return{total,byType,invoices};}
 
-/* ===== المتاجره / الأرباح والخسائر / ارباح المواد ===== */
+/* ===== المتاجره / أرباح والخسائر ===== */
 function mutajVals(){
  if(!R.mut)return null;
  const H=R.mut.headers,ni=ci(H,['مدين']),cri=ci(H,['دائن']),ai=ci(H,['حساب']);
@@ -197,12 +197,17 @@ function plVals(){
   if(n.includes('92')||n.includes('المتاجره'))gross=v;
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
+
+/* ===== ✅ ارباح المواد — مع استبعاد أسطر الأجل ===== */
 function ipVals(){
  if(!R.ip)return null;
  const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
- let sale=0,cost=0,prof=0;
- R.ip.data.forEach(r=>{sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
- return{sale,cost,prof};}
+ let sale=0,cost=0,prof=0,skipped=0,kept=0;
+ R.ip.data.forEach(r=>{
+  const line=r.map(v=>v==null?'':String(v)).join('|');
+  if(/أجل|اجل/.test(line)){skipped++;return;}
+  kept++;sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
+ return{sale,cost,prof,skipped,kept};}
 
 /* ===== قائمة الدخل ===== */
 function computeIncome(){
@@ -277,7 +282,9 @@ function render(){
 
  const ip=ipVals();
  if(ip)h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٣)</h2>`
-  +row('قيمة المبيع',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')+row('الربح',fmt(ip.prof),'ok')
+  +row('قيمة المبيع (نقدي فقط)',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
+  +row('الربح',fmt(ip.prof),'ok')
+  +row('أسطر الأجل المستبعدة',ip.skipped,'bad')
   +row('مطابقة المجمل',chk(ip.prof,ic.gross))
   +`<button class="btn" onclick="openT('ارباح المواد',R.ip)">التفاصيل</button></div>`;
 
@@ -322,7 +329,7 @@ function openIncome(){
   <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
   <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
   <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
-  <tr><td>المجمل = ارباح المواد</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr></table>`;
+  <tr><td>المجمل = ارباح المواد (بدون أجل)</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr></table>`;
  document.getElementById('mbody').innerHTML=`<div class="incwrap"><div>${t1}</div><div>${t2}</div></div>`;
  document.getElementById('modal').style.display='block';}
 function openDisc(mode){
