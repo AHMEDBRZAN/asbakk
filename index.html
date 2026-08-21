@@ -43,8 +43,8 @@ section{margin:14px 0}
 <h1>🎨 نظام شركة الأصباغ — قراءة عميقة</h1>
 
 <section class="card">
-<h2>🗓️ الفترة</h2>
-<button class="pb on" onclick="setPeriod('all',this)">الكل</button>
+<h2>🗓️ الفترة (تعيد بناء قائمة الدخل من الحركة التفصيلية)</h2>
+<button class="pb on" onclick="setPeriod('all',this)">الكل (شهري)</button>
 <button class="pb" onclick="setPeriod('day',this)">يوم</button>
 <button class="pb" onclick="setPeriod('week',this)">أسبوع</button>
 <button class="pb" onclick="setPeriod('month',this)">شهر</button>
@@ -198,19 +198,44 @@ function plVals(){
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
 
-/* ===== ارباح المواد مع استبعاد أسطر الأجل ===== */
+/* ===== ارباح المواد بدون أجل ===== */
 function ipVals(){
  if(!R.ip)return null;
  const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
- let sale=0,cost=0,prof=0,skipped=0,kept=0;
+ let sale=0,cost=0,prof=0,skipped=0;
  R.ip.data.forEach(r=>{
   const line=r.map(v=>v==null?'':String(v)).join('|');
   if(/أجل|اجل/.test(line)){skipped++;return;}
-  kept++;sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
- return{sale,cost,prof,skipped,kept};}
+  sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
+ return{sale,cost,prof,skipped};}
 
-/* ===== ✅ قائمة الدخل المصححة: تكلفة المبيعات = تكلفة البضاعة (بدون خصم المكتسب) ===== */
+/* ===== ✅ قائمة دخل الفترة من الحركة التفصيلية (ورقة٣) ===== */
+function journalPeriod(){
+ if(!R.journal)return null;
+ const H=R.journal.headers;
+ const ai=ci(H,['اسم الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']);
+ if(ai<0||mi<0)return null;
+ const pl=plVals();const expNames=pl?pl.expenses.map(x=>x[0]):[];
+ let sales=0,ret=0,granted=0,earned=0,cogs=0;const expMap={};
+ R.journal.data.forEach(r=>{
+  if(di>=0&&!inP(toDate(r[di])))return;
+  const a=String(r[ai]||'').trim();if(!a)return;
+  const d=num(r[mi])||0,c=num(r[cri])||0;
+  if(a.includes('مردودات')){ret+=d-c;return;}
+  if(a.includes('الحسم الممنوح')){granted+=d-c;return;}
+  if(a.includes('الحسم المكتسب')){earned+=c-d;return;}
+  if(a.includes('تكلفة البضاعة')){cogs+=d-c;return;}
+  if(a.includes('المبيعات')){sales+=c-d;return;}
+  for(const n of expNames){if(a&&n&&(a.includes(n)||n.includes(a))){expMap[n]=(expMap[n]||0)+(d-c);break;}}
+ });
+ const expList=Object.entries(expMap);
+ const exp=expList.reduce((s,x)=>s+x[1],0);
+ const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
+ return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,expList,filtered:true};}
+
+/* ===== قائمة الدخل ===== */
 function computeIncome(){
+ if(P.start&&R.journal){const j=journalPeriod();if(j&&j.sales)return j;}
  const mt=mutajVals()||{},m=R.m||{},pl=plVals();
  const sales=mt.sales??m['المبيعات']??0;
  const ret=mt.returns??m['مردودات المبيعات']??0;
@@ -220,7 +245,7 @@ function computeIncome(){
  const exp=pl?pl.expenses.reduce((s,x)=>s+x[1],0):(m['مجموع المصاريف']||0);
  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
-  mtGranted:mt.granted,mtNet:mt.netSales,plGross:pl?pl.gross:null};}
+  mtGranted:mt.granted,mtNet:mt.netSales,plGross:pl?pl.gross:null,filtered:false};}
 
 /* ===== الفترة ===== */
 function maxDate(){let mx=null;
@@ -238,7 +263,7 @@ function manualPeriod(){P={start:toDate(document.getElementById('d1').value),end
 function syncDates(){const f=d=>d?d.toISOString().slice(0,10):'';
  document.getElementById('d1').value=f(P.start);document.getElementById('d2').value=f(P.end);}
 function inP(d){if(!P.start||!P.end)return true;return d&&d>=P.start&&d<=P.end;}
-function periodLabel(){return P.start?`الفترة: ${P.start.toLocaleDateString('en-GB')} → ${P.end.toLocaleDateString('en-GB')}`:'الفترة: كل الحركات';}
+function periodLabel(){return P.start?`الفترة: ${P.start.toLocaleDateString('en-GB')} → ${P.end.toLocaleDateString('en-GB')}`:'الفترة: كل الحركات (شهري)';}
 function filtered(t){const d=ci(t.headers,['تاريخ']);if(d<0)return t.data;
  return t.data.filter(r=>inP(toDate(r[d])));}
 function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قيمة','مبلغ']);
@@ -251,11 +276,11 @@ const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')')
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();
- let h=`<p class="tag" style="text-align:center">${periodLabel()}</p>`;
+ let h=`<p class="tag" style="text-align:center">${periodLabel()}${ic.filtered?' — قائمة الدخل مبنية من الحركة التفصيلية 📒':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
- h+=`<div class="card"><h2>📊 قائمة الدخل</h2>`
+ h+=`<div class="card"><h2>📊 قائمة الدخل ${ic.filtered?'(للفترة)':''}</h2>`
   +row('المبيعات',fmt(ic.sales))+row('الحسم الممنوح',fmt(ic.granted),'bad')
   +row('الحسم المكتسب',fmt(ic.earned),'ok')+row('صافي المبيعات',fmt(ic.netSales))
   +row('تكلفة المبيعات',fmt(ic.costSales))+row('مجمل الدخل',fmt(ic.gross))
@@ -265,7 +290,7 @@ function render(){
  const gp=discParse('grant'),ep=discParse('earn');
  h+=`<div class="card"><h2>🎁 الحسم الممنوح والمكتسب</h2>`
   +row('الممنوح',fmt(gp.total)+' د.ع','bad')+row('المكتسب',fmt(ep.total)+' د.ع','ok')
-  +row('مطابقة 41103',chk(gp.total,ic.mtGranted))
+  +row('مطابقة 41103',ic.filtered?'':chk(gp.total,ic.mtGranted))
   +`<button class="btn r" onclick="openDisc('grant')">تفاصيل الممنوح</button>
      <button class="btn g" onclick="openDisc('earn')">تفاصيل المكتسب</button></div>`;
 
@@ -281,15 +306,14 @@ function render(){
   +`<button class="btn" onclick="openT('اجمالي الحركة المالية',R.fin)">التفاصيل</button></div>`;}
 
  const ip=ipVals();
- if(ip)h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٣)</h2>`
+ if(ip&&!ic.filtered)h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٣)</h2>`
   +row('قيمة المبيع (بدون أجل)',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
-  +row('الربح',fmt(ip.prof),'ok')
-  +row('أسطر الأجل المستبعدة',ip.skipped,'bad')
+  +row('الربح',fmt(ip.prof),'ok')+row('أسطر الأجل المستبعدة',ip.skipped,'bad')
   +row('مطابقة المجمل',chk(ip.prof,ic.gross))
   +`<button class="btn" onclick="openT('ارباح المواد',R.ip)">التفاصيل</button></div>`;
 
  if(R.journal)h+=`<div class="card"><h2>📒 الحركة المالية التفصيلية</h2>`
-  +row('عدد الحركات',filtered(R.journal).length)
+  +row('حركات الفترة',filtered(R.journal).length)
   +`<button class="btn" onclick="openT('الحركة المالية',R.journal)">عرض</button></div>`;
 
  if(R.cust){const H=R.cust.headers,md=ci(H,['مدين']),cr=ci(H,['دائن']);
@@ -306,8 +330,8 @@ function render(){
 function closeM(){document.getElementById('modal').style.display='none';}
 function openIncome(){
  const ic=computeIncome();const pl=plVals();const ip=ipVals();
- document.getElementById('mtitle').textContent='قائمة الدخل + التحقق المتقاطع';
- const exps=pl?pl.expenses:[];
+ document.getElementById('mtitle').textContent=ic.filtered?'قائمة الدخل للفترة + التحقق':'قائمة الدخل الشهرية + التحقق';
+ const exps=ic.filtered?ic.expList:(pl?pl.expenses:[]);
  const main=[['المبيعات',ic.sales,''],['مردودات المبيعات',ic.ret,''],['الحسم الممنوح',ic.granted,'r-p'],
   ['صافي المبيعات',ic.netSales,'r-y'],['الحسم المكتسب (للمعلومية)',ic.earned,'r-g'],
   ['تكلفة البضاعة المباعة',ic.cogs,''],['تكلفة المبيعات',ic.costSales,'r-b'],
@@ -316,6 +340,14 @@ function openIncome(){
  let t1='<table><tr><th>ت</th><th>اسم الحساب</th><th>المبلغ</th></tr>';
  main.forEach((r,i)=>t1+=`<tr class="${r[2]}"><td>${i+1}</td><td>${r[0]}</td><td>${fmt(r[1])}</td></tr>`);
  t1+='</table>';
+ const checks=ic.filtered?`
+  <tr><td>المبيعات = حركة المبيعات للفترة</td><td>${chk(ic.sales,salesTotal())||'—'}</td></tr>
+  <tr><td>الممنوح = جدول الحسم للفترة</td><td>${chk(ic.granted,discParse('grant').total)||'—'}</td></tr>
+  <tr><td>المكتسب = جدول الحسم للفترة</td><td>${chk(ic.earned,discParse('earn').total)||'—'}</td></tr>`:`
+  <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
+  <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
+  <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
+  <tr><td>المجمل = ارباح المواد (بدون أجل)</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr>`;
  let t2=`<table><tr><th colspan="3" style="background:#0ea5e9">صافي الدخل</th></tr>
   <tr><td>1</td><td>صافي المبيعات</td><td>${fmt(ic.netSales)}</td></tr>
   <tr><td>2</td><td>تكلفة المبيعات</td><td>${fmt(ic.costSales)}</td></tr>
@@ -325,16 +357,12 @@ function openIncome(){
   <table><tr><th colspan="3" style="background:#0ea5e9">نسب الأرباح</th></tr>
   <tr><td>1</td><td>نسبة مجمل الدخل على صافي المبيعات</td><td>${pct(ic.gross/(ic.netSales||1))}</td></tr>
   <tr><td>2</td><td>نسبة الربح على صافي المبيعات</td><td>${pct(ic.net/(ic.netSales||1))}</td></tr></table><br>
-  <table><tr><th colspan="2" style="background:#f59e0b">🔍 التحقق المتقاطع</th></tr>
-  <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
-  <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
-  <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
-  <tr><td>المجمل = ارباح المواد (بدون أجل)</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr></table>`;
+  <table><tr><th colspan="2" style="background:#f59e0b">🔍 التحقق المتقاطع ${ic.filtered?'(للفترة)':''}</th></tr>${checks}</table>`;
  document.getElementById('mbody').innerHTML=`<div class="incwrap"><div>${t1}</div><div>${t2}</div></div>`;
  document.getElementById('modal').style.display='block';}
 function openDisc(mode){
  const a=discParse(mode);
- document.getElementById('mtitle').textContent=mode==='grant'?'تفاصيل الحسم الممنوح':'تفاصيل الحسم المكتسب';
+ document.getElementById('mtitle').textContent=(mode==='grant'?'تفاصيل الحسم الممنوح':'تفاصيل الحسم المكتسب')+(P.start?' — للفترة':'');
  let x='<table><tr><th>النوع</th><th>الحسم</th></tr>';
  Object.entries(a.byType).forEach(([k,v])=>x+=`<tr><td>${k}</td><td>${fmt(v)}</td></tr>`);
  x+=`<tr><td><b>الكلي</b></td><td><b>${fmt(a.total)} د.ع</b></td></tr></table>`;
