@@ -12,7 +12,7 @@ body{background:var(--bg);color:var(--txt);margin:0;padding:14px}
 h1{font-size:19px;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
 .card{background:var(--card);border-radius:14px;padding:14px}
-.card h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
+.card h2{font-size:15px;margin:0 10px 10px 0;color:var(--acc)}
 .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #334155;font-size:13px}
 .row b{direction:ltr}
 .btn{display:block;width:100%;margin-top:10px;background:var(--acc);border:0;color:#0f172a;font-weight:700;padding:9px;border-radius:10px;font-size:13px}
@@ -40,7 +40,7 @@ section{margin:14px 0}
 </style>
 </head>
 <body>
-<h1>🎨 نظام شركة الأصباغ — ملف واحد شامل</h1>
+<h1>🎨 نظام شركة الأصباغ — قراءة عميقة</h1>
 
 <section class="card">
 <h2>🗓️ الفترة</h2>
@@ -54,7 +54,7 @@ section{margin:14px 0}
 </section>
 
 <section class="card">
-<h2>📄 رفع التقرير الشهري (ملف واحد: ورقة1 + ورقة٢ + ورقة)</h2>
+<h2>📄 رفع التقرير الشهري (ملف واحد — كل الأوراق)</h2>
 <input type="file" id="fMonthly" accept=".xlsx,.xls">
 <div id="pm" class="tag"></div>
 </section>
@@ -82,37 +82,57 @@ function toDate(v){if(v==null)return null;if(v instanceof Date)return v;
  const d=new Date(s);return isNaN(d)?null:d;}
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 
-/* ===== استخراج ===== */
+/* ===== محرك القراءة العميقة: فصل الجداول بالأعمدة ===== */
 const IDX=['#','ت'];
-const COLK=['النوع','التاريخ','القيمة','اسم الحساب','مدين','دائن','وارد نقدي','وارد أجل','صادر نقدي','صادر أجل','رقم السند','المبلغ','البيان','الرصيد','الموضوع','نسبة','حسم','الكمية','الوحدة','المادة','رقم الفاتورة','الحساب','تكلفة','الربح','قيمة المبيع','السعر الافرادي','السعر الاجمالي','السعر النهائي'];
-function isHeader(row){if(!row)return false;let kw=0,idx=false;
- for(const v of row){if(v==null)continue;const s=String(v).trim();
-  if(IDX.includes(s))idx=true;
-  if(COLK.some(k=>s.includes(k)))kw++;}
- return kw>=2||(idx&&kw>=1);}
-function findTitle(g,keys){for(let i=0;i<g.length;i++)for(let j=0;j<(g[i]||[]).length;j++){
- const v=g[i][j];if(v==null)continue;const s=String(v);
- for(const k of keys)if(s.includes(k))return{i,j};}return null;}
-function extractTable(g,sR){
+const COLK=['النوع','التاريخ','القيمة','اسم الحساب','مدين','دائن','وارد نقدي','وارد أجل','صادر نقدي','صادر أجل','رقم السند','المبلغ','البيان','الرصيد','الموضوع','نسبة','حسم','الكمية','الوحدة','المادة','رقم الفاتورة','الحساب','تكلفة','الربح','قيمة المبيع','السعر الاجمالي','السعر النهائي','اسم العميل'];
+function colBlocks(g){
+ const W=g.reduce((m,r)=>Math.max(m,r.length),0);
+ const act=new Array(W).fill(false);
+ for(const r of g)for(let c=0;c<W;c++)if(r[c]!=null&&String(r[c]).trim()!=='')act[c]=true;
+ const res=[];let s=-1;
+ for(let c=0;c<=W;c++){
+  if(c<W&&act[c]){if(s<0)s=c;}
+  else if(s>=0){if(c-s>=2)res.push([s,c]);s=-1;}
+ }
+ return res;}
+function blockTable(g,s,e){
  let h=-1,cols=[];
- for(let i=sR;i<Math.min(g.length,sR+25);i++)if(isHeader(g[i])){h=i;(g[i]||[]).forEach((v,c)=>{if(v!=null&&String(v).trim()!=='')cols.push(c)});break;}
+ for(let i=0;i<Math.min(g.length,60);i++){
+  let kw=0,idx=false;
+  for(let c=s;c<e;c++){const v=g[i][c];if(v==null)continue;const t=String(v).trim();
+   if(IDX.includes(t))idx=true;if(COLK.some(k=>t.includes(k)))kw++;}
+  if(kw>=2||(idx&&kw>=1)){h=i;for(let c=s;c<e;c++)if(g[i][c]!=null&&String(g[i][c]).trim()!=='')cols.push(c);break;}
+ }
  if(h<0)return null;
- const headers=cols.map(c=>String(g[h][c]).trim());const data=[];let totals=null;
- for(let i=h+1;i<g.length;i++){const row=g[i]||[];
-  if(cols.some(c=>row[c]!=null&&String(row[c]).includes('مجموع'))){totals=cols.map(c=>row[c]??null);break;}
-  if(row[cols[0]]==null||String(row[cols[0]]).trim()==='')break;
-  data.push(cols.map(c=>row[c]??null));}
- return{headers,data,totals};}
-function extractLoose(g,sR){
- let h=-1,cols=[];
- for(let i=sR;i<Math.min(g.length,sR+25);i++)if(isHeader(g[i])){h=i;(g[i]||[]).forEach((v,c)=>{if(v!=null&&String(v).trim()!=='')cols.push(c)});break;}
- if(h<0)return null;
- const headers=cols.map(c=>String(g[h][c]).trim());const data=[];let blank=0;
- for(let i=h+1;i<g.length;i++){const row=g[i]||[];
-  const any=cols.some(c=>row[c]!=null&&String(row[c]).trim()!=='');
-  if(!any){blank++;if(blank>=2)break;continue;}
-  blank=0;data.push(cols.map(c=>row[c]??null));}
- return{headers,data};}
+ const headers=cols.map(c=>String(g[h][c]).trim());
+ const TK=['كشف حساب','حركة المبيعات','الحركة المالية','قائمة الدخل','صافي الدخل','نسب الأرباح','حسم ممنوح','متاجره','الخسائر','ارباح المواد'];
+ let title='';
+ for(let i=0;i<h&&!title;i++)for(let c=s;c<e;c++){const v=g[i][c];
+  if(v!=null&&TK.some(k=>String(v).includes(k))){title=String(v);break;}}
+ const data=[];let totals=null,blank=0;
+ for(let i=h+1;i<g.length;i++){
+  const row=g[i]||[];const vals=cols.map(c=>row[c]??null);
+  if(vals.every(v=>v==null||String(v).trim()==='')){blank++;if(blank>=2)break;continue;}
+  blank=0;
+  if(vals.some(v=>v!=null&&String(v).includes('مجموع'))){totals=vals;break;}
+  data.push(vals);}
+ return{headers,data,totals,title};}
+function classify(t){
+ const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
+ if(has('وارد نقدي'))return 'fin';
+ if(has('قيمة المبيع')&&has('الربح'))return 'ip';
+ if(has('حسم الفاتورة'))return 'disc';
+ if(has('رقم السند')&&has('مدين'))return T.includes('الحركة المالية')?'journal':'cust';
+ if(has('الموضوع')&&has('نسبة'))return 'rat';
+ if(has('المبلغ')){
+  const f=t.data[0]?String(t.data[0][1]??''):'';
+  if(f.includes('صافي'))return 'sum';
+  return 'inc';}
+ if(has('مدين')&&has('الحساب')){
+  const j=t.data.map(r=>String(r[0])).join('|');
+  return (j.includes('41101')||j.includes('الموارد'))?'mut':'pl';}
+ if(has('التاريخ')&&has('القيمة'))return 'sales';
+ return null;}
 
 let R={};let P={start:null,end:null};
 
@@ -121,29 +141,28 @@ document.getElementById('fMonthly').addEventListener('change',e=>{
  const rd=new FileReader();
  rd.onload=ev=>{try{
   const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+  R={};
   for(const n of wb.SheetNames){
-   const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null});let p;
-   if(p=findTitle(g,['حركة المبيعات']))R.sales=extractTable(g,p.i);
-   if(p=findTitle(g,['الحركة المالية'])){const t=extractLoose(g,p.i);
-     if(t&&ci(t.headers,['وارد نقدي'])>=0)R.fin=t;else if(t)R.journal=t;}
-   if(p=findTitle(g,['كشف حساب'])){R.cust=extractTable(g,p.i);
-     R.custName=String(g[p.i][p.j]).replace('كشف حساب','').replace(/[-–]/,'').trim();}
-   if(p=findTitle(g,['قائمة الدخل']))R.inc=extractTable(g,p.i);
-   if(p=findTitle(g,['ممنوح ومكتسب']))R.disc=extractLoose(g,p.i);
-   if(p=findTitle(g,['متاجره'])&&String(g[p.i][p.j]).trim().startsWith('متاجره'))R.mut=extractTable(g,p.i);
-   if(p=findTitle(g,['الخسائر']))R.pl=extractTable(g,p.i);
-   if(p=findTitle(g,['ارباح المواد']))R.ip=extractLoose(g,p.i);
+   const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null});
+   for(const [s,e2] of colBlocks(g)){
+    const t=blockTable(g,s,e2);if(!t||!t.data.length)continue;
+    const key=classify(t);if(!key)continue;
+    if(key==='cust')R.custName=(t.title||'').replace('كشف حساب','').replace(/[-–]/,'').trim();
+    R[key]=t;
+   }
   }
   if(R.inc){const m={};R.inc.data.forEach(x=>{m[String(x[1]).trim()]=num(x[2]);});R.m=m;}
-  const found=[R.sales&&'المبيعات',R.fin&&'الحركة المالية',R.inc&&'قائمة الدخل',R.cust&&'كشف الحساب',
-   R.disc&&'الحسم',R.mut&&'المتاجره',R.pl&&'الأرباح والخسائر',R.ip&&'ارباح المواد',R.journal&&'الحركة التفصيلية'].filter(Boolean);
-  document.getElementById('pm').innerHTML='✅ تم استخراج: '+found.join(' + ');
+  const names={sales:'المبيعات',fin:'الحركة المالية',inc:'قائمة الدخل',sum:'صافي الدخل',rat:'النسب',
+   cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'الحركة التفصيلية'};
+  document.getElementById('pm').innerHTML='✅ تم استخراج: '
+   +Object.keys(names).filter(k=>R[k]).map(k=>names[k]).join(' + ')
+   +(R.sales?` — <b>${R.sales.data.length} يوم مبيعات</b>`:'');
   render();
  }catch(err){showErr('فشل: '+err.message);}};
  rd.readAsArrayBuffer(f);
 });
 
-/* ===== الحسم من الجدول الواحد ===== */
+/* ===== الحسم ===== */
 function discParse(mode){
  const t=R.disc;if(!t)return{total:0,byType:{},invoices:0};
  const H=t.headers;
@@ -164,7 +183,7 @@ function discParse(mode){
   if(fi>=0&&r[fi]!=null&&String(r[fi]).trim()!=='')invoices++;});
  return{total,byType,invoices};}
 
-/* ===== المتاجره والأرباح والخسائر ===== */
+/* ===== المتاجره / الأرباح والخسائر / ارباح المواد ===== */
 function mutajVals(){
  if(!R.mut)return null;
  const H=R.mut.headers,ni=ci(H,['مدين']),cri=ci(H,['دائن']),ai=ci(H,['حساب']);
@@ -236,12 +255,12 @@ function render(){
   +row('الحسم المكتسب',fmt(ic.earned),'ok')+row('صافي المبيعات',fmt(ic.netSales))
   +row('تكلفة المبيعات',fmt(ic.costSales))+row('مجمل الدخل',fmt(ic.gross))
   +row('مجموع المصاريف',fmt(ic.exp),'bad')+row('صافي الربح',fmt(ic.net),'ok')
-  +`<button class="btn" onclick="openIncome()">عرض بالترتيب الكامل + التحقق</button></div>`;
+  +`<button class="btn" onclick="openIncome()">الترتيب الكامل + التحقق</button></div>`;
 
  const gp=discParse('grant'),ep=discParse('earn');
  h+=`<div class="card"><h2>🎁 الحسم الممنوح والمكتسب</h2>`
   +row('الممنوح',fmt(gp.total)+' د.ع','bad')+row('المكتسب',fmt(ep.total)+' د.ع','ok')
-  +row('مطابقة مع المتاجره 41103',chk(gp.total,ic.mtGranted),'ok')
+  +row('مطابقة 41103',chk(gp.total,ic.mtGranted))
   +`<button class="btn r" onclick="openDisc('grant')">تفاصيل الممنوح</button>
      <button class="btn g" onclick="openDisc('earn')">تفاصيل المكتسب</button></div>`;
 
@@ -257,10 +276,9 @@ function render(){
   +`<button class="btn" onclick="openT('اجمالي الحركة المالية',R.fin)">التفاصيل</button></div>`;}
 
  const ip=ipVals();
- if(ip)h+=`<div class="card"><h2>🧾 ارباح المواد التفصيلي (ورقة٣)</h2>`
-  +row('قيمة المبيع',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
-  +row('الربح',fmt(ip.prof),'ok')
-  +row('مطابقة مجمل الدخل',chk(ip.prof,ic.gross))
+ if(ip)h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٣)</h2>`
+  +row('قيمة المبيع',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')+row('الربح',fmt(ip.prof),'ok')
+  +row('مطابقة المجمل',chk(ip.prof,ic.gross))
   +`<button class="btn" onclick="openT('ارباح المواد',R.ip)">التفاصيل</button></div>`;
 
  if(R.journal)h+=`<div class="card"><h2>📒 الحركة المالية التفصيلية</h2>`
@@ -277,11 +295,12 @@ function render(){
  document.getElementById('plabel').textContent=periodLabel();
 }
 
-/* ===== قائمة الدخل الكاملة + التحقق ===== */
+/* ===== النوافذ ===== */
+function closeM(){document.getElementById('modal').style.display='none';}
 function openIncome(){
  const ic=computeIncome();const pl=plVals();const ip=ipVals();
  document.getElementById('mtitle').textContent='قائمة الدخل + التحقق المتقاطع';
- const exps=pl?pl.expenses:(R.expenses||[]);
+ const exps=pl?pl.expenses:[];
  const main=[['المبيعات',ic.sales,''],['مردودات المبيعات',ic.ret,''],['الحسم الممنوح',ic.granted,'r-p'],
   ['صافي المبيعات',ic.netSales,'r-y'],['الحسم المكتسب',ic.earned,'r-g'],
   ['تكلفة البضاعة المباعة',ic.cogs,''],['تكلفة المبيعات',ic.costSales,'r-b'],
@@ -300,15 +319,12 @@ function openIncome(){
   <tr><td>1</td><td>نسبة مجمل الدخل على صافي المبيعات</td><td>${pct(ic.gross/(ic.netSales||1))}</td></tr>
   <tr><td>2</td><td>نسبة الربح على صافي المبيعات</td><td>${pct(ic.net/(ic.netSales||1))}</td></tr></table><br>
   <table><tr><th colspan="2" style="background:#f59e0b">🔍 التحقق المتقاطع</th></tr>
-  <tr><td>الممنوح = المتاجره 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
-  <tr><td>صافي المبيعات = المتاجره الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
-  <tr><td>مجمل الدخل = ارباح/خسائر (92)</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
-  <tr><td>مجمل الدخل = ارباح المواد (ورقة٣)</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr></table>`;
+  <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
+  <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
+  <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
+  <tr><td>المجمل = ارباح المواد</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr></table>`;
  document.getElementById('mbody').innerHTML=`<div class="incwrap"><div>${t1}</div><div>${t2}</div></div>`;
  document.getElementById('modal').style.display='block';}
-
-/* ===== نوافذ ===== */
-function closeM(){document.getElementById('modal').style.display='none';}
 function openDisc(mode){
  const a=discParse(mode);
  document.getElementById('mtitle').textContent=mode==='grant'?'تفاصيل الحسم الممنوح':'تفاصيل الحسم المكتسب';
@@ -316,12 +332,12 @@ function openDisc(mode){
  Object.entries(a.byType).forEach(([k,v])=>x+=`<tr><td>${k}</td><td>${fmt(v)}</td></tr>`);
  x+=`<tr><td><b>الكلي</b></td><td><b>${fmt(a.total)} د.ع</b></td></tr></table>`;
  if(R.disc){x+='<br><table><tr>'+R.disc.headers.map(v=>`<th>${v}</th>`).join('')+'</tr>';
-  R.disc.data.slice(0,500).forEach(r=>x+='<tr>'+r.map(v=>`<td>${typeof v==='number'?fmt(v):(v??'')}</td>`).join('')+'</tr>');
+  R.disc.data.slice(0,800).forEach(r=>x+='<tr>'+r.map(v=>`<td>${typeof v==='number'?fmt(v):(v??'')}</td>`).join('')+'</tr>');
   x+='</table>';}
  document.getElementById('mbody').innerHTML=x;
  document.getElementById('modal').style.display='block';}
 function openT(t,tbl){
- document.getElementById('mtitle').textContent=t;
+ document.getElementById('mtitle').textContent=t+' ('+tbl.data.length+' سطر)';
  let x='<table><tr>'+tbl.headers.map(v=>`<th>${v}</th>`).join('')+'</tr>';
  tbl.data.forEach(r=>x+='<tr>'+r.map(v=>`<td>${typeof v==='number'?fmt(v):(v??'')}</td>`).join('')+'</tr>');
  if(tbl.totals)x+='<tr>'+tbl.totals.map(v=>`<td><b>${typeof v==='number'?fmt(v):(v??'')}</b></td>`).join('')+'</tr>';
