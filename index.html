@@ -198,7 +198,7 @@ function plVals(){
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
 
-/* ===== ✅ ارباح المواد — مع استبعاد أسطر الأجل ===== */
+/* ===== ارباح المواد مع استبعاد أسطر الأجل ===== */
 function ipVals(){
  if(!R.ip)return null;
  const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
@@ -209,7 +209,7 @@ function ipVals(){
   kept++;sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
  return{sale,cost,prof,skipped,kept};}
 
-/* ===== قائمة الدخل ===== */
+/* ===== ✅ قائمة الدخل المصححة: تكلفة المبيعات = تكلفة البضاعة (بدون خصم المكتسب) ===== */
 function computeIncome(){
  const mt=mutajVals()||{},m=R.m||{},pl=plVals();
  const sales=mt.sales??m['المبيعات']??0;
@@ -218,7 +218,7 @@ function computeIncome(){
  const granted=R.disc?discParse('grant').total:(m['الحسم الممنوح']||0);
  const earned=R.disc?discParse('earn').total:(m['الحسم المكتسب']||0);
  const exp=pl?pl.expenses.reduce((s,x)=>s+x[1],0):(m['مجموع المصاريف']||0);
- ولأنهconst netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
+ const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
   mtGranted:mt.granted,mtNet:mt.netSales,plGross:pl?pl.gross:null};}
 
@@ -282,7 +282,7 @@ function render(){
 
  const ip=ipVals();
  if(ip)h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٣)</h2>`
-  +row('قيمة المبيع (نقدي فقط)',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
+  +row('قيمة المبيع (بدون أجل)',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
   +row('الربح',fmt(ip.prof),'ok')
   +row('أسطر الأجل المستبعدة',ip.skipped,'bad')
   +row('مطابقة المجمل',chk(ip.prof,ic.gross))
@@ -309,7 +309,7 @@ function openIncome(){
  document.getElementById('mtitle').textContent='قائمة الدخل + التحقق المتقاطع';
  const exps=pl?pl.expenses:[];
  const main=[['المبيعات',ic.sales,''],['مردودات المبيعات',ic.ret,''],['الحسم الممنوح',ic.granted,'r-p'],
-  ['صافي المبيعات',ic.netSales,'r-y'],['الحسم المكتسب',ic.earned,'r-g'],
+  ['صافي المبيعات',ic.netSales,'r-y'],['الحسم المكتسب (للمعلومية)',ic.earned,'r-g'],
   ['تكلفة البضاعة المباعة',ic.cogs,''],['تكلفة المبيعات',ic.costSales,'r-b'],
   ['مجمل الدخل',ic.gross,'r-g'],['إيرادات مختلفة',0,''],
   ...exps.map(x=>[x[0],x[1],'']),['مجموع المصاريف',ic.exp,'r-p']];
