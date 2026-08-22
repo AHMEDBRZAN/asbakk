@@ -44,7 +44,7 @@ section{margin:14px 0}
 <h1>🎨 نظام شركة الأصباغ <span class="ver" id="ver"></span></h1>
 
 <section class="card">
-<h2>📁 ملفات التقرير على GitHub <button class="pb" onclick="loadRepoList()">🔄 تحقق من جديد</button></h2>
+<h2>📁 ملفات التقرير على GitHub <button class="pb" onclick="loadRepoList()">🔄 تحقق</button></h2>
 <div id="files"></div>
 <div id="fs" class="tag"></div>
 </section>
@@ -54,13 +54,8 @@ section{margin:14px 0}
 <button class="pb on" onclick="modeAll(this)">الكل</button>
 <button class="pb" onclick="modeDay(this)">📅 يوم محدد</button>
 <button class="pb" onclick="modeRange(this)">📆 بين فترتين</button>
-<div id="dayBox" style="display:none;margin-top:8px">
- اليوم: <input type="date" id="dDay" onchange="applyDay()">
-</div>
-<div id="rangeBox" style="display:none;margin-top:8px">
- من: <input type="date" id="d1" onchange="applyRange()">
- إلى: <input type="date" id="d2" onchange="applyRange()">
-</div>
+<div id="dayBox" style="display:none;margin-top:8px">اليوم: <input type="date" id="dDay" onchange="applyDay()"></div>
+<div id="rangeBox" style="display:none;margin-top:8px">من: <input type="date" id="d1" onchange="applyRange()"> إلى: <input type="date" id="d2" onchange="applyRange()"></div>
 <div id="plabel" class="tag"></div>
 </section>
 
@@ -81,12 +76,12 @@ section{margin:14px 0}
 
 <script>
 /* 🔖 الإصدار */
-const VERSION='v6';
+const VERSION='v7';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
 const REPO='ahmedbrzan/asbakk';
 let ACTIVE='';let FILES=[];
 
-/* ===== 📁 قائمة الملفات من GitHub ===== */
+/* ===== 📁 قائمة GitHub ===== */
 function setStatus(m){document.getElementById('fs').innerHTML=m;}
 function namesMap(){try{return JSON.parse(localStorage.getItem('asbag-names')||'{}')}catch(e){return{}}}
 async function loadRepoList(){
@@ -97,7 +92,7 @@ async function loadRepoList(){
   const items=await res.json();
   FILES=items.filter(x=>/\.(xlsx|xls)$/i.test(x.name));
   renderFiles();
-  setStatus('✅ تم الفحص: '+FILES.length+' ملف Excel — '+new Date().toLocaleTimeString('en-GB'));
+  setStatus('✅ تم الفحص: '+FILES.length+' ملف — '+new Date().toLocaleTimeString('en-GB'));
   const last=localStorage.getItem('asbag-last');
   const i=FILES.findIndex(f=>f.name===last);
   if(i>=0)openFile(i);
@@ -112,7 +107,7 @@ function renderFiles(){
    <button class="pb on" onclick="openFile(${i})">فتح</button>
    <button class="pb" onclick="renameFile(${i})">✏️ تسمية</button>
   </span></div>`;});
- document.getElementById('files').innerHTML=h||'<span class="tag">لا توجد ملفات Excel بالمستودع — ارفع تقاريرك على GitHub وستظهر هنا تلقائيًا</span>';}
+ document.getElementById('files').innerHTML=h||'<span class="tag">لا ملفات Excel بالمستودع</span>';}
 async function openFile(i){
  const f=FILES[i];if(!f)return;
  setStatus('⏳ تحميل '+f.name+'...');
@@ -121,7 +116,7 @@ async function openFile(i){
   ingestBuffer(await res.arrayBuffer(),namesMap()[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));
   localStorage.setItem('asbag-last',f.name);
   setStatus('✅ الملف النشط: '+f.name);
- }catch(e){setStatus('⚠️ فشل التحميل: '+e.message);}
+ }catch(e){setStatus('⚠️ فشل: '+e.message);}
 }
 function renameFile(i){
  const f=FILES[i];if(!f)return;
@@ -131,22 +126,17 @@ function renameFile(i){
  nm[f.name]=n;localStorage.setItem('asbag-names',JSON.stringify(nm));
  renderFiles();}
 
-/* ===== 🗓️ الفلتر المرتب ===== */
+/* ===== 🗓️ الفلتر ===== */
 let P={start:null,end:null};
 function sel(b){b.parentElement.querySelectorAll('.pb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function modeAll(b){sel(b);document.getElementById('dayBox').style.display='none';
- document.getElementById('rangeBox').style.display='none';P={start:null,end:null};render();}
-function modeDay(b){sel(b);document.getElementById('dayBox').style.display='block';
- document.getElementById('rangeBox').style.display='none';
+function modeAll(b){sel(b);dayBox.style.display='none';rangeBox.style.display='none';P={start:null,end:null};render();}
+function modeDay(b){sel(b);dayBox.style.display='block';rangeBox.style.display='none';
  const el=document.getElementById('dDay');
  if(!el.value){const mx=maxDate();if(mx)el.value=mx.toISOString().slice(0,10);}
  applyDay();}
-function applyDay(){const d=toDate(document.getElementById('dDay').value);if(!d)return;
- P={start:d,end:d};render();}
-function modeRange(b){sel(b);document.getElementById('dayBox').style.display='none';
- document.getElementById('rangeBox').style.display='block';applyRange();}
-function applyRange(){const a=toDate(document.getElementById('d1').value),b=toDate(document.getElementById('d2').value);
- if(!a||!b)return;P={start:a,end:b};render();}
+function applyDay(){const d=toDate(document.getElementById('dDay').value);if(!d)return;P={start:d,end:d};render();}
+function modeRange(b){sel(b);dayBox.style.display='none';rangeBox.style.display='block';applyRange();}
+function applyRange(){const a=toDate(d1.value),b=toDate(d2.value);if(!a||!b)return;P={start:a,end:b};render();}
 function periodLabel(){return P.start?(P.start.getTime()===P.end.getTime()
  ?`اليوم: ${P.start.toLocaleDateString('en-GB')}`
  :`الفترة: ${P.start.toLocaleDateString('en-GB')} → ${P.end.toLocaleDateString('en-GB')}`)
@@ -165,9 +155,9 @@ function toDate(v){if(v==null)return null;if(v instanceof Date)return v;
  const d=new Date(s);return isNaN(d)?null:d;}
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 
-/* ===== محرك القراءة العميقة ===== */
+/* ===== محرك القراءة ===== */
 const IDX=['#','ت'];
-const COLK=['النوع','التاريخ','القيمة','اسم الحساب','مدين','دائن','وارد نقدي','وارد أجل','صادر نقدي','صادر أجل','رقم السند','المبلغ','البيان','الرصيد','الموضوع','نسبة','حسم','الكمية','الوحدة','المادة','رقم الفاتورة','الحساب','تكلفة','الربح','قيمة المبيع','السعر الاجمالي','السعر النهائي','اسم العميل'];
+const COLK=['النوع','التاريخ','القيمة','اسم الحساب','مدين','دائن','وارد نقدي','وارد أجل','صادر نقدي','صادر أجل','رقم السند','المبلغ','البيان','الرصيد','الموضوع','نسبة','حسم','الكمية','الوحدة','المادة','رقم الفاتورة','الحساب','تكلفة','الربح','قيمة المبيع','السعر الاجمالي','السعر النهائي','اسم العميل','مجموع الفاتورة','اجمالي الفاتورة','هدايا','ملاحظة'];
 function colBlocks(g){
  const W=g.reduce((m,r)=>Math.max(m,r.length),0);
  const act=new Array(W).fill(false);
@@ -188,7 +178,7 @@ function blockTable(g,s,e){
  }
  if(h<0)return null;
  const headers=cols.map(c=>String(g[h][c]).trim());
- const TK=['كشف حساب','حركة المبيعات','الحركة المالية','قائمة الدخل','صافي الدخل','نسب الأرباح','حسم ممنوح','متاجره','الخسائر','ارباح المواد'];
+ const TK=['كشف حساب','حركة المبيعات','الحركة المالية','قائمة الدخل','صافي الدخل','نسب الأرباح','حسم ممنوح','متاجره','الخسائر','أرباح المواد','ارباح المواد'];
  let title='';
  for(let i=0;i<h&&!title;i++)for(let c=s;c<e;c++){const v=g[i][c];
   if(v!=null&&TK.some(k=>String(v).includes(k))){title=String(v);break;}}
@@ -200,11 +190,18 @@ function blockTable(g,s,e){
   if(vals.some(v=>v!=null&&String(v).includes('مجموع'))){totals=vals;break;}
   data.push(vals);}
  return{headers,data,totals,title};}
+
+/* ===== ✅ v7: تصنيف بأصناف ورقة٤ ===== */
 function classify(t){
  const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
+ if(T.includes('أرباح المواد')||T.includes('ارباح المواد')){
+  if(/ونقدي|نقدي واجل|اجل ونقدي/.test(T))return 'ipBoth';
+  if(T.includes('نقدي فقط'))return 'ipCash';
+  if(/الاجل|أجل/.test(T))return 'ipCredit';
+  return 'ipBoth';}
  if(has('وارد نقدي'))return 'fin';
  if(has('قيمة المبيع')&&has('الربح'))return 'ip';
- if(has('حسم الفاتورة'))return 'disc';
+ if(has('حسم الفاتورة')&&!has('مجموع الفاتورة'))return 'disc';
  if(has('رقم السند')&&has('مدين')){
   const ai=ci(H,['اسم الحساب']);
   const names=t.data.slice(0,400).map(r=>String(r[ai]??'')).join('|');
@@ -238,7 +235,8 @@ function ingestBuffer(buf,label){try{
  }
  if(R.inc){const m={};R.inc.data.forEach(x=>{m[String(x[1]).trim()]=num(x[2]);});R.m=m;}
  const names={sales:'المبيعات',fin:'الحركة المالية',inc:'قائمة الدخل',sum:'صافي الدخل',rat:'النسب',
-  cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'اليومية التفصيلية'};
+  cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',journal:'اليومية',
+  ipCash:'ارباح نقدي',ipCredit:'ارباح أجل',ipBoth:'ارباح نقدي+أجل',ip:'ارباح تفصيلي'};
  document.getElementById('pm').innerHTML='✅ '+VERSION+' استخراج: '
   +Object.keys(names).filter(k=>R[k]).map(k=>names[k]).join(' + ');
  render();
@@ -285,15 +283,21 @@ function plVals(){
   if(n.includes('92')||n.includes('المتاجره'))gross=v;
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
-function ipVals(rows){
- if(!R.ip)return null;
- const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
- let sale=0,cost=0,prof=0,skipped=0;
- (rows||R.ip.data).forEach(r=>{
-  const line=r.map(v=>v==null?'':String(v)).join('|');
-  if(/أجل|اجل/.test(line)){skipped++;return;}
-  sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
- return{sale,cost,prof,skipped};}
+
+/* ===== ✅ v7: أرباح الأصناف الثلاثة (تتفلتر بالتاريخ) ===== */
+function ipAgg(){
+ const cats=[['نقدي فقط',R.ipCash],['أجل فقط',R.ipCredit],['نقدي+أجل',R.ipBoth],['تفصيلي',R.ip]];
+ let totSale=0,totCost=0,totProf=0;const per={};
+ cats.forEach(([name,t])=>{
+  if(!t)return;
+  const H=t.headers;
+  let si=ci(H,['اجمالي الفاتورة']);if(si<0)si=ci(H,['قيمة المبيع']);
+  const ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
+  let sale=0,cost=0,prof=0;
+  filtered(t).forEach(r=>{sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
+  per[name]={sale,cost,prof};
+  totSale+=sale;totCost+=cost;totProf+=prof;});
+ return{sale:totSale,cost:totCost,prof:totProf,per};}
 
 /* ===== اليومية للفترة ===== */
 function journalSums(){
@@ -356,13 +360,12 @@ function computeIncome(){
 function maxDate(){let mx=null;
  const scan=t=>{if(!t)return;const d=ci(t.headers,['تاريخ']);if(d<0)return;
   t.data.forEach(r=>{const dt=toDate(r[d]);if(dt&&(!mx||dt>mx))mx=dt;});};
- scan(R.sales);scan(R.cust);scan(R.disc);scan(R.journal);return mx;}
+ scan(R.sales);scan(R.cust);scan(R.disc);scan(R.journal);scan(R.ipCash);scan(R.ipCredit);scan(R.ipBoth);return mx;}
 function inP(d){if(!P.start||!P.end)return true;return d&&d>=P.start&&d<=P.end;}
 function filtered(t){if(!t)return[];const d=ci(t.headers,['تاريخ']);if(d<0)return t.data;
  return t.data.filter(r=>inP(toDate(r[d])));}
 function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قيمة','مبلغ']);
  return filtered(R.sales).reduce((s,r)=>s+(num(r[v])||0),0);}
-const hasDate=t=>t&&ci(t.headers,['تاريخ'])>=0;
 
 /* ===== العرض ===== */
 const row=(l,v,c)=>`<div class="row"><span>${l}</span><b class="${c||''}">${v}</b></div>`;
@@ -370,8 +373,8 @@ function showErr(m){const e=document.getElementById('err');e.style.display='bloc
 const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')'):'';
 
 function render(){
- const o=document.getElementById('out');const ic=computeIncome();
- let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف النشط: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — أرقام الفترة من اليومية 📒':''}</p>`;
+ const o=document.getElementById('out');const ic=computeIncome();const ip=ipAgg();
+ let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — أرقام الفترة من اليومية 📒':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
@@ -389,6 +392,15 @@ function render(){
   +`<button class="btn r" onclick="openDisc('grant')">تفاصيل الممنوح</button>
      <button class="btn g" onclick="openDisc('earn')">تفاصيل المكتسب</button></div>`;
 
+ if(ip.prof||ip.sale){
+  h+=`<div class="card"><h2>🧾 ارباح المواد (ورقة٤)</h2>`;
+  if(ip.per['نقدي فقط'])h+=row('ربح نقدي فقط',fmt(ip.per['نقدي فقط'].prof));
+  if(ip.per['أجل فقط'])h+=row('ربح أجل فقط',fmt(ip.per['أجل فقط'].prof));
+  if(ip.per['نقدي+أجل'])h+=row('ربح نقدي+أجل',fmt(ip.per['نقدي+أجل'].prof));
+  h+=row('الربح الكلي',fmt(ip.prof),'ok')+row('التكلفة الكلية',fmt(ip.cost),'bad')
+  +row('مطابقة المجمل',chk(ic.gross,ip.prof))
+  +`<button class="btn" onclick="openIp()">تفاصيل الأصناف</button></div>`;}
+
  if(R.sales)h+=`<div class="card"><h2>📈 حركة المبيعات</h2>`
   +row('المجموع',fmt(salesTotal())+' د.ع')+row('عدد الأيام',filtered(R.sales).length)
   +`<button class="btn" onclick="openT('حركة المبيعات',R.sales)">التفاصيل</button></div>`;
@@ -403,15 +415,6 @@ function render(){
   +row('وارد نقدي',fmt(s[0]))+row('وارد أجل',fmt(s[1]))+row('صادر نقدي',fmt(s[2]),'bad')
   +row('صادر أجل',fmt(s[3]),'bad')+row('الرصيد',fmt(s[4]),s[4]>=0?'ok':'bad')
   +`<button class="btn" onclick="openT('اجمالي الحركة المالية',R.fin)">التفاصيل</button></div>`;}
-
- if(R.ip){const hd=hasDate(R.ip);
-  const ip=ipVals(hd?filtered(R.ip):null);
-  h+=`<div class="card"><h2>🧾 ارباح المواد ${hd&&P.start?'(للفترة)':'(ورقة٣)'}</h2>`
-  +(P.start&&!hd?row('ملاحظة','بدون عمود تاريخ — شهر كامل','bad'):'')
-  +row('قيمة المبيع (بدون أجل)',fmt(ip.sale))+row('التكلفة',fmt(ip.cost),'bad')
-  +row('الربح',fmt(ip.prof),'ok')
-  +(!ic.filtered?row('مطابقة المجمل',chk(ip.prof,ic.gross)):'')
-  +`<button class="btn" onclick="openT('ارباح المواد',R.ip)">التفاصيل</button></div>`;}
 
  if(R.journal)h+=`<div class="card"><h2>📒 اليومية التفصيلية</h2>`
   +row('حركات الفترة',filtered(R.journal).length)
@@ -429,6 +432,19 @@ function render(){
 
 /* ===== النوافذ ===== */
 function closeM(){document.getElementById('modal').style.display='none';}
+function openIp(){
+ const ip=ipAgg();
+ document.getElementById('mtitle').textContent='ارباح المواد — الأصناف الثلاثة'+(P.start?' (للفترة)':'');
+ let x=`<table><tr><th>الصنف</th><th>المبيع</th><th>التكلفة</th><th>الربح</th></tr>`;
+ Object.entries(ip.per).forEach(([k,v])=>x+=`<tr><td>${k}</td><td>${fmt(v.sale)}</td><td>${fmt(v.cost)}</td><td>${fmt(v.prof)}</td></tr>`);
+ x+=`<tr><td><b>الكلي</b></td><td><b>${fmt(ip.sale)}</b></td><td><b>${fmt(ip.cost)}</b></td><td><b>${fmt(ip.prof)}</b></td></tr></table>`;
+ [['نقدي فقط',R.ipCash],['أجل فقط',R.ipCredit],['نقدي+أجل',R.ipBoth]].forEach(([k,t])=>{
+  if(!t)return;
+  x+=`<br><h2 style="color:var(--acc)">📄 ${k} (${filtered(t).length} فاتورة)</h2><table><tr>`+t.headers.map(v=>`<th>${v}</th>`).join('')+'</tr>';
+  filtered(t).slice(0,300).forEach(r=>x+='<tr>'+r.map(v=>`<td>${typeof v==='number'?fmt(v):(v??'')}</td>`).join('')+'</tr>');
+  x+='</table>';});
+ document.getElementById('mbody').innerHTML=x;
+ document.getElementById('modal').style.display='block';}
 function openFinPeriod(){
  const fp=finPeriod();
  document.getElementById('mtitle').textContent='الحركة المالية للفترة حسب النوع';
@@ -437,7 +453,7 @@ function openFinPeriod(){
  document.getElementById('mbody').innerHTML=x+'</table>';
  document.getElementById('modal').style.display='block';}
 function openIncome(){
- const ic=computeIncome();const pl=plVals();const ip=ipVals();
+ const ic=computeIncome();const pl=plVals();const ip=ipAgg();
  document.getElementById('mtitle').textContent=(ic.filtered?'قائمة الدخل للفترة':'قائمة الدخل الشهرية')+' + التحقق';
  const exps=ic.filtered?ic.expList:(pl?pl.expenses:[]);
  const main=[['المبيعات',ic.sales,''],['مردودات المبيعات',ic.ret,''],['الحسم الممنوح',ic.granted,'r-p'],
@@ -451,11 +467,12 @@ function openIncome(){
  const checks=ic.filtered?`
   <tr><td>المبيعات = اليومية للفترة</td><td>${chk(ic.sales,ic.chkSales)||'—'}</td></tr>
   <tr><td>الممنوح (ورقة٢) = اليومية للفترة</td><td>${chk(ic.granted,ic.chkGranted)||'—'}</td></tr>
-  <tr><td>المكتسب (ورقة٢) = اليومية للفترة</td><td>${chk(ic.earned,ic.chkEarned)||'—'}</td></tr>`:`
+  <tr><td>المكتسب (ورقة٢) = اليومية للفترة</td><td>${chk(ic.earned,ic.chkEarned)||'—'}</td></tr>
+  <tr><td>المجمل = ارباح المواد للفترة</td><td>${chk(ic.gross,ip.prof)||'—'}</td></tr>`:`
   <tr><td>الممنوح = 41103</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
   <tr><td>صافي المبيعات = الموارد</td><td>${chk(ic.netSales,ic.mtNet)||'—'}</td></tr>
   <tr><td>المجمل = أرباح/خسائر 92</td><td>${chk(ic.gross,ic.plGross)||'—'}</td></tr>
-  <tr><td>المجمل = ارباح المواد (بدون أجل)</td><td>${chk(ic.gross,ip?ip.prof:null)||'—'}</td></tr>`;
+  <tr><td>المجمل = ارباح المواد (٣ أصناف)</td><td>${chk(ic.gross,ip.prof)||'—'}</td></tr>`;
  let t2=`<table><tr><th colspan="3" style="background:#0ea5e9">صافي الدخل</th></tr>
   <tr><td>1</td><td>صافي المبيعات</td><td>${fmt(ic.netSales)}</td></tr>
   <tr><td>2</td><td>تكلفة المبيعات</td><td>${fmt(ic.costSales)}</td></tr>
