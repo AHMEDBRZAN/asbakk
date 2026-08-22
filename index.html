@@ -19,11 +19,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:4px
 .tag{font-size:10px;color:var(--mut)}
 .flist{display:flex;flex-direction:column;gap:8px}
 .fchip{display:flex;justify-content:space-between;align-items:center;background:#182236;border:1px solid #2a3a55;border-radius:14px;padding:11px 12px;font-size:13px}
+.fchip.local{border-color:#34d39955}
 .fbtns{display:flex;gap:6px}
 .mini{border:0;border-radius:10px;padding:7px 12px;font-size:11px;font-weight:800;cursor:pointer}
 .mini.open{background:var(--acc);color:#06121f}
-.mini.rn{background:#24344f;color:var(--txt)}
 .mini.rf{background:#24344f;color:var(--txt)}
+.savebtn{width:100%;border:0;border-radius:14px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#201404;margin-top:10px;box-shadow:0 8px 20px #f59e0b33}
 .seg{display:flex;background:#0d1420;border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
 .seg button{flex:1;border:0;background:transparent;color:var(--mut);padding:10px 4px;border-radius:11px;font-weight:800;font-size:12px}
 .seg button.on{background:linear-gradient(135deg,#38bdf8,#22c55e);color:#06121f}
@@ -70,12 +71,10 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 </header>
 
 <div class="card">
- <h2>📁 ملفات التقرير <button class="mini rf" onclick="loadRepoList(true)">🔄 تحديث</button></h2>
- <div class="flist" id="files"></div>
- <div style="display:flex;gap:8px;margin-top:10px">
-  <input id="fname" placeholder="فتح بالاسم: تقرير شهري.xlsx" style="flex:1;background:#0d1420;border:1px solid var(--line);border-radius:12px;padding:9px;color:var(--txt);font-size:12px">
-  <button class="mini open" onclick="openByName(document.getElementById('fname').value.trim())">فتح</button>
- </div>
+ <h2>📁 الملفات <button class="mini rf" onclick="refreshList()">🔄 تحديث</button></h2>
+ <div class="flist" id="localFiles"></div>
+ <div class="flist" id="gitFiles" style="margin-top:8px"></div>
+ <button class="savebtn" onclick="saveLocalActive()">💾 Save</button>
  <div class="tag" id="fs" style="margin-top:8px"></div>
 </div>
 
@@ -102,11 +101,11 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 </div></div>
 
 <script>
-const VERSION='v14';
+const VERSION='v15';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
-const RAW='https://raw.githubusercontent.com/'+REPO+'/main/';
-let ACTIVE='',FILES=[],R={},P={start:null,end:null};
+const API='https://api.github.com/repos/'+REPO+'/contents/';
+let ACTIVE=null,FILES=[],R={},P={start:null,end:null};
 
 /* ===== أدوات ===== */
 const ARD='٠١٢٣٤٥٦٧٨٩';
@@ -126,52 +125,68 @@ const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 function codeMatch(c,pre){c=String(c).trim();if(c===pre)return true;
  return c.startsWith(pre)&&!'0123456789'.includes(c.charAt(pre.length));}
 
-/* ===== ✅ v14: ملفات مع كاش + رابط خام بدون حدود ===== */
+/* ===== ✅ v15 حفظ محلي IndexedDB ===== */
+let db=null;
+function idb(){return new Promise((res,rej)=>{const q=indexedDB.open('asbag-save',1);
+ q.onupgradeneeded=e=>{e.target.result.createObjectStore('save',{keyPath:'name'});};
+ q.onsuccess=e=>{db=e.target.result;res();};q.onerror=()=>rej(q.error);});}
+function putLocal(name,blob){return new Promise((res,rej)=>{const tx=db.transaction('save','readwrite');
+ tx.objectStore('save').put({name,blob,ts:Date.now()});tx.oncomplete=res;tx.onerror=rej;});}
+function getLocal(name){return new Promise((res,rej)=>{const tx=db.transaction('save','readonly');
+ const q=tx.objectStore('save').get(name);q.onsuccess=()=>res(q.result);q.onerror=rej;});}
+function allLocal(){return new Promise((res,rej)=>{const tx=db.transaction('save','readonly');
+ const q=tx.objectStore('save').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=rej;});}
+
 function setStatus(m){document.getElementById('fs').innerHTML=m;}
-function namesMap(){try{return JSON.parse(localStorage.getItem('asbag-names')||'{}')}catch(e){return{}}}
-function cacheGet(){try{return JSON.parse(localStorage.getItem('asbag-apicache'))||null}catch(e){return null}}
-function cacheSet(items){try{localStorage.setItem('asbag-apicache',JSON.stringify({t:Date.now(),items}))}catch(e){}}
-async function loadRepoList(force){
- setStatus('⏳ فحص الملفات...');
- const c=cacheGet();
- if(!force&&c&&c.items&&Date.now()-c.t<10*60*1000){
-  FILES=c.items;renderFiles();setStatus('✅ '+FILES.length+' ملف (قائمة محفوظة)');openLast();return;}
+const cleanName=n=>n.replace(/\.(xlsx|xls)$/i,'');
+
+async function renderLocal(){
+ const list=(await allLocal()).sort((a,b)=>(b.ts||0)-(a.ts||0));
+ document.getElementById('localFiles').innerHTML=list.map(r=>
+  `<div class="fchip local"><b>📍 ${cleanName(r.name)} <span class="tag">(محلي)</span></b>
+   <span class="fbtns"><button class="mini open" onclick="openLocal('${r.name.replace(/'/g,"\\'")}')">فتح</button></span></div>`).join('')||'';}
+
+async function openLocal(name){
+ const rec=await getLocal(name);if(!rec)return;
+ ACTIVE={name:rec.name,blob:rec.blob};
+ localStorage.setItem('asbag-last',name);
+ ingestBuffer(await rec.blob.arrayBuffer(),cleanName(name)+' (محلي)');
+ setStatus('📍 محمّل من الحفظ المحلي: '+cleanName(name));}
+
+async function saveLocalActive(){
+ if(!ACTIVE||!ACTIVE.blob){setStatus('⚠️ افتح ملفًا أولًا ثم اضغط Save');return;}
+ await putLocal(ACTIVE.name,ACTIVE.blob);
+ localStorage.setItem('asbag-last',ACTIVE.name);
+ renderLocal();
+ setStatus('✅ Saved locally: '+cleanName(ACTIVE.name));}
+
+async function refreshList(){
+ setStatus('⏳ جلب القائمة من GitHub...');
  try{
-  const res=await fetch('https://api.github.com/repos/'+REPO+'/contents/?t='+Date.now());
-  if(res.status===403)throw new Error('403');
+  const res=await fetch(API+'?t='+Date.now());
   if(!res.ok)throw new Error('HTTP '+res.status);
   FILES=(await res.json()).filter(x=>/\.(xlsx|xls)$/i.test(x.name));
-  cacheSet(FILES);renderFiles();setStatus('✅ '+FILES.length+' ملف — '+new Date().toLocaleTimeString('en-GB'));
-  openLast();
- }catch(e){
-  if(c&&c.items&&c.items.length){FILES=c.items;renderFiles();
-   setStatus('⚠️ حد GitHub بالساعة انتهى مؤقتًا — عرضت القائمة المحفوظة وفتحت آخر ملف بالرابط المباشر');openLast();}
-  else{FILES=[];renderFiles();
-   setStatus('⚠️ تعذر جلب القائمة (403) — استخدم "فتح بالاسم" بالأعلى');}
- }
+  const saved=new Set((await allLocal()).map(r=>r.name));
+  document.getElementById('gitFiles').innerHTML=FILES.map((f,i)=>
+   `<div class="fchip"><b>📄 ${cleanName(f.name)} ${saved.has(f.name)?'<span class="tag">📍 محفوظ</span>':''}</b>
+    <span class="fbtns"><button class="mini open" onclick="openGit(${i})">فتح</button></span></div>`).join('')
+   ||'<span class="tag">لا ملفات Excel بالمستودع</span>';
+  setStatus('✅ القائمة جاهزة — افتح أي ملف ثم اضغط Save');
+ }catch(e){setStatus('⚠️ تعذر جلب القائمة ('+e.message+') — الاعتماد على الحفظ المحلي');}
 }
-function renderFiles(){
- const nm=namesMap();
- document.getElementById('files').innerHTML=FILES.map((f,i)=>
-  `<div class="fchip"><b>📄 ${nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,'')}</b>
-   <span class="fbtns"><button class="mini open" onclick="openByName('${f.name.replace(/'/g,"\\'")}')">فتح</button>
-   <button class="mini rn" onclick="renameFile(${i})">✏️</button></span></div>`).join('')
-  ||'<span class="tag">لا قائمة بعد</span>';}
-async function openByName(name){
- if(!name)return;
- setStatus('⏳ '+name+'...');
+async function openGit(i){
+ const f=FILES[i];if(!f)return;
+ setStatus('⏳ تحميل '+f.name+'...');
  try{
-  const r=await fetch(RAW+encodeURIComponent(name)+'?t='+Date.now());
+  const r=await fetch(f.download_url);
   if(!r.ok)throw new Error('HTTP '+r.status);
-  ingestBuffer(await r.arrayBuffer(),namesMap()[name]||name.replace(/\.(xlsx|xls)$/i,''));
-  localStorage.setItem('asbag-last',name);
-  setStatus('✅ الملف النشط: '+name);
- }catch(e){setStatus('⚠️ فشل فتح '+name+' — تأكد من الاسم بالضبط');}
+  const blob=await r.blob();
+  ACTIVE={name:f.name,blob};
+  localStorage.setItem('asbag-last',f.name);
+  ingestBuffer(await blob.arrayBuffer(),cleanName(f.name));
+  setStatus('✅ فُتح من GitHub — اضغط 💾 Save ليصير محليًا');
+ }catch(e){setStatus('⚠️ فشل: '+e.message);}
 }
-function openLast(){const n=localStorage.getItem('asbag-last');if(n)openByName(n);}
-function renameFile(i){const f=FILES[i];const nm=namesMap();
- const n=prompt('الاسم المعروض:',nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));if(!n)return;
- nm[f.name]=n;localStorage.setItem('asbag-names',JSON.stringify(nm));renderFiles();}
 
 /* ===== الفلتر ===== */
 function sel(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
@@ -254,7 +269,7 @@ function classify(t){
  return null;}
 
 function ingestBuffer(buf,label){try{
- ACTIVE=label||'';
+ ACTIVE=ACTIVE||{};ACTIVE.label=label;
  const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
  R={};
  for(const n of wb.SheetNames){
@@ -379,7 +394,7 @@ function computeIncome(){
 const row=(l,v,cls,n)=>`<div class="srow ${cls||''}"><span>${n!=null?`<span class="n">${n}</span>`:''}${l}</span><b class="v">${v}</b></div>`;
 function render(){
  const ic=computeIncome();const o=document.getElementById('out');
- let h=`<div class="hero"><div class="lbl">صافي الربح — ${periodLabel()}${ACTIVE?' · '+ACTIVE:''}</div>
+ let h=`<div class="hero"><div class="lbl">صافي الربح — ${periodLabel()}${ACTIVE&&ACTIVE.label?' · '+ACTIVE.label:''}</div>
   <div class="net">${fmt(ic.net)}</div>
   <div class="chips">
    <span class="chip">المبيعات<b>${fmt(ic.sales)}</b></span>
@@ -446,7 +461,17 @@ function openVerify(){
  document.getElementById('modal').style.display='block';
 }
 function closeM(){document.getElementById('modal').style.display='none';}
-window.addEventListener('load',()=>loadRepoList(false));
+
+/* ===== بدء التشغيل: محلي أولًا، بدون GitHub ===== */
+window.addEventListener('load',async()=>{
+ try{
+  await idb();
+  await renderLocal();
+  const last=localStorage.getItem('asbag-last');
+  if(last){await openLocal(last);}
+  else setStatus('لا حفظ محلي بعد — اضغط 🔄 تحديث لجلب القائمة من GitHub');
+ }catch(e){setStatus('⚠️ التخزين غير متاح: '+e.message);}
+});
 </script>
 </body>
 </html>
