@@ -76,7 +76,7 @@ section{margin:14px 0}
 
 <script>
 /* 🔖 الإصدار */
-const VERSION='v8';
+const VERSION='v9';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
 const REPO='ahmedbrzan/asbakk';
 let ACTIVE='';let FILES=[];
@@ -192,8 +192,6 @@ function blockTable(g,s,e){
   if(vals.some(v=>v!=null&&String(v).includes('مجموع'))){totals=vals;break;}
   data.push(vals);}
  return{headers,data,totals,title};}
-
-/* ===== ✅ v8 التصنيف ===== */
 function classify(t){
  const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
  if(T.includes('أرباح المواد')||T.includes('ارباح المواد')){
@@ -274,6 +272,14 @@ function discParse(mode){
   total+=d;byType[(ty.split('-')[0].trim()||'عام')]=(byType[(ty.split('-')[0].trim()||'عام')]||0)+d;
   if(fi>=0&&r[fi]!=null&&String(r[fi]).trim()!=='')invoices++;});
  return{total,byType,invoices};}
+function returnsFromDisc(){
+ const t=R.disc;if(!t)return 0;
+ const H=t.headers,ti=ci(H,['نوع']),di=ci(H,['تاريخ']);
+ let si=ci(H,['اجمالي الفاتورة']);if(si<0)si=ci(H,['مجموع الفاتورة']);
+ if(ti<0||si<0)return 0;let v=0;
+ t.data.forEach(r=>{if(!String(r[ti]).includes('مرتجع'))return;
+  if(di>=0&&P.start&&!inP(toDate(r[di])))return;v+=num(r[si])||0;});
+ return v;}
 
 /* ===== المتاجره / أرباح والخسائر ===== */
 function mutajVals(){
@@ -305,7 +311,7 @@ function ipAgg(){
   totSale+=sale;totCost+=cost;totProf+=prof;});
  return{sale:totSale,cost:totCost,prof:totProf,per};}
 
-/* ===== ✅ v8 ميزان المراجعة ===== */
+/* ===== ميزان المراجعة / الميزانية ===== */
 function tbVals(){
  if(!R.tb)return null;
  const H=R.tb.headers;
@@ -330,48 +336,43 @@ function bsVals(){
  const sales=get('41101'),gr=get('41103'),cogs=get('31105');
  return{sales:sales?sales.c:null,granted:gr?gr.d:null,cogs:cogs?cogs.d:null};}
 
-/* ===== ✅ v8 دفتر اليومية بالأكواد ===== */
-function djSums(){
- if(!R.dj)return null;
- const H=R.dj.headers;
- const ri=ci(H,['رمز الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']),ni=ci(H,['اسم الحساب']);
- if(ri<0||mi<0)return null;
- let salesJ=0,ret=0,grantedJ=0,earnedJ=0,cogs=0;const expMap={};
- R.dj.data.forEach(r=>{
+/* ===== ✅ v9 محرك الحسابات بالمطابقة المرنة متعددة المصادر ===== */
+function acctSums(t){
+ const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0};
+ if(!t)return out;
+ const H=t.headers;
+ const codeI=ci(H,['رمز الحساب']);
+ const n1=ci(H,['اسم الحساب']),n2=ci(H,['الحساب']);
+ const mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']);
+ if(mi<0||cri<0)return out;
+ t.data.forEach(r=>{
   if(di>=0&&!inP(toDate(r[di])))return;
-  const code=String(r[ri]||'').trim();if(!code)return;
+  const code=String(codeI>=0?r[codeI]:'').trim();
+  const nm=(n1>=0?String(r[n1]??''):'')+'|'+(n2>=0?String(r[n2]??''):'');
   const d=num(r[mi])||0,c=num(r[cri])||0;
-  if(code.startsWith('41102')){ret+=d-c;return;}
-  if(code.startsWith('41103')){grantedJ+=d-c;return;}
-  if(code.startsWith('41104')){earnedJ+=c-d;return;}
-  if(code.startsWith('31105')){cogs+=d-c;return;}
-  if(code.startsWith('41101')){salesJ+=c-d;return;}
-  if(code.startsWith('322')){const nm=String(r[ni]||code).trim();expMap[nm]=(expMap[nm]||0)+(d-c);}
+  if(!d&&!c)return;
+  out.rows++;
+  const has=p=>(code&&code.startsWith(p))||nm.includes('- '+p)||nm.includes(p+' -')||nm.includes('|'+p)||nm.includes(p+'|');
+  if(has('41102')||nm.includes('مردودات')){out.ret+=d-c;return;}
+  if(has('41103')||nm.includes('الحسم الممنوح')){out.granted+=d-c;return;}
+  if(has('41104')||nm.includes('الحسم المكتسب')){out.earned+=c-d;return;}
+  if(has('31105')||nm.includes('تكلفة البضاعة')){out.cogs+=d-c;return;}
+  if(has('41101')||nm.includes('المبيعات')){out.sales+=c-d;return;}
+  if(code.startsWith('322')||nm.includes('322')){
+   const clean=String(n1>=0?r[n1]??'':code).replace(/\s*-\s*\d+.*$/,'').trim()||code;
+   out.expMap[clean]=(out.expMap[clean]||0)+(d-c);}
  });
- const expList=Object.entries(expMap);
- return{salesJ,ret,grantedJ,earnedJ,cogs,expList,exp:expList.reduce((s,x)=>s+x[1],0)};}
+ out.expList=Object.entries(out.expMap);
+ out.exp=out.expList.reduce((s,x)=>s+x[1],0);
+ return out;}
+function periodEngine(){
+ const A=acctSums(R.dj),B=acctSums(R.journal);
+ const pick=k=>A[k]?A[k]:(B[k]?B[k]:0);
+ const src=A.rows>=B.rows?A:B;
+ return{sales:pick('sales'),ret:pick('ret'),granted:pick('granted'),earned:pick('earned'),
+  cogs:pick('cogs'),exp:src.exp,expList:src.expList||[],
+  jSales:A.sales||B.sales,jGranted:A.granted||B.granted,jCogs:A.cogs||B.cogs};}
 
-/* ===== اليومية (ورقة٣) بالأسماء ===== */
-function journalSums(){
- if(!R.journal)return null;
- const H=R.journal.headers;
- const ai=ci(H,['اسم الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']);
- if(ai<0||mi<0)return null;
- const pl=plVals();const expNames=pl?pl.expenses.map(x=>x[0]):[];
- let salesJ=0,ret=0,grantedJ=0,earnedJ=0,cogs=0;const expMap={};
- R.journal.data.forEach(r=>{
-  if(di>=0&&!inP(toDate(r[di])))return;
-  const a=String(r[ai]||'').trim();if(!a)return;
-  const d=num(r[mi])||0,c=num(r[cri])||0;
-  if(a.includes('مردودات')){ret+=d-c;return;}
-  if(a.includes('الحسم الممنوح')){grantedJ+=d-c;return;}
-  if(a.includes('الحسم المكتسب')){earnedJ+=c-d;return;}
-  if(a.includes('تكلفة البضاعة')){cogs+=d-c;return;}
-  if(a.includes('المبيعات')){salesJ+=c-d;return;}
-  for(const n of expNames){if(n&&(a.includes(n)||n.includes(a))){expMap[n]=(expMap[n]||0)+(d-c);break;}}
- });
- const expList=Object.entries(expMap);
- return{salesJ,ret,grantedJ,earnedJ,cogs,expList,exp:expList.reduce((s,x)=>s+x[1],0)};}
 function finPeriod(){
  const src=R.dj||R.journal;if(!src)return null;
  const H=src.headers,ti=ci(H,['نوع']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']);
@@ -387,15 +388,16 @@ function finPeriod(){
 /* ===== قائمة الدخل ===== */
 function computeIncome(){
  if(P.start){
-  const j=djSums()||journalSums();
-  if(j){
-   const sales=salesTotal()??j.salesJ;
-   const granted=discParse('grant').total;
-   const earned=discParse('earn').total;
-   const netSales=sales-j.ret-granted,costSales=j.cogs,gross=netSales-costSales,net=gross-j.exp;
-   return{sales,ret:j.ret,granted,earned,cogs:j.cogs,exp:j.exp,netSales,costSales,gross,net,
-    expList:j.expList,filtered:true,chkSales:j.salesJ,chkGranted:j.grantedJ,chkEarned:j.earnedJ,chkCogs:j.cogs};
-  }
+  const E=periodEngine();const ip=ipAgg();
+  const sales=salesTotal()||E.sales;
+  const granted=discParse('grant').total||E.granted;
+  const earned=discParse('earn').total||E.earned;
+  const ret=E.ret||returnsFromDisc();
+  const cogs=E.cogs||ip.cost;
+  const exp=E.exp;
+  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
+  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
+   expList:E.expList,filtered:true,chkSales:E.jSales,chkGranted:E.jGranted,chkCogs:E.jCogs};
  }
  const mt=mutajVals()||{},m=R.m||{},pl=plVals();
  const sales=mt.sales??m['المبيعات']??0;
@@ -423,10 +425,14 @@ function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قي�
 const row=(l,v,c)=>`<div class="row"><span>${l}</span><b class="${c||''}">${v}</b></div>`;
 function showErr(m){const e=document.getElementById('err');e.style.display='block';e.innerHTML=m;}
 const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')'):'';
+const chk2=(a,b)=>{if(a==null||b==null)return '—';
+ if(Math.abs(a-b)<1)return ' ✅';
+ if(a===0||b===0)return '—';
+ return ' ❌ ('+fmt(b)+')';};
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();const ip=ipAgg();const tb=tbVals();
- let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — أرقام الفترة من دفتر اليومية 📒':''}</p>`;
+ let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — محرك متعدد المصادر 🛰️':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
@@ -440,7 +446,7 @@ function render(){
  const gp=discParse('grant'),ep=discParse('earn');
  h+=`<div class="card"><h2>🎁 الحسم الممنوح والمكتسب</h2>`
   +row('الممنوح',fmt(gp.total)+' د.ع','bad')+row('المكتسب',fmt(ep.total)+' د.ع','ok')
-  +row(ic.filtered?'مطابقة دفتر اليومية':'مطابقة 41103',ic.filtered?chk(gp.total,ic.chkGranted):chk(gp.total,ic.mtGranted))
+  +row(ic.filtered?'مطابقة اليومية':'مطابقة 41103',ic.filtered?chk2(gp.total,ic.chkGranted):chk(gp.total,ic.mtGranted))
   +`<button class="btn r" onclick="openDisc('grant')">تفاصيل الممنوح</button>
      <button class="btn g" onclick="openDisc('earn')">تفاصيل المكتسب</button></div>`;
 
@@ -524,12 +530,13 @@ function openIncome(){
  main.forEach((r,i)=>t1+=`<tr class="${r[2]}"><td>${i+1}</td><td>${r[0]}</td><td>${fmt(r[1])}</td></tr>`);
  t1+='</table>';
  const checks=ic.filtered?`
-  <tr><td>المبيعات = دفتر اليومية للفترة</td><td>${chk(ic.sales,ic.chkSales)||'—'}</td></tr>
-  <tr><td>المبيعات = حركة المبيعات للفترة</td><td>${chk(ic.sales,salesTotal())||'—'}</td></tr>
-  <tr><td>الممنوح = دفتر اليومية للفترة</td><td>${chk(ic.granted,ic.chkGranted)||'—'}</td></tr>
-  <tr><td>الممنوح = جدول الحسم للفترة</td><td>${chk(ic.granted,discParse('grant').total)||'—'}</td></tr>
-  <tr><td>التكلفة = دفتر اليومية للفترة</td><td>${chk(ic.costSales,ic.chkCogs)||'—'}</td></tr>
-  <tr><td>المجمل = ارباح المواد للفترة</td><td>${chk(ic.gross,ip.prof)||'—'}</td></tr>`:`
+  <tr><td>المبيعات = اليومية للفترة</td><td>${chk2(ic.sales,ic.chkSales)}</td></tr>
+  <tr><td>المبيعات = حركة المبيعات للفترة</td><td>${chk2(ic.sales,salesTotal())}</td></tr>
+  <tr><td>الممنوح = اليومية للفترة</td><td>${chk2(ic.granted,ic.chkGranted)}</td></tr>
+  <tr><td>الممنوح = جدول الحسم للفترة</td><td>${chk2(ic.granted,discParse('grant').total)}</td></tr>
+  <tr><td>التكلفة = اليومية للفترة</td><td>${chk2(ic.costSales,ic.chkCogs)}</td></tr>
+  <tr><td>التكلفة = ارباح المواد للفترة</td><td>${chk2(ic.costSales,ip.cost)}</td></tr>
+  <tr><td>المجمل = ارباح المواد للفترة</td><td>${chk2(ic.gross,ip.prof)}</td></tr>`:`
   <tr><td>الممنوح = 41103 (متاجره)</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
   <tr><td>المبيعات = ميزان المراجعة 41101</td><td>${chk(ic.sales,tb?tb.sales:bs?bs.sales:null)||'—'}</td></tr>
   <tr><td>الممنوح = ميزان المراجعة 41103</td><td>${chk(ic.granted,tb?tb.granted:bs?bs.granted:null)||'—'}</td></tr>
