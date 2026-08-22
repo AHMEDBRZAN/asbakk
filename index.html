@@ -76,7 +76,7 @@ section{margin:14px 0}
 
 <script>
 /* 🔖 الإصدار */
-const VERSION='v10';
+const VERSION='v11';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
 const REPO='ahmedbrzan/asbakk';
 let ACTIVE='';let FILES=[];
@@ -296,7 +296,7 @@ function plVals(){
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
 
-/* ===== ✅ v10 ارباح الأصناف + مجموع الفاتورة (الإجمالي قبل الحسم) ===== */
+/* ===== ارباح الأصناف ===== */
 function ipAgg(){
  const cats=[['نقدي فقط',R.ipCash],['أجل فقط',R.ipCredit],['نقدي+أجل',R.ipBoth],['تفصيلي',R.ip]];
  let totSale=0,totGross=0,totCost=0,totProf=0;const per={};
@@ -337,9 +337,9 @@ function bsVals(){
  const sales=get('41101'),gr=get('41103'),cogs=get('31105');
  return{sales:sales?sales.c:null,granted:gr?gr.d:null,cogs:cogs?cogs.d:null};}
 
-/* ===== محرك الحسابات للفترة ===== */
-function acctSums(t){
- const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0};
+/* ===== ✅ v11 محرك الفترة: مصاريف من أي مصدر + مطابقة بأسماء المصاريف ===== */
+function acctSums(t,expNames){
+ const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0,exp:0,expList:[]};
  if(!t)return out;
  const H=t.headers;
  const codeI=ci(H,['رمز الحساب']);
@@ -359,7 +359,9 @@ function acctSums(t){
   if(has('41104')||nm.includes('الحسم المكتسب')){out.earned+=c-d;return;}
   if(has('31105')||nm.includes('تكلفة البضاعة')){out.cogs+=d-c;return;}
   if(has('41101')||nm.includes('المبيعات')){out.sales+=c-d;return;}
-  if(code.startsWith('322')||nm.includes('322')){
+  const isExp=code.startsWith('322')||nm.includes('322')||
+   (expNames&&expNames.some(n=>n&&n.length>3&&nm.includes(n)));
+  if(isExp){
    const clean=String(n1>=0?r[n1]??'':code).replace(/\s*-\s*\d+.*$/,'').trim()||code;
    out.expMap[clean]=(out.expMap[clean]||0)+(d-c);}
  });
@@ -367,11 +369,12 @@ function acctSums(t){
  out.exp=out.expList.reduce((s,x)=>s+x[1],0);
  return out;}
 function periodEngine(){
- const A=acctSums(R.dj),B=acctSums(R.journal);
+ const pl=plVals();const en=pl?pl.expenses.map(x=>x[0]):[];
+ const A=acctSums(R.dj,en),B=acctSums(R.journal,en);
  const pick=k=>A[k]?A[k]:(B[k]?B[k]:0);
- const src=A.rows>=B.rows?A:B;
+ const expSrc=A.exp?A:(B.exp?B:null);
  return{sales:pick('sales'),ret:pick('ret'),granted:pick('granted'),earned:pick('earned'),
-  cogs:pick('cogs'),exp:src.exp,expList:src.expList||[],
+  cogs:pick('cogs'),exp:pick('exp'),expList:expSrc?expSrc.expList:[],
   jSales:A.sales||B.sales,jGranted:A.granted||B.granted,jCogs:A.cogs||B.cogs};}
 
 function finPeriod(){
@@ -386,7 +389,7 @@ function finPeriod(){
   m.d+=num(r[mi])||0;m.c+=num(r[cri])||0;});
  return Object.entries(map).map(([k,v])=>({k,d:v.d,c:v.c,net:v.d-v.c})).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net));}
 
-/* ===== ✅ v10 قائمة الدخل: المبيعات من اليومية (قبل الطرح) ===== */
+/* ===== قائمة الدخل ===== */
 function computeIncome(){
  if(P.start){
   const E=periodEngine();const ip=ipAgg();
@@ -427,10 +430,11 @@ function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قي�
 const row=(l,v,c)=>`<div class="row"><span>${l}</span><b class="${c||''}">${v}</b></div>`;
 function showErr(m){const e=document.getElementById('err');e.style.display='block';e.innerHTML=m;}
 const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')'):'';
+/* ✅ v11: التحقق يعرض الرقم المجلوب للفترة دائمًا */
 const chk2=(a,b)=>{if(a==null||b==null)return '—';
- if(Math.abs(a-b)<1)return ' ✅';
+ if(Math.abs(a-b)<1)return '✅ '+fmt(b);
  if(a===0||b===0)return '—';
- return ' ❌ ('+fmt(b)+')';};
+ return '❌ '+fmt(b);};
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();const ip=ipAgg();const tb=tbVals();
