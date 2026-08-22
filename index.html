@@ -14,14 +14,14 @@ h1{font-size:19px;text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
 .card{background:var(--card);border-radius:14px;padding:14px}
 .card h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
-.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #334155;font-size:13px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #334155;font-size:13px}
 .row b{direction:ltr}
 .btn{display:block;width:100%;margin-top:10px;background:var(--acc);border:0;color:#0f172a;font-weight:700;padding:9px;border-radius:10px;font-size:13px}
 .btn.w{background:#f59e0b}.btn.g{background:var(--ok)}.btn.r{background:var(--bad);color:#fff}
 .ok{color:var(--ok)}.bad{color:var(--bad)}
 input[type=file]{color:var(--txt);font-size:12px;width:100%}
-input[type=date]{background:#334155;border:0;color:var(--txt);border-radius:8px;padding:7px}
-.pb{background:#334155;border:0;color:var(--txt);border-radius:8px;padding:8px 12px;margin:3px;font-weight:700}
+input[type=date],input[type=text]{background:#334155;border:0;color:var(--txt);border-radius:8px;padding:7px}
+.pb{background:#334155;border:0;color:var(--txt);border-radius:8px;padding:6px 10px;margin:2px;font-weight:700;font-size:12px}
 .pb.on{background:var(--acc);color:#0f172a}
 .hero{background:linear-gradient(135deg,#0ea5e9,#22c55e);border-radius:14px;padding:16px;text-align:center;margin:12px 0}
 .hero b{font-size:24px;display:block}
@@ -44,18 +44,28 @@ section{margin:14px 0}
 <h1>🎨 نظام شركة الأصباغ <span class="ver" id="ver"></span></h1>
 
 <section class="card">
-<h2>🗓️ الفترة — كل البطاقات تتبع التاريخ</h2>
-<button class="pb on" onclick="setPeriod('all',this)">الكل (شهري)</button>
-<button class="pb" onclick="setPeriod('day',this)">يوم</button>
-<button class="pb" onclick="setPeriod('week',this)">أسبوع</button>
-<button class="pb" onclick="setPeriod('month',this)">شهر</button>
-من: <input type="date" id="d1" onchange="manualPeriod()">
-إلى: <input type="date" id="d2" onchange="manualPeriod()">
-<span id="plabel" class="tag"></span>
+<h2>📁 ملفات التقرير على GitHub <button class="pb" onclick="loadRepoList()">🔄 تحقق من جديد</button></h2>
+<div id="files"></div>
+<div id="fs" class="tag"></div>
 </section>
 
 <section class="card">
-<h2>📄 رفع التقرير الشهري (ملف واحد — كل الأوراق)</h2>
+<h2>🗓️ الفترة</h2>
+<button class="pb on" onclick="modeAll(this)">الكل</button>
+<button class="pb" onclick="modeDay(this)">📅 يوم محدد</button>
+<button class="pb" onclick="modeRange(this)">📆 بين فترتين</button>
+<div id="dayBox" style="display:none;margin-top:8px">
+ اليوم: <input type="date" id="dDay" onchange="applyDay()">
+</div>
+<div id="rangeBox" style="display:none;margin-top:8px">
+ من: <input type="date" id="d1" onchange="applyRange()">
+ إلى: <input type="date" id="d2" onchange="applyRange()">
+</div>
+<div id="plabel" class="tag"></div>
+</section>
+
+<section class="card">
+<h2>📤 رفع يدوي (احتياطي)</h2>
 <input type="file" id="fMonthly" accept=".xlsx,.xls">
 <div id="pm" class="tag"></div>
 </section>
@@ -70,9 +80,77 @@ section{margin:14px 0}
 </div></div>
 
 <script>
-/* 🔖 الإصدار — يتغير مع كل تحديث */
-const VERSION='v3';
+/* 🔖 الإصدار */
+const VERSION='v6';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
+const REPO='ahmedbrzan/asbakk';
+let ACTIVE='';let FILES=[];
+
+/* ===== 📁 قائمة الملفات من GitHub ===== */
+function setStatus(m){document.getElementById('fs').innerHTML=m;}
+function namesMap(){try{return JSON.parse(localStorage.getItem('asbag-names')||'{}')}catch(e){return{}}}
+async function loadRepoList(){
+ setStatus('⏳ فحص الملفات على GitHub...');
+ try{
+  const res=await fetch('https://api.github.com/repos/'+REPO+'/contents/?t='+Date.now());
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const items=await res.json();
+  FILES=items.filter(x=>/\.(xlsx|xls)$/i.test(x.name));
+  renderFiles();
+  setStatus('✅ تم الفحص: '+FILES.length+' ملف Excel — '+new Date().toLocaleTimeString('en-GB'));
+  const last=localStorage.getItem('asbag-last');
+  const i=FILES.findIndex(f=>f.name===last);
+  if(i>=0)openFile(i);
+ }catch(e){setStatus('⚠️ تعذر جلب القائمة: '+e.message);}
+}
+function renderFiles(){
+ const nm=namesMap();let h='';
+ FILES.forEach((f,i)=>{
+  const label=nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,'');
+  h+=`<div class="row"><span>📄 ${label} <span class="tag">(${(f.size/1024).toFixed(0)} KB)</span></span>
+  <span style="white-space:nowrap">
+   <button class="pb on" onclick="openFile(${i})">فتح</button>
+   <button class="pb" onclick="renameFile(${i})">✏️ تسمية</button>
+  </span></div>`;});
+ document.getElementById('files').innerHTML=h||'<span class="tag">لا توجد ملفات Excel بالمستودع — ارفع تقاريرك على GitHub وستظهر هنا تلقائيًا</span>';}
+async function openFile(i){
+ const f=FILES[i];if(!f)return;
+ setStatus('⏳ تحميل '+f.name+'...');
+ try{
+  const res=await fetch(f.download_url);
+  ingestBuffer(await res.arrayBuffer(),namesMap()[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));
+  localStorage.setItem('asbag-last',f.name);
+  setStatus('✅ الملف النشط: '+f.name);
+ }catch(e){setStatus('⚠️ فشل التحميل: '+e.message);}
+}
+function renameFile(i){
+ const f=FILES[i];if(!f)return;
+ const nm=namesMap();
+ const n=prompt('الاسم المعروض داخل النظام:',nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));
+ if(!n)return;
+ nm[f.name]=n;localStorage.setItem('asbag-names',JSON.stringify(nm));
+ renderFiles();}
+
+/* ===== 🗓️ الفلتر المرتب ===== */
+let P={start:null,end:null};
+function sel(b){b.parentElement.querySelectorAll('.pb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function modeAll(b){sel(b);document.getElementById('dayBox').style.display='none';
+ document.getElementById('rangeBox').style.display='none';P={start:null,end:null};render();}
+function modeDay(b){sel(b);document.getElementById('dayBox').style.display='block';
+ document.getElementById('rangeBox').style.display='none';
+ const el=document.getElementById('dDay');
+ if(!el.value){const mx=maxDate();if(mx)el.value=mx.toISOString().slice(0,10);}
+ applyDay();}
+function applyDay(){const d=toDate(document.getElementById('dDay').value);if(!d)return;
+ P={start:d,end:d};render();}
+function modeRange(b){sel(b);document.getElementById('dayBox').style.display='none';
+ document.getElementById('rangeBox').style.display='block';applyRange();}
+function applyRange(){const a=toDate(document.getElementById('d1').value),b=toDate(document.getElementById('d2').value);
+ if(!a||!b)return;P={start:a,end:b};render();}
+function periodLabel(){return P.start?(P.start.getTime()===P.end.getTime()
+ ?`اليوم: ${P.start.toLocaleDateString('en-GB')}`
+ :`الفترة: ${P.start.toLocaleDateString('en-GB')} → ${P.end.toLocaleDateString('en-GB')}`)
+ :'الفترة: كل الحركات (شهري)';}
 
 /* ===== أدوات ===== */
 const num=v=>{if(typeof v==='number')return v;if(v==null)return null;
@@ -122,8 +200,6 @@ function blockTable(g,s,e){
   if(vals.some(v=>v!=null&&String(v).includes('مجموع'))){totals=vals;break;}
   data.push(vals);}
  return{headers,data,totals,title};}
-
-/* ===== ✅ v3: تصنيف اليومية من محتوى الحسابات الفعلية ===== */
 function classify(t){
  const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
  if(has('وارد نقدي'))return 'fin';
@@ -145,34 +221,34 @@ function classify(t){
  if(has('التاريخ')&&has('القيمة'))return 'sales';
  return null;}
 
-let R={};let P={start:null,end:null};
+let R={};
+
+function ingestBuffer(buf,label){try{
+ ACTIVE=label||'';
+ const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+ R={};
+ for(const n of wb.SheetNames){
+  const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null});
+  for(const [s,e2] of colBlocks(g)){
+   const t=blockTable(g,s,e2);if(!t||!t.data.length)continue;
+   const key=classify(t);if(!key)continue;
+   if(key==='cust')R.custName=(t.title||'').replace('كشف حساب','').replace(/[-–]/,'').trim();
+   R[key]=t;
+  }
+ }
+ if(R.inc){const m={};R.inc.data.forEach(x=>{m[String(x[1]).trim()]=num(x[2]);});R.m=m;}
+ const names={sales:'المبيعات',fin:'الحركة المالية',inc:'قائمة الدخل',sum:'صافي الدخل',rat:'النسب',
+  cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'اليومية التفصيلية'};
+ document.getElementById('pm').innerHTML='✅ '+VERSION+' استخراج: '
+  +Object.keys(names).filter(k=>R[k]).map(k=>names[k]).join(' + ');
+ render();
+}catch(err){showErr('فشل: '+err.message);}}
 
 document.getElementById('fMonthly').addEventListener('change',e=>{
  const f=e.target.files[0];if(!f)return;
  const rd=new FileReader();
- rd.onload=ev=>{try{
-  const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-  R={};
-  for(const n of wb.SheetNames){
-   const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null});
-   for(const [s,e2] of colBlocks(g)){
-    const t=blockTable(g,s,e2);if(!t||!t.data.length)continue;
-    const key=classify(t);if(!key)continue;
-    if(key==='cust')R.custName=(t.title||'').replace('كشف حساب','').replace(/[-–]/,'').trim();
-    R[key]=t;
-   }
-  }
-  if(R.inc){const m={};R.inc.data.forEach(x=>{m[String(x[1]).trim()]=num(x[2]);});R.m=m;}
-  const names={sales:'المبيعات',fin:'الحركة المالية',inc:'قائمة الدخل',sum:'صافي الدخل',rat:'النسب',
-   cust:'كشف الحساب',disc:'الحسم',mut:'المتاجره',pl:'أرباح/خسائر',ip:'ارباح المواد',journal:'اليومية التفصيلية'};
-  document.getElementById('pm').innerHTML='✅ '+VERSION+' تم استخراج: '
-   +Object.keys(names).filter(k=>R[k]).map(k=>names[k]).join(' + ')
-   +(R.journal?` — <b>${R.journal.data.length} حركة يومية</b>`:'')
-   +(R.sales?` — <b>${R.sales.data.length} يوم مبيعات</b>`:'');
-  render();
- }catch(err){showErr('فشل: '+err.message);}};
- rd.readAsArrayBuffer(f);
-});
+ rd.onload=ev=>ingestBuffer(ev.target.result,f.name.replace(/\.(xlsx|xls)$/i,''));
+ rd.readAsArrayBuffer(f);});
 
 /* ===== الحسم ===== */
 function discParse(mode){
@@ -209,8 +285,6 @@ function plVals(){
   if(n.includes('92')||n.includes('المتاجره'))gross=v;
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
-
-/* ===== ارباح المواد ===== */
 function ipVals(rows){
  if(!R.ip)return null;
  const H=R.ip.headers,si=ci(H,['قيمة المبيع']),ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
@@ -221,7 +295,7 @@ function ipVals(rows){
   sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
  return{sale,cost,prof,skipped};}
 
-/* ===== ✅ v3: أرقام الفترة الفعلية من اليومية ===== */
+/* ===== اليومية للفترة ===== */
 function journalSums(){
  if(!R.journal)return null;
  const H=R.journal.headers;
@@ -242,7 +316,6 @@ function journalSums(){
  });
  const expList=Object.entries(expMap);
  return{salesJ,ret,grantedJ,earnedJ,cogs,expList,exp:expList.reduce((s,x)=>s+x[1],0)};}
-
 function finPeriod(){
  if(!R.journal)return null;
  const H=R.journal.headers,ti=ci(H,['نوع']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']);
@@ -279,23 +352,12 @@ function computeIncome(){
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
   mtGranted:mt.granted,mtNet:mt.netSales,plGross:pl?pl.gross:null,filtered:false};}
 
-/* ===== الفترة ===== */
+/* ===== الفترة أدوات ===== */
 function maxDate(){let mx=null;
  const scan=t=>{if(!t)return;const d=ci(t.headers,['تاريخ']);if(d<0)return;
   t.data.forEach(r=>{const dt=toDate(r[d]);if(dt&&(!mx||dt>mx))mx=dt;});};
  scan(R.sales);scan(R.cust);scan(R.disc);scan(R.journal);return mx;}
-function setPeriod(k,b){document.querySelectorAll('.pb').forEach(x=>x.classList.remove('on'));
- if(b)b.classList.add('on');const mx=maxDate();
- if(k==='all'||!mx)P={start:null,end:null};
- else if(k==='day')P={start:new Date(mx.getFullYear(),mx.getMonth(),mx.getDate()),end:mx};
- else if(k==='week'){const s=new Date(mx);s.setDate(s.getDate()-6);P={start:s,end:mx};}
- else P={start:new Date(mx.getFullYear(),mx.getMonth(),1),end:new Date(mx.getFullYear(),mx.getMonth()+1,0)};
- syncDates();render();}
-function manualPeriod(){P={start:toDate(document.getElementById('d1').value),end:toDate(document.getElementById('d2').value)};render();}
-function syncDates(){const f=d=>d?d.toISOString().slice(0,10):'';
- document.getElementById('d1').value=f(P.start);document.getElementById('d2').value=f(P.end);}
 function inP(d){if(!P.start||!P.end)return true;return d&&d>=P.start&&d<=P.end;}
-function periodLabel(){return P.start?`الفترة: ${P.start.toLocaleDateString('en-GB')} → ${P.end.toLocaleDateString('en-GB')}`:'الفترة: كل الحركات (شهري)';}
 function filtered(t){if(!t)return[];const d=ci(t.headers,['تاريخ']);if(d<0)return t.data;
  return t.data.filter(r=>inP(toDate(r[d])));}
 function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قيمة','مبلغ']);
@@ -309,7 +371,7 @@ const chk=(a,b)=>(a!=null&&b!=null)?(Math.abs(a-b)<1?' ✅':' ❌ ('+fmt(b)+')')
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();
- let h=`<p class="tag" style="text-align:center">${VERSION} — ${periodLabel()}${ic.filtered?' — أرقام الفترة من اليومية الفعلية 📒':''}</p>`;
+ let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف النشط: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — أرقام الفترة من اليومية 📒':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
@@ -424,6 +486,8 @@ function openT(t,tbl){
  if(tbl.totals)x+='<tr>'+tbl.totals.map(v=>`<td><b>${typeof v==='number'?fmt(v):(v??'')}</b></td>`).join('')+'</tr>';
  document.getElementById('mbody').innerHTML=x+'</table>';
  document.getElementById('modal').style.display='block';}
+
+window.addEventListener('load',loadRepoList);
 </script>
 </body>
 </html>
