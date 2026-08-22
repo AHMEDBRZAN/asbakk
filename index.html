@@ -76,7 +76,7 @@ section{margin:14px 0}
 
 <script>
 /* 🔖 الإصدار */
-const VERSION='v9';
+const VERSION='v10';
 document.getElementById('ver').textContent='الإصدار '+VERSION;
 const REPO='ahmedbrzan/asbakk';
 let ACTIVE='';let FILES=[];
@@ -296,20 +296,21 @@ function plVals(){
   else if(v)expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross};}
 
-/* ===== ارباح الأصناف ===== */
+/* ===== ✅ v10 ارباح الأصناف + مجموع الفاتورة (الإجمالي قبل الحسم) ===== */
 function ipAgg(){
  const cats=[['نقدي فقط',R.ipCash],['أجل فقط',R.ipCredit],['نقدي+أجل',R.ipBoth],['تفصيلي',R.ip]];
- let totSale=0,totCost=0,totProf=0;const per={};
+ let totSale=0,totGross=0,totCost=0,totProf=0;const per={};
  cats.forEach(([name,t])=>{
   if(!t)return;
   const H=t.headers;
   let si=ci(H,['اجمالي الفاتورة']);if(si<0)si=ci(H,['قيمة المبيع']);
+  const gi=ci(H,['مجموع الفاتورة']);
   const ki=ci(H,['تكلفة']),pi=ci(H,['الربح']);
-  let sale=0,cost=0,prof=0;
-  filtered(t).forEach(r=>{sale+=num(r[si])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
-  per[name]={sale,cost,prof};
-  totSale+=sale;totCost+=cost;totProf+=prof;});
- return{sale:totSale,cost:totCost,prof:totProf,per};}
+  let sale=0,gross=0,cost=0,prof=0;
+  filtered(t).forEach(r=>{sale+=num(r[si])||0;gross+=num(r[gi])||0;cost+=num(r[ki])||0;prof+=num(r[pi])||0;});
+  per[name]={sale,gross,cost,prof};
+  totSale+=sale;totGross+=gross;totCost+=cost;totProf+=prof;});
+ return{sale:totSale,grossSale:totGross,cost:totCost,prof:totProf,per};}
 
 /* ===== ميزان المراجعة / الميزانية ===== */
 function tbVals(){
@@ -336,7 +337,7 @@ function bsVals(){
  const sales=get('41101'),gr=get('41103'),cogs=get('31105');
  return{sales:sales?sales.c:null,granted:gr?gr.d:null,cogs:cogs?cogs.d:null};}
 
-/* ===== ✅ v9 محرك الحسابات بالمطابقة المرنة متعددة المصادر ===== */
+/* ===== محرك الحسابات للفترة ===== */
 function acctSums(t){
  const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0};
  if(!t)return out;
@@ -385,11 +386,11 @@ function finPeriod(){
   m.d+=num(r[mi])||0;m.c+=num(r[cri])||0;});
  return Object.entries(map).map(([k,v])=>({k,d:v.d,c:v.c,net:v.d-v.c})).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net));}
 
-/* ===== قائمة الدخل ===== */
+/* ===== ✅ v10 قائمة الدخل: المبيعات من اليومية (قبل الطرح) ===== */
 function computeIncome(){
  if(P.start){
   const E=periodEngine();const ip=ipAgg();
-  const sales=salesTotal()||E.sales;
+  const sales=E.sales||ip.grossSale;
   const granted=discParse('grant').total||E.granted;
   const earned=discParse('earn').total||E.earned;
   const ret=E.ret||returnsFromDisc();
@@ -397,7 +398,8 @@ function computeIncome(){
   const exp=E.exp;
   const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
   return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
-   expList:E.expList,filtered:true,chkSales:E.jSales,chkGranted:E.jGranted,chkCogs:E.jCogs};
+   expList:E.expList,filtered:true,chkSales:E.jSales,chkSalesIp:ip.grossSale,
+   chkGranted:E.jGranted,chkCogs:E.jCogs,ipCost:ip.cost,ipProf:ip.prof};
  }
  const mt=mutajVals()||{},m=R.m||{},pl=plVals();
  const sales=mt.sales??m['المبيعات']??0;
@@ -432,7 +434,7 @@ const chk2=(a,b)=>{if(a==null||b==null)return '—';
 
 function render(){
  const o=document.getElementById('out');const ic=computeIncome();const ip=ipAgg();const tb=tbVals();
- let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — محرك متعدد المصادر 🛰️':''}</p>`;
+ let h=`<p class="tag" style="text-align:center">${VERSION} — ${ACTIVE?('الملف: <b>'+ACTIVE+'</b> — '):''}${periodLabel()}${ic.filtered?' — المبيعات من اليومية 📒':''}</p>`;
  h+=`<div class="hero">صافي الربح<b>${fmt(ic.net)} دينار</b><small>مجمل ${pct(ic.gross/(ic.netSales||1))} — صافي ${pct(ic.net/(ic.netSales||1))}</small></div>`;
  h+='<div class="grid">';
 
@@ -466,7 +468,7 @@ function render(){
   +row('مطابقة المجمل',chk(ic.gross,ip.prof))
   +`<button class="btn" onclick="openIp()">تفاصيل الأصناف</button></div>`;}
 
- if(R.sales)h+=`<div class="card"><h2>📈 حركة المبيعات</h2>`
+ if(R.sales)h+=`<div class="card"><h2>📈 حركة المبيعات (صافي)</h2>`
   +row('المجموع',fmt(salesTotal())+' د.ع')+row('عدد الأيام',filtered(R.sales).length)
   +`<button class="btn" onclick="openT('حركة المبيعات',R.sales)">التفاصيل</button></div>`;
 
@@ -530,13 +532,14 @@ function openIncome(){
  main.forEach((r,i)=>t1+=`<tr class="${r[2]}"><td>${i+1}</td><td>${r[0]}</td><td>${fmt(r[1])}</td></tr>`);
  t1+='</table>';
  const checks=ic.filtered?`
-  <tr><td>المبيعات = اليومية للفترة</td><td>${chk2(ic.sales,ic.chkSales)}</td></tr>
-  <tr><td>المبيعات = حركة المبيعات للفترة</td><td>${chk2(ic.sales,salesTotal())}</td></tr>
+  <tr><td>المبيعات = دفتر اليومية 41101</td><td>${chk2(ic.sales,ic.chkSales)}</td></tr>
+  <tr><td>المبيعات = مجموع الفاتورة (ورقة٤)</td><td>${chk2(ic.sales,ic.chkSalesIp)}</td></tr>
+  <tr><td>صافي المبيعات = حركة المبيعات</td><td>${chk2(ic.netSales,salesTotal())}</td></tr>
   <tr><td>الممنوح = اليومية للفترة</td><td>${chk2(ic.granted,ic.chkGranted)}</td></tr>
   <tr><td>الممنوح = جدول الحسم للفترة</td><td>${chk2(ic.granted,discParse('grant').total)}</td></tr>
   <tr><td>التكلفة = اليومية للفترة</td><td>${chk2(ic.costSales,ic.chkCogs)}</td></tr>
-  <tr><td>التكلفة = ارباح المواد للفترة</td><td>${chk2(ic.costSales,ip.cost)}</td></tr>
-  <tr><td>المجمل = ارباح المواد للفترة</td><td>${chk2(ic.gross,ip.prof)}</td></tr>`:`
+  <tr><td>التكلفة = ارباح المواد للفترة</td><td>${chk2(ic.costSales,ic.ipCost)}</td></tr>
+  <tr><td>المجمل = ارباح المواد للفترة</td><td>${chk2(ic.gross,ic.ipProf)}</td></tr>`:`
   <tr><td>الممنوح = 41103 (متاجره)</td><td>${chk(discParse('grant').total,ic.mtGranted)||'—'}</td></tr>
   <tr><td>المبيعات = ميزان المراجعة 41101</td><td>${chk(ic.sales,tb?tb.sales:bs?bs.sales:null)||'—'}</td></tr>
   <tr><td>الممنوح = ميزان المراجعة 41103</td><td>${chk(ic.granted,tb?tb.granted:bs?bs.granted:null)||'—'}</td></tr>
