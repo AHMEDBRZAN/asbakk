@@ -17,31 +17,25 @@ header{display:flex;align-items:center;justify-content:space-between;padding:4px
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 10px 30px #0006}
 .card h2{font-size:14px;color:var(--mut);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .tag{font-size:10px;color:var(--mut)}
-/* ملفات */
 .flist{display:flex;flex-direction:column;gap:8px}
 .fchip{display:flex;justify-content:space-between;align-items:center;background:#182236;border:1px solid #2a3a55;border-radius:14px;padding:11px 12px;font-size:13px}
-.fchip b{font-weight:700}
 .fbtns{display:flex;gap:6px}
 .mini{border:0;border-radius:10px;padding:7px 12px;font-size:11px;font-weight:800;cursor:pointer}
 .mini.open{background:var(--acc);color:#06121f}
-.mini.rn{background:#243least?}
 .mini.rn{background:#24344f;color:var(--txt)}
 .mini.rf{background:#24344f;color:var(--txt)}
-/* فترة */
 .seg{display:flex;background:#0d1420;border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
 .seg button{flex:1;border:0;background:transparent;color:var(--mut);padding:10px 4px;border-radius:11px;font-weight:800;font-size:12px}
 .seg button.on{background:linear-gradient(135deg,#38bdf8,#22c55e);color:#06121f}
 .dates{display:none;gap:8px;margin-top:10px;align-items:center;font-size:12px;color:var(--mut)}
 .dates.show{display:flex}
 input[type=date]{flex:1;background:#0d1420;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:9px;font-size:12px}
-/* هيرو */
 .hero{background:linear-gradient(160deg,#0ea5e922,#22c55e22),var(--card);border:1px solid #22c55e44;border-radius:22px;padding:20px;text-align:center}
 .hero .lbl{font-size:12px;color:var(--mut);font-weight:700}
 .hero .net{font-size:30px;font-weight:900;color:var(--ok);direction:ltr;margin:6px 0}
 .hero .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
 .chip{background:#0d1420;border:1px solid var(--line);border-radius:12px;padding:7px 10px;font-size:11px;color:var(--mut)}
 .chip b{color:var(--txt);direction:ltr;display:block;font-size:12px}
-/* القائمة */
 .srow{display:flex;justify-content:space-between;align-items:center;padding:10px 6px;border-bottom:1px dashed #22304a;font-size:13px}
 .srow .v{font-weight:800;direction:ltr}
 .srow .n{color:var(--mut);font-size:10px;margin-left:6px}
@@ -58,7 +52,6 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 .ratio b{display:block;font-size:16px;color:var(--acc);direction:ltr}
 .ratio span{font-size:10px;color:var(--mut)}
 .bigbtn{width:100%;border:0;border-radius:16px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#38bdf8,#22c55e);color:#06121f;box-shadow:0 10px 24px #22c55e33}
-/* مودال */
 #modal{position:fixed;inset:0;background:#000c;display:none;padding:12px;overflow:auto;z-index:9}
 #modal .box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;max-width:640px;margin:auto}
 .x{float:left;background:var(--bad);border:0;border-radius:10px;padding:7px 14px;color:#fff;font-weight:800}
@@ -77,8 +70,12 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 </header>
 
 <div class="card">
- <h2>📁 ملفات التقرير <button class="mini rf" onclick="loadRepoList()">🔄 تحديث</button></h2>
+ <h2>📁 ملفات التقرير <button class="mini rf" onclick="loadRepoList(true)">🔄 تحديث</button></h2>
  <div class="flist" id="files"></div>
+ <div style="display:flex;gap:8px;margin-top:10px">
+  <input id="fname" placeholder="فتح بالاسم: تقرير شهري.xlsx" style="flex:1;background:#0d1420;border:1px solid var(--line);border-radius:12px;padding:9px;color:var(--txt);font-size:12px">
+  <button class="mini open" onclick="openByName(document.getElementById('fname').value.trim())">فتح</button>
+ </div>
  <div class="tag" id="fs" style="margin-top:8px"></div>
 </div>
 
@@ -105,12 +102,13 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 </div></div>
 
 <script>
-const VERSION='v13';
+const VERSION='v14';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
+const RAW='https://raw.githubusercontent.com/'+REPO+'/main/';
 let ACTIVE='',FILES=[],R={},P={start:null,end:null};
 
-/* ===== أدوات قوية نصوص/تواريخ/أرقام ===== */
+/* ===== أدوات ===== */
 const ARD='٠١٢٣٤٥٦٧٨٩';
 function norm(s){return String(s).replace(/[٠-٩]/g,d=>ARD.indexOf(d)).replace(/،/g,',').replace(/٫/g,'.').replace(/[\u200f\u200e]/g,'');}
 const num=v=>{if(typeof v==='number')return v;if(v==null)return null;
@@ -128,35 +126,49 @@ const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 function codeMatch(c,pre){c=String(c).trim();if(c===pre)return true;
  return c.startsWith(pre)&&!'0123456789'.includes(c.charAt(pre.length));}
 
-/* ===== GitHub ===== */
+/* ===== ✅ v14: ملفات مع كاش + رابط خام بدون حدود ===== */
 function setStatus(m){document.getElementById('fs').innerHTML=m;}
 function namesMap(){try{return JSON.parse(localStorage.getItem('asbag-names')||'{}')}catch(e){return{}}}
-async function loadRepoList(){
+function cacheGet(){try{return JSON.parse(localStorage.getItem('asbag-apicache'))||null}catch(e){return null}}
+function cacheSet(items){try{localStorage.setItem('asbag-apicache',JSON.stringify({t:Date.now(),items}))}catch(e){}}
+async function loadRepoList(force){
  setStatus('⏳ فحص الملفات...');
+ const c=cacheGet();
+ if(!force&&c&&c.items&&Date.now()-c.t<10*60*1000){
+  FILES=c.items;renderFiles();setStatus('✅ '+FILES.length+' ملف (قائمة محفوظة)');openLast();return;}
  try{
   const res=await fetch('https://api.github.com/repos/'+REPO+'/contents/?t='+Date.now());
+  if(res.status===403)throw new Error('403');
   if(!res.ok)throw new Error('HTTP '+res.status);
   FILES=(await res.json()).filter(x=>/\.(xlsx|xls)$/i.test(x.name));
-  renderFiles();
-  setStatus('✅ '+FILES.length+' ملف — '+new Date().toLocaleTimeString('en-GB'));
-  const i=FILES.findIndex(f=>f.name===localStorage.getItem('asbag-last'));
-  if(i>=0)openFile(i);
- }catch(e){setStatus('⚠️ '+e.message);}
+  cacheSet(FILES);renderFiles();setStatus('✅ '+FILES.length+' ملف — '+new Date().toLocaleTimeString('en-GB'));
+  openLast();
+ }catch(e){
+  if(c&&c.items&&c.items.length){FILES=c.items;renderFiles();
+   setStatus('⚠️ حد GitHub بالساعة انتهى مؤقتًا — عرضت القائمة المحفوظة وفتحت آخر ملف بالرابط المباشر');openLast();}
+  else{FILES=[];renderFiles();
+   setStatus('⚠️ تعذر جلب القائمة (403) — استخدم "فتح بالاسم" بالأعلى');}
+ }
 }
 function renderFiles(){
  const nm=namesMap();
  document.getElementById('files').innerHTML=FILES.map((f,i)=>
   `<div class="fchip"><b>📄 ${nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,'')}</b>
-   <span class="fbtns"><button class="mini open" onclick="openFile(${i})">فتح</button>
+   <span class="fbtns"><button class="mini open" onclick="openByName('${f.name.replace(/'/g,"\\'")}')">فتح</button>
    <button class="mini rn" onclick="renameFile(${i})">✏️</button></span></div>`).join('')
-  ||'<span class="tag">لا ملفات بعد</span>';}
-async function openFile(i){
- const f=FILES[i];if(!f)return;setStatus('⏳ '+f.name+'...');
- try{const r=await fetch(f.download_url);
-  ingestBuffer(await r.arrayBuffer(),namesMap()[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));
-  localStorage.setItem('asbag-last',f.name);setStatus('✅ الملف النشط: '+f.name);
- }catch(e){setStatus('⚠️ '+e.message);}
+  ||'<span class="tag">لا قائمة بعد</span>';}
+async function openByName(name){
+ if(!name)return;
+ setStatus('⏳ '+name+'...');
+ try{
+  const r=await fetch(RAW+encodeURIComponent(name)+'?t='+Date.now());
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  ingestBuffer(await r.arrayBuffer(),namesMap()[name]||name.replace(/\.(xlsx|xls)$/i,''));
+  localStorage.setItem('asbag-last',name);
+  setStatus('✅ الملف النشط: '+name);
+ }catch(e){setStatus('⚠️ فشل فتح '+name+' — تأكد من الاسم بالضبط');}
 }
+function openLast(){const n=localStorage.getItem('asbag-last');if(n)openByName(n);}
 function renameFile(i){const f=FILES[i];const nm=namesMap();
  const n=prompt('الاسم المعروض:',nm[f.name]||f.name.replace(/\.(xlsx|xls)$/i,''));if(!n)return;
  nm[f.name]=n;localStorage.setItem('asbag-names',JSON.stringify(nm));renderFiles();}
@@ -300,8 +312,7 @@ function plVals(){
  R.pl.data.forEach(r=>{const n=String(r[ai]);const v=num(r[ni])||num(r[cri])||0;
   if(n.includes('92')||n.includes('المتاجره'))gross=v;
   else if(/-\s*32$/.test(n.trim())||n.includes('المصروفات - 32'))exp32=v;
-  else if(/^322/.test(n.trim())||n.match(/\b322\d{2}\b/))expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
- if(exp32==null&&!expenses.length)exp32=null;
+  else if(/\b322\d{2}\b/.test(n))expenses.push([n.replace(/^\s*\d+\s*-\s*/,''),v]);});
  return{expenses,gross,exp32};}
 function acctSums(t,expNames){
  const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0,exp:0,expList:[]};
@@ -335,6 +346,11 @@ function periodEngine(){
   jSales:A.sales||B.sales,jGranted:A.granted||B.granted,jCogs:A.cogs||B.cogs};}
 function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قيمة','مبلغ']);
  return filtered(R.sales).reduce((s,r)=>s+(num(r[v])||0),0);}
+function mutaj(){
+ if(!R.mut)return{};
+ const H=R.mut.headers,ni=ci(H,['مدين']),cri=ci(H,['دائن']),ai=ci(H,['حساب']);
+ const get=k=>{let v=null;R.mut.data.forEach(r=>{if(String(r[ai]).includes(k))v=num(r[ni])||num(r[cri])||0;});return v;};
+ return{sales:get('41101'),returns:get('41102'),granted:get('41103'),cogs:get('31105'),netSales:get('الموارد')};}
 
 /* ===== قائمة الدخل ===== */
 function computeIncome(){
@@ -358,11 +374,6 @@ function computeIncome(){
  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
   expList:pl?pl.expenses:[],filtered:false};}
-function mutaj(){
- if(!R.mut)return{};
- const H=R.mut.headers,ni=ci(H,['مدين']),cri=ci(H,['دائن']),ai=ci(H,['حساب']);
- const get=k=>{let v=null;R.mut.data.forEach(r=>{if(String(r[ai]).includes(k))v=num(r[ni])||num(r[cri])||0;});return v;};
- return{sales:get('41101'),returns:get('41102'),granted:get('41103'),cogs:get('31105'),netSales:get('الموارد')};}
 
 /* ===== العرض ===== */
 const row=(l,v,cls,n)=>`<div class="srow ${cls||''}"><span>${n!=null?`<span class="n">${n}</span>`:''}${l}</span><b class="v">${v}</b></div>`;
@@ -375,7 +386,6 @@ function render(){
    <span class="chip">مجمل الدخل<b>${fmt(ic.gross)}</b></span>
    <span class="chip">المصاريف<b>${fmt(ic.exp)}</b></span>
   </div></div>`;
-
  h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'شهري'}</span></h2>`;
  h+=row('المبيعات',fmt(ic.sales),'',1);
  h+=row('مردودات المبيعات',fmt(ic.ret),'',2);
@@ -409,9 +419,10 @@ function vrow(l,a,b){const[s,c]=st(a,b);
 function openVerify(){
  const ic=computeIncome();const tb=tbVals();const pl=plVals();const ip=ipAgg();const inv=invSums();
  const E=P.start?periodEngine():null;
- const djSales=E?E.jSales:(acctSums(R.dj,[]).sales||acctSums(R.journal,[]).sales);
- const djGrant=E?E.jGranted:acctSums(R.dj,[]).granted;
- const djCogs=E?E.jCogs:acctSums(R.dj,[]).cogs;
+ const base=acctSums(R.dj,[]),base2=acctSums(R.journal,[]);
+ const djSales=E?E.jSales:(base.sales||base2.sales);
+ const djGrant=E?E.jGranted:(base.granted||base2.granted);
+ const djCogs=E?E.jCogs:(base.cogs||base2.cogs);
  let x='';
  x+=vrow('المبيعات = ميزان المراجعة 41101',ic.sales,tb?tb.sales:null);
  x+=vrow('المبيعات = دفتر اليومية 41101',ic.sales,djSales||null);
@@ -435,7 +446,7 @@ function openVerify(){
  document.getElementById('modal').style.display='block';
 }
 function closeM(){document.getElementById('modal').style.display='none';}
-window.addEventListener('load',loadRepoList);
+window.addEventListener('load',()=>loadRepoList(false));
 </script>
 </body>
 </html>
