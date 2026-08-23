@@ -112,8 +112,8 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* ====== v26: تصحيح 3 أخطاء: حسميات 41103 + مقارنة باليوم الكامل + كشف احتياطي للتاريخ ====== */
-const VERSION='v26';
+/* ====== v27: إصلاح null (تاريخ فارغ) + حماية العرض ====== */
+const VERSION='v27';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
@@ -135,9 +135,9 @@ function toDate(v){if(v==null||v==='')return null;if(v instanceof Date)return v;
  const d=new Date(s);return isNaN(d)?null:d;}
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 const isSkipType=ty=>{const s=String(ty||'');return s.includes('إغلاق')||s.includes('تسوية');};
-/* ✅ v26: مقارنة باليوم الكامل */
-function dayOf(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
-function inP(d){if(!P.start||!P.end)return true;const x=dayOf(d);return x>=P.start&&x<=P.end;}
+/* ✅ v27: حماية من التاريخ الفارغ */
+function dayOf(d){return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;}
+function inP(d){if(!P.start||!P.end)return true;if(!d)return false;const x=dayOf(d);return x>=P.start&&x<=P.end;}
 
 /* ===== حفظ محلي ===== */
 let db=null;
@@ -225,12 +225,12 @@ async function openGit(i){
 
 /* ===== الفلتر ===== */
 function sel(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function modeAll(b){sel(b);dayBox.classList.remove('show');rangeBox.classList.remove('show');P={start:null,end:null};render();}
+function modeAll(b){sel(b);dayBox.classList.remove('show');rangeBox.classList.remove('show');P={start:null,end:null};safeRender();}
 function modeDay(b){sel(b);dayBox.classList.add('show');rangeBox.classList.remove('show');
  if(!dDay.value){const mx=maxDate();if(mx)dDay.value=mx.toISOString().slice(0,10);}applyDay();}
-function applyDay(){const d=toDate(dDay.value);if(!d)return;P={start:d,end:d};render();}
+function applyDay(){const d=toDate(dDay.value);if(!d)return;P={start:d,end:d};safeRender();}
 function modeRange(b){sel(b);rangeBox.classList.add('show');dayBox.classList.remove('show');applyRange();}
-function applyRange(){const a=toDate(d1.value),b=toDate(d2.value);if(!a||!b)return;P={start:a,end:b};render();}
+function applyRange(){const a=toDate(d1.value),b=toDate(d2.value);if(!a||!b)return;P={start:a,end:b};safeRender();}
 function periodLabel(){return P.start?(P.start.getTime()===P.end.getTime()?
  'اليوم: '+P.start.toLocaleDateString('en-GB'):
  'الفترة: '+P.start.toLocaleDateString('en-GB')+' → '+P.end.toLocaleDateString('en-GB')):'كامل المدة';}
@@ -240,8 +240,9 @@ function maxDate(){let mx=null;const scan=t=>{if(!t||t.di<0)return;
  t.data.forEach(r=>{const dt=toDate(r[t.di]);if(dt&&(!mx||dt>mx))mx=dt;});};
  if(R.ledgers)Object.values(R.ledgers).forEach(scan);
  [R.sales,R.disc,R.journal,R.dj,R.inv].forEach(scan);return mx;}
+function safeRender(){try{render();}catch(e){showErr('فشل العرض: '+e.message);}}
 
-/* ===== ✅ v26 قارئ الدفاتر + كشف احتياطي لعمود التاريخ ===== */
+/* ===== قارئ الدفاتر ===== */
 function findHeader(g){
  let best=-1,bestScore=0;
  for(let i=0;i<Math.min(g.length,15);i++){
@@ -276,7 +277,6 @@ function ledgerTable(g){
   if(vals.every(v=>v==null||String(v).trim()===''))continue;
   data.push(vals);}
  return{headers,data,di:detectDateCol(data,headers)};}
-/* ✅ القاعدة القطعية — حسميات تُستثنى من 41101 فقط */
 const DIR={'41101':'cred','41102':'deb','41103':'deb','31105':'deb','32':'deb','31104':'cred'};
 function sheetValue(code,wf){
  const t=R.ledgers&&R.ledgers[code];if(!t)return null;
@@ -371,7 +371,7 @@ function ingestBuffer(buf,label){try{
    const v=num(r[ni+1])||num(r[ni+2])||num(r[ni+3])||num(r[ni+4]);if(v!=null)m[name]=v;});}
   else{R.inc.data.forEach(x=>{const name=String(x[1]||'').trim();const v=num(x[2]);if(name&&v!=null)m[name]=v;});}
   R.m=m;}
- render();
+ safeRender();
 }catch(err){showErr('فشل: '+err.message);}}
 function showErr(m){const e=document.getElementById('err');e.style.display='block';e.textContent=m;}
 
