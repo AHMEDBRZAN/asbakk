@@ -67,6 +67,7 @@ summary{cursor:pointer;color:var(--mut);font-size:12px;font-weight:800;padding:8
 table{width:100%;border-collapse:collapse;font-size:11px}
 th,td{border:1px solid #334155;padding:5px;text-align:right;white-space:nowrap}
 th{background:#334155}
+tr.pick td{background:#14532d55}
 </style>
 </head>
 <body>
@@ -112,12 +113,12 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* بطاقة Siraj ERP + ✅ v23: محركات إجماع صامتة (تاريخ دقيق: يوم/فترتين/الكل) */
-const VERSION='v23';
+/* ✅ v24: كشف رأس الجدول بالنقاط + محركات موثوقة + تدقيق عميق + مصاريف 3 مستويات */
+const VERSION='v24';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
-let ACTIVE=null,FILES=[],R={},P={start:null,end:null};
+let ACTIVE=null,FILES=[],R={},P={start:null,end:null},CUR_MOVES=[];
 
 /* ===== أدوات ===== */
 const ARD='٠١٢٣٤٥٦٧٨٩';
@@ -134,14 +135,7 @@ function toDate(v){if(v==null||v==='')return null;if(v instanceof Date)return v;
  m=s.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
  const d=new Date(s);return isNaN(d)?null:d;}
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
-function codeMatch(c,pre){c=String(c).trim();if(c===pre)return true;
- return c.startsWith(pre)&&!'0123456789'.includes(c.charAt(pre.length));}
 const isSkipType=ty=>{const s=String(ty||'');return s.includes('إغلاق')||s.includes('تسوية');};
-function parseBal(v){if(v==null)return null;
- if(typeof v==='number')return{v:Math.abs(v),dir:''};
- const s=norm(v);const m=s.match(/([\d][\d,\.]*)\s*(لنا|لهم)?/);
- if(!m)return null;
- return{v:parseFloat(m[1].replace(/,/g,'')),dir:m[2]||''};}
 
 /* ===== حفظ محلي ===== */
 let db=null;
@@ -185,7 +179,7 @@ async function openSaved(){
     <button class="mini open" onclick="openLocal('${r.name.replace(/'/g,"\\'")}')">فتح</button>
     <button class="mini rn" onclick="renameSaved('${r.name.replace(/'/g,"\\'")}')">✏️</button>
     <button class="mini rn" style="background:#7f1d1d;color:#fff" onclick="delSaved('${r.name.replace(/'/g,"\\'")}')">🗑</button>
-   </span></div>`).join('')||'<div class="tag">لا ملفات محفوظة بعد — افتح ملفًا واضغط 💾 Save</div>';
+   </span></div>`).join('')||'<div class="tag">لا ملفات محفوظة بعد</div>';
  document.getElementById('modal').style.display='block';}
 async function renameSaved(name){
  const n=prompt('الاسم الجديد:',cleanName(name));if(!n)return;
@@ -195,7 +189,7 @@ async function renameSaved(name){
  if(localStorage.getItem('asbag-last')===name)localStorage.setItem('asbag-last',newName);
  renderLocal();openSaved();}
 async function delSaved(name){
- if(!confirm('حذف «'+cleanName(name)+'» من الحفظ المحلي؟'))return;
+ if(!confirm('حذف «'+cleanName(name)+'»؟'))return;
  await delRec(name);
  if(localStorage.getItem('asbag-last')===name)localStorage.removeItem('asbag-last');
  renderLocal();openSaved();}
@@ -210,8 +204,8 @@ async function refreshList(){
    `<div class="fchip"><b>📄 ${cleanName(f.name)} ${saved.has(f.name)?'<span class="tag">📍 محفوظ</span>':''}</b>
     <span class="fbtns"><button class="mini open" onclick="openGit(${i})">فتح</button></span></div>`).join('')
    ||'<span class="tag">لا ملفات Excel بالمستودع</span>';
-  setStatus('✅ القائمة جاهزة — افتح أي ملف ثم اضغط Save');
- }catch(e){setStatus('⚠️ تعذر جلب القائمة ('+e.message+') — الاعتماد على الحفظ المحلي');}
+  setStatus('✅ القائمة جاهزة');
+ }catch(e){setStatus('⚠️ تعذر جلب القائمة ('+e.message+')');}
 }
 async function openGit(i){
  const f=FILES[i];if(!f)return;
@@ -223,7 +217,7 @@ async function openGit(i){
   ACTIVE={name:f.name,blob};
   localStorage.setItem('asbag-last',f.name);
   ingestBuffer(await blob.arrayBuffer(),cleanName(f.name));
-  setStatus('✅ فُتح من GitHub — اضغط 💾 Save ليصير محليًا');
+  setStatus('✅ فُتح من GitHub — اضغط 💾 Save');
  }catch(e){setStatus('⚠️ فشل: '+e.message);}
 }
 
@@ -237,35 +231,44 @@ function modeRange(b){sel(b);rangeBox.classList.add('show');dayBox.classList.rem
 function applyRange(){const a=toDate(d1.value),b=toDate(d2.value);if(!a||!b)return;P={start:a,end:b};render();}
 function periodLabel(){return P.start?(P.start.getTime()===P.end.getTime()?
  'اليوم: '+P.start.toLocaleDateString('en-GB'):
- 'الفترة: '+P.start.toLocaleDateString('en-GB')+' → '+P.end.toLocaleDateString('en-GB')):'كامل الشهر';}
+ 'الفترة: '+P.start.toLocaleDateString('en-GB')+' → '+P.end.toLocaleDateString('en-GB')):'كامل المدة';}
 function inP(d){if(!P.start||!P.end)return true;return d&&d>=P.start&&d<=P.end;}
-function filtered(t){if(!t)return[];const d=ci(t.headers,['تاريخ']);if(d<0)return t.data;
- return t.data.filter(r=>inP(toDate(r[d])));}
-function maxDate(){let mx=null;const scan=t=>{if(!t)return;const d=ci(t.headers,['تاريخ']);if(d<0)return;
- t.data.forEach(r=>{const dt=toDate(r[d]);if(dt&&(!mx||dt>mx))mx=dt;});};
- const srcs=[R.sales,R.disc,R.journal,R.dj,R.inv,R.ipCash,R.ipCredit,R.ipBoth];
- if(R.ledgers)Object.values(R.ledgers).forEach(t=>srcs.push(t));
- srcs.forEach(scan);return mx;}
+function filtered(t){if(!t)return[];if(t.di==null||t.di<0)return t.data;
+ return t.data.filter(r=>inP(toDate(r[t.di])));}
+function maxDate(){let mx=null;const scan=t=>{if(!t||t.di<0)return;
+ t.data.forEach(r=>{const dt=toDate(r[t.di]);if(dt&&(!mx||dt>mx))mx=dt;});};
+ if(R.ledgers)Object.values(R.ledgers).forEach(scan);
+ [R.sales,R.disc,R.journal,R.dj,R.inv].forEach(scan);return mx;}
 
-/* ===== قارئ صفحات الحسابات ===== */
-function looksLedger(g){
- for(let i=0;i<Math.min(g.length,10);i++){
-  const row=(g[i]||[]).map(v=>v==null?'':String(v));
-  if(row.some(v=>v.includes('مدين'))&&row.some(v=>v.includes('تاريخ'))&&(row.some(v=>v.includes('الرصيد'))||row.some(v=>v.includes('البيان'))))return true;}
- return false;}
+/* ===== ✅ v24 قارئ الدفاتر برأس موثوق ===== */
+function findHeader(g){
+ let best=-1,bestScore=0;
+ for(let i=0;i<Math.min(g.length,15);i++){
+  const row=(g[i]||[]).map(v=>v==null?'':String(v).trim());
+  let score=0;
+  row.forEach(v=>{
+   if(v==='#')score+=2;
+   else if(v==='التاريخ')score+=3;
+   else if(v==='مدين')score+=3;
+   else if(v==='دائن')score+=3;
+   else if(v==='الرصيد')score+=2;
+   else if(v==='النوع')score+=1;
+   else if(v==='البيان')score+=1;
+   else if(v==='رقم السند')score+=1;});
+  if(score>bestScore){bestScore=score;best=i;}}
+ return bestScore>=8?best:-1;}
+function looksLedger(g){return findHeader(g)>=0;}
 function ledgerTable(g){
- let h=0;
- for(let i=0;i<Math.min(g.length,10);i++){
-  const row=(g[i]||[]).map(v=>v==null?'':String(v));
-  if(row.some(v=>v.includes('مدين'))&&row.some(v=>v.includes('تاريخ'))){h=i;break;}}
+ const h=findHeader(g);if(h<0)return null;
  const cols=[];(g[h]||[]).forEach((v,c)=>{if(v!=null&&String(v).trim()!=='')cols.push(c);});
  const headers=cols.map(c=>String(g[h][c]).trim());
+ const di=ci(headers,['تاريخ']);
  const data=[];
  for(let i=h+1;i<g.length;i++){
   const row=g[i]||[];const vals=cols.map(c=>row[c]??null);
   if(vals.every(v=>v==null||String(v).trim()===''))continue;
   data.push(vals);}
- return{headers,data};}
+ return{headers,data,di};}
 function ledgerSums(code,withFilter){
  const t=R.ledgers&&R.ledgers[code];if(!t)return null;
  const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
@@ -284,98 +287,56 @@ function grantInside41101(withFilter){
   if(ti>=0&&isSkipType(r[ti]))return;
   if(String(r[bi]||'').includes('حسم'))s+=(num(r[mi])||0)-(num(r[cri])||0);});
  return Math.abs(s);}
-function balLast(code){
- const t=R.ledgers&&R.ledgers[code];if(!t)return null;
- const H=t.headers,bi=ci(H,['الرصيد']);if(bi<0)return null;
- for(let i=t.data.length-1;i>=0;i--){
-  const b=parseBal(t.data[i][bi]);if(b&&b.v)return b;}
- return null;}
-function invFullTotal(){
- const t=R.inv;if(!t)return null;
- const H=t.headers,gi=ci(H,['الاجمالي']);if(gi<0)return null;
- let s=0;t.data.forEach(r=>{s+=num(r[gi])||0;});return s;}
+
+/* ===== ✅ v24 المحركات الموثوقة + الإجماع ===== */
 function calib(){
  if(R._calib)return R._calib;
  const f1=ledgerSums('41101',false),f2=ledgerSums('41102',false),f3=ledgerSums('41103',false),
   fc=ledgerSums('31105',false),fe=ledgerSums('32',false);
  const s1=f1&&f1.net<0?-1:1,s2=f2&&f2.net<0?-1:1,s3=f3&&f3.net<0?-1:1,
   sc=fc&&fc.net<0?-1:1,se=fe&&fe.net<0?-1:1;
- const mt=mutaj();const tb=tbVals();
- const anchor=mt.sales??(tb?tb.sales:null);
- let plus=false;
- if(anchor&&f1&&f2){const v1=(f1.net*s1)+grantInside41101(false),v2=f2.net*s2;
-  plus=Math.abs(v1-anchor)>1&&Math.abs(v1+v2-anchor)<Math.abs(v1-anchor);}
- R._calib={s1,s2,s3,sc,se,plus};return R._calib;}
-
-/* ===== ✅ v23 الإجماع: يأخذ القيمة التي تتفق عليها أغلب المحركات ===== */
-function consensus(vals){
- const list=vals.filter(v=>v!=null&&!isNaN(v)&&Math.abs(v)>0.001);
- if(!list.length)return null;
- const groups=[];
- list.forEach((v,i)=>{const g=groups.find(g=>Math.abs(g.v-v)<1);
-  if(g)g.n++;else groups.push({v,n:1});});
- groups.sort((a,b)=>b.n-a.n||Math.abs(b.v)-Math.abs(a.v));
- return groups[0].v;}
-/* محركات المبيعات (كلها تحترم التاريخ) */
-function engSales(wf){
- const c=calib();const vals=[];
- const l1=ledgerSums('41101',wf),l3=ledgerSums('41103',wf);
- if(l1){
-  vals.push(l1.net*c.s1);                                  // محرك صافي 41101
-  if(l3)vals.push((l1.net*c.s1)+(l3.net*c.s3));           // محرك + الحسم
-  vals.push((l1.net*c.s1)+grantInside41101(wf));          // محرك الحسميات الداخلية
-  const t=R.ledgers['41101'];const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
-  let cred=0,deb=0;
-  (wf?filtered(t):t.data).forEach(r=>{
-   if(ti>=0&&isSkipType(r[ti]))return;
-   if(String(r[ti]||'').includes('مرتجع'))return;
-   cred+=num(r[cri])||0;deb+=num(r[mi])||0;});
-  if(cred||deb)vals.push(Math.max(cred,deb));             // محرك الجانب الغالب
+ R._calib={s1,s2,s3,sc,se};return R._calib;}
+const hasDate=code=>{const t=R.ledgers&&R.ledgers[code];return !!(t&&t.di>=0);};
+function metricEngines(kind,wf){
+ const c=calib();const out=[];
+ const L=code=>ledgerSums(code,wf);
+ const ok=code=>wf?hasDate(code):true;
+ if(kind==='sales'){
+  const l1=L('41101'),l3=L('41103');
+  if(l1){
+   out.push({id:'صافي 41101',v:l1.net*c.s1,ok:ok('41101')});
+   if(l3)out.push({id:'صافي+41103',v:(l1.net*c.s1)+(l3.net*c.s3),ok:ok('41101')});
+   out.push({id:'صافي+حسميات',v:(l1.net*c.s1)+grantInside41101(wf),ok:ok('41101')});
+   const t=R.ledgers['41101'];const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
+   let cred=0,deb=0;
+   (wf?filtered(t):t.data).forEach(r=>{if(ti>=0&&isSkipType(r[ti]))return;
+    if(String(r[ti]||'').includes('مرتجع'))return;
+    cred+=num(r[cri])||0;deb+=num(r[mi])||0;});
+   if(cred||deb)out.push({id:'الجانب الغالب',v:Math.max(cred,deb),ok:ok('41101')});
+  }
+  const inv=wf?invSums():{total:invFullTotal()};if(inv&&inv.total)out.push({id:'بحث الفواتير',v:inv.total,ok:true});
+  const ip=ipAgg();if(ip.grossSale)out.push({id:'ورقة٤',v:ip.grossSale,ok:true});
+  const tb=tbVals();if(tb&&tb.sales)out.push({id:'الميزان',v:tb.sales,ok:true});
+  const mt=mutaj();if(mt.sales)out.push({id:'المتاجرة',v:mt.sales,ok:true});
  }
- const inv=wf?invSums():{total:invFullTotal()};if(inv&&inv.total)vals.push(inv.total);
- const ip=ipAgg();if(ip.grossSale)vals.push(ip.grossSale);
- const tb=tbVals();if(tb&&tb.sales)vals.push(tb.sales);
- const mt=mutaj();if(mt.sales)vals.push(mt.sales);
- return consensus(vals);}
-function engRet(wf){
- const c=calib();const vals=[];
- const l2=ledgerSums('41102',wf);if(l2)vals.push(l2.net*c.s2);
- const mt=mutaj();if(mt.returns)vals.push(mt.returns);
- return consensus(vals);}
-function engGranted(wf){
- const c=calib();const vals=[];
- const l3=ledgerSums('41103',wf);if(l3)vals.push(l3.net*c.s3);
- const d=discParse('grant',wf);if(d.total)vals.push(d.total);
- const tb=tbVals();if(tb&&tb.granted)vals.push(tb.granted);
- const mt=mutaj();if(mt.granted)vals.push(mt.granted);
- return consensus(vals);}
-function engCogs(wf){
- const c=calib();const vals=[];
- const lc=ledgerSums('31105',wf);if(lc)vals.push(lc.net*c.sc);
- const tb=tbVals();if(tb&&tb.cogs)vals.push(tb.cogs);
- const mt=mutaj();if(mt.cogs)vals.push(mt.cogs);
- const ip=ipAgg();if(ip.cost)vals.push(ip.cost);
- return consensus(vals);}
-function expBreakdown(){
- const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
- const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
- if(bi<0||mi<0)return[];
- const map={};
- filtered(t).forEach(r=>{
-  if(ti>=0&&isSkipType(r[ti]))return;
-  const n=String(r[bi]||'').trim()||'بدون بيان';
-  const v=(num(r[mi])||0)-(num(r[cri])||0);if(v)map[n]=(map[n]||0)+v;});
- return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([name,val])=>({code:'',name,val}));}
-function djByCode(code){
- const t=R.dj;if(!t||!code)return{rows:[],net:0};
- const H=t.headers,ri=ci(H,['رمز الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
- if(ri<0)return{rows:[],net:0};
- let net=0;const rows=[];
- filtered(t).forEach(r=>{
-  if(ti>=0&&isSkipType(r[ti]))return;
-  const c=String(r[ri]||'').trim();
-  if(c===code||c.startsWith(code+'-')||c.startsWith(code+' ')){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
- return{rows,net};}
+ if(kind==='ret'){const l2=L('41102');if(l2)out.push({id:'41102',v:l2.net*c.s2,ok:ok('41102')});
+  const mt=mutaj();if(mt.returns)out.push({id:'المتاجرة',v:mt.returns,ok:true});}
+ if(kind==='grant'){const l3=L('41103');if(l3)out.push({id:'41103',v:l3.net*c.s3,ok:ok('41103')});
+  const d=discParse('grant',wf);if(d.total)out.push({id:'جدول الحسم',v:d.total,ok:true});
+  const tb=tbVals();if(tb&&tb.granted)out.push({id:'الميزان',v:tb.granted,ok:true});
+  const mt=mutaj();if(mt.granted)out.push({id:'المتاجرة',v:mt.granted,ok:true});}
+ if(kind==='cogs'){const lc=L('31105');if(lc)out.push({id:'31105',v:lc.net*c.sc,ok:ok('31105')});
+  const tb=tbVals();if(tb&&tb.cogs)out.push({id:'الميزان',v:tb.cogs,ok:true});
+  const mt=mutaj();if(mt.cogs)out.push({id:'المتاجرة',v:mt.cogs,ok:true});
+  const ip=ipAgg();if(ip.cost)out.push({id:'ورقة٤',v:ip.cost,ok:true});}
+ if(kind==='exp'){const le=L('32');if(le)out.push({id:'صفحة 32',v:Math.abs(le.net),ok:ok('32')});
+  const pl=plVals();if(pl&&pl.exp32)out.push({id:'الأرباح والخسائر',v:pl.exp32,ok:true});}
+ return out;}
+function choose(kind,wf){
+ const es=metricEngines(kind,wf).filter(e=>e.ok&&e.v!=null&&!isNaN(e.v)&&Math.abs(e.v)>0.001);
+ if(!es.length)return null;
+ const groups=[];es.forEach(e=>{const g=groups.find(g=>Math.abs(g.v-e.v)<1);if(g)g.n++;else groups.push({v:e.v,n:1});});
+ groups.sort((a,b)=>b.n-a.n);return groups[0].v;}
 
 /* ===== محرك القراءة العام ===== */
 const IDX=['#','ت','م'];
@@ -410,7 +371,7 @@ function extractBlockTables(g,s,e){
    blank=0;
    if(vals.some(v=>v!=null&&String(v).includes('مجموع')))break;
    data.push(vals);}
-  if(data.length)out.push({headers,data,title});}
+  if(data.length)out.push({headers,data,title,di:ci(headers,['تاريخ'])});}
  return out;}
 function classify(t){
  const H=t.headers;const has=k=>H.some(h=>String(h).includes(k));const T=t.title||'';
@@ -483,6 +444,10 @@ function invSums(){
  let total=0,disc=0,net=0;
  filtered(t).forEach(r=>{total+=num(r[gi])||0;disc+=num(r[hi])||0;net+=num(r[ni])||0;});
  return{total,disc,net};}
+function invFullTotal(){
+ const t=R.inv;if(!t)return null;
+ const H=t.headers,gi=ci(H,['الاجمالي']);if(gi<0)return null;
+ let s=0;t.data.forEach(r=>{s+=num(r[gi])||0;});return s;}
 function tbVals(){
  if(!R.tb)return null;
  const H=R.tb.headers,ri=ci(H,['رمز الحساب']),mi=ci(H,['حركة مدين']),cri=ci(H,['حركة دائن']);
@@ -490,7 +455,7 @@ function tbVals(){
  let totD=0,totC=0;const acc={};
  R.tb.data.forEach(r=>{const d=num(r[mi])||0,c=num(r[cri])||0;totD+=d;totC+=c;
   const code=String(r[ri]).trim();if(code)acc[code]={d,c};});
- const g=p=>{for(const k in acc)if(codeMatch(k,p))return acc[k];return null;};
+ const g=p=>{for(const k in acc)if(k===p||k.startsWith(p))return acc[k];return null;};
  const s=g('41101'),gr=g('41103'),co=g('31105');
  return{totD,totC,sales:s?s.c:null,granted:gr?gr.d:null,cogs:co?co.d:null};}
 function plVals(){
@@ -503,6 +468,22 @@ function plVals(){
   else{const m=n.match(/\b(322\d{2})\b/);
    if(m)expenses.push({code:m[1],name:n.replace(/^\s*\d+\s*-\s*/,'').trim(),val:v});}});
  return{expenses,gross,exp32};}
+function djByCode(code){
+ const t=R.dj;if(!t||!code)return{rows:[],net:0};
+ const H=t.headers,ri=ci(H,['رمز الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
+ if(ri<0)return{rows:[],net:0};
+ let net=0;const rows=[];
+ filtered(t).forEach(r=>{const c=String(r[ri]||'').trim();
+  if(c===code||c.startsWith(code+'-')||c.startsWith(code+' ')){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
+ return{rows,net};}
+function periodEngine(){
+ const pl=plVals();const en=pl?pl.expenses.map(x=>x.name):[];
+ const A=acctSums(R.dj,en),B=acctSums(R.journal,en);
+ const pick=k=>A[k]?A[k]:(B[k]?B[k]:0);
+ const src=A.exp?A:(B.exp?B:null);
+ return{sales:pick('sales'),ret:pick('ret'),granted:pick('granted'),earned:pick('earned'),
+  cogs:pick('cogs'),exp:pick('exp'),expList:src?src.expList:[],
+  jSales:A.sales||B.sales,jGranted:A.granted||B.granted,jCogs:A.cogs||B.cogs};}
 function acctSums(t,expNames){
  const out={sales:0,ret:0,granted:0,earned:0,cogs:0,expMap:{},rows:0,exp:0,expList:[]};
  if(!t)return out;
@@ -526,14 +507,6 @@ function acctSums(t,expNames){
  out.expList=Object.entries(out.expMap).map(([name,val])=>({code:'',name,val}));
  out.exp=out.expList.reduce((s,x)=>s+x.val,0);
  return out;}
-function periodEngine(){
- const pl=plVals();const en=pl?pl.expenses.map(x=>x.name):[];
- const A=acctSums(R.dj,en),B=acctSums(R.journal,en);
- const pick=k=>A[k]?A[k]:(B[k]?B[k]:0);
- const src=A.exp?A:(B.exp?B:null);
- return{sales:pick('sales'),ret:pick('ret'),granted:pick('granted'),earned:pick('earned'),
-  cogs:pick('cogs'),exp:pick('exp'),expList:src?src.expList:[],
-  jSales:A.sales||B.sales,jGranted:A.granted||B.granted,jCogs:A.cogs||B.cogs};}
 function salesTotal(){if(!R.sales)return null;const v=ci(R.sales.headers,['قيمة','مبلغ']);
  return filtered(R.sales).reduce((s,r)=>s+(num(r[v])||0),0);}
 function mutaj(){
@@ -542,20 +515,20 @@ function mutaj(){
  const get=k=>{let v=null;R.mut.data.forEach(r=>{if(String(r[ai]).includes(k))v=num(r[ni])||num(r[cri])||0;});return v;};
  return{sales:get('41101'),returns:get('41102'),granted:get('41103'),cogs:get('31105'),netSales:get('الموارد')};}
 
-/* ===== ✅ v23 قائمة الدخل بالمحركات ===== */
+/* ===== قائمة الدخل ===== */
 function computeIncome(){
  const pl=plVals();
  if(R.ledgers&&R.ledgers['41101']){
   const wf=!!P.start;
-  const sales=engSales(wf);
-  const ret=engRet(wf);
-  const granted=engGranted(wf);
+  const sales=choose('sales',wf);
+  const ret=choose('ret',wf);
+  const granted=choose('grant',wf);
+  const cogs=choose('cogs',wf);
   const l4=R.ledgers['31104']?ledgerSums('31104',wf):null;
   const earned=l4?Math.abs(l4.net):discParse('earn',wf).total;
-  const cogs=engCogs(wf);
   const le=ledgerSums('32',wf);
   const expList=pl&&pl.expenses.length?pl.expenses.map(e=>({code:e.code,name:e.name,val:djByCode(e.code).net})):expBreakdown();
-  const exp=le?Math.abs(le.net):expList.reduce((s,x)=>s+x.val,0);
+  const exp=le&&hasDate('32')?Math.abs(le.net):(le?Math.abs(le.net):expList.reduce((s,x)=>s+x.val,0));
   const netSales=(sales||0)-(ret||0)-(granted||0),costSales=cogs||0,gross=netSales-costSales,net=gross-exp;
   return{sales:sales||0,ret:ret||0,granted:granted||0,earned:earned||0,cogs:costSales,exp,netSales,costSales,gross,net,expList,filtered:wf,ledger:true};
  }
@@ -566,8 +539,7 @@ function computeIncome(){
   const earned=discParse('earn',true).total||E.earned;
   const ret=E.ret;
   const cogs=E.cogs||ip.cost;
-  const le=R.ledgers?ledgerSums('32',true):null;
-  const exp=le?Math.abs(le.net):E.exp;
+  const exp=E.exp;
   const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
   return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,expList:E.expList,filtered:true,ledger:false};
  }
@@ -580,28 +552,46 @@ function computeIncome(){
  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,
   expList:pl?pl.expenses:[],filtered:false,ledger:false};}
+function expBreakdown(){
+ const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
+ const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
+ if(bi<0||mi<0)return[];
+ const map={};
+ filtered(t).forEach(r=>{
+  if(ti>=0&&isSkipType(r[ti]))return;
+  const n=String(r[bi]||'').trim()||'بدون بيان';
+  const v=(num(r[mi])||0)-(num(r[cri])||0);if(v)map[n]=(map[n]||0)+v;});
+ return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([name,val])=>({code:'',name,val}));}
 
-/* ===== تفاصيل بند المصاريف ===== */
-function openExpCat(code,name){
- let x='';
+/* ===== ✅ v24 مصاريف: فئة ← حركات ← تفاصيل ===== */
+function openExpMoves(code,name){
  const t=R.dj;
- if(t&&code){
-  const H=t.headers,ri=ci(H,['رمز الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),di=ci(H,['تاريخ']),bi=ci(H,['البيان']),ty=ci(H,['النوع']);
-  let net=0,count=0;
-  x='<table><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>مدين</th><th>دائن</th></tr>';
-  filtered(t).forEach(r=>{
-   if(ty>=0&&isSkipType(r[ty]))return;
-   const c=String(r[ri]||'').trim();
-   if(!(c===code||c.startsWith(code+'-')||c.startsWith(code+' ')))return;
-   count++;const d=num(r[mi])||0,cr=num(r[cri])||0;net+=d-cr;
-   x+=`<tr><td>${r[di]??''}</td><td>${r[ty]??''}</td><td>${r[bi]??''}</td><td>${fmt(d)}</td><td>${fmt(cr)}</td></tr>`;});
-  x+=`<tr><td colspan="3"><b>المجموع (${count} حركة)</b></td><td colspan="2"><b>${fmt(net)}</b></td></tr></table>`;
-  if(!count)x='<div class="tag">لا حركات لهذا البند ضمن الفترة بدفتر اليومية</div>';
- }else{
-  x='<div class="tag">لا يتوفر دفتر اليومية لعرض صرفيات هذا البند</div>';
- }
- document.getElementById('mtitle').textContent='💠 صرفيات: '+name;
+ if(!t||!code){openExpCatFallback(name);return;}
+ const H=t.headers,ri=ci(H,['رمز الحساب']);
+ CUR_MOVES=[];
+ filtered(t).forEach(r=>{const c=String(r[ri]||'').trim();
+  if(c===code||c.startsWith(code+'-')||c.startsWith(code+' '))CUR_MOVES.push(r);});
+ let x=`<div class="tag" style="margin-bottom:8px">اضغط أي حركة لعرض تفاصيلها الكاملة</div>
+  <table><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>البيان</th><th>مدين</th><th>دائن</th></tr>`;
+ CUR_MOVES.forEach((r,i)=>{
+  const di=ci(H,['تاريخ']),ty=ci(H,['النوع']),bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
+  x+=`<tr style="cursor:pointer" onclick="openMoveDetail(${i})"><td>${i+1}</td><td>${r[di]??''}</td><td>${r[ty]??''}</td><td>${r[bi]??''}</td><td>${fmt(num(r[mi]))}</td><td>${fmt(num(r[cri]))}</td></tr>`;});
+ x+='</table>';
+ if(!CUR_MOVES.length)x='<div class="tag">لا حركات لهذه الفئة ضمن الفترة</div>';
+ document.getElementById('mtitle').textContent='💠 حركات: '+name;
  document.getElementById('mbody').innerHTML=x;
+ document.getElementById('modal').style.display='block';}
+function openMoveDetail(i){
+ const t=R.dj;const H=t.headers;const r=CUR_MOVES[i];if(!r)return;
+ let x='<table><tr><th>الحقل</th><th>القيمة</th></tr>';
+ H.forEach((h,k)=>{if(r[k]!=null&&String(r[k]).trim()!=='')x+=`<tr><td>${h}</td><td>${typeof r[k]==='number'?fmt(r[k]):r[k]}</td></tr>`;});
+ x+='</table>';
+ document.getElementById('mtitle').textContent='🧾 تفاصيل الحركة '+(i+1);
+ document.getElementById('mbody').innerHTML=x;
+ document.getElementById('modal').style.display='block';}
+function openExpCatFallback(name){
+ document.getElementById('mtitle').textContent='💠 '+name;
+ document.getElementById('mbody').innerHTML='<div class="tag">لا يتوفر دفتر اليومية لعرض الحركات</div>';
  document.getElementById('modal').style.display='block';}
 
 /* ===== العرض ===== */
@@ -617,7 +607,7 @@ function render(){
    <span class="chip">المصاريف<b>${fmt(ic.exp)}</b></span>
    ${ledCount?`<span class="chip">صفحات الحسابات<b>${ledCount}</b></span>`:''}
   </div></div>`;
- h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'شهري'}${ic.ledger?' · محركات الإجماع':''}</span></h2>`;
+ h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'كامل'}${ic.ledger?' · إجماع المحركات':''}</span></h2>`;
  h+=row('المبيعات',fmt(ic.sales),'',1);
  h+=row('مردودات المبيعات',fmt(ic.ret),'',2);
  h+=row('الحسم الممنوح',fmt(ic.granted),'',3);
@@ -628,11 +618,11 @@ function render(){
  h+=row('مجمل الدخل',fmt(ic.gross),'sub sub-g',8);
  h+=row('إيرادات مختلفة','0','',9);
  const exps=ic.expList||[];
- h+=`<details><summary>📋 المصاريف (${exps.length} بند) — اضغط أي بند لعرض صرفياته</summary>`;
+ h+=`<details><summary>📋 المصاريف (${exps.length} فئة) — فئة ← حركات ← تفاصيل</summary>`;
  exps.forEach((x,i)=>{
   const nm=x.name??x[0],vl=x.val??x[1],cd=x.code||'';
-  h+=`<div class="srow click" onclick="openExpCat('${cd}','${String(nm).replace(/'/g,"\\'")}')">
-   <span><span class="n">${i+10}</span>${nm} ${cd?'<span class="tag">‹ صرفيات</span>':''}</span><b class="v">${fmt(vl)}</b></div>`;});
+  h+=`<div class="srow click" onclick="openExpMoves('${cd}','${String(nm).replace(/'/g,"\\'")}')">
+   <span><span class="n">${i+10}</span>${nm} ${cd?'<span class="tag">‹ حركات</span>':''}</span><b class="v">${fmt(vl)}</b></div>`;});
  h+=`</details>`;
  h+=row('مجموع المصاريف',fmt(ic.exp),'sub sub-p',exps.length+10);
  h+=row('صافي الدخل',fmt(ic.net),'sub sub-g','★');
@@ -640,47 +630,41 @@ function render(){
    <div class="ratio"><b>${pct(ic.gross/(ic.netSales||1))}</b><span>مجمل الدخل / صافي المبيعات</span></div>
    <div class="ratio"><b>${pct(ic.net/(ic.netSales||1))}</b><span>الربح / صافي المبيعات</span></div>
   </div>
-  <button class="bigbtn" style="margin-top:14px" onclick="openVerify()">🔍 تحقق من القيم</button></div>`;
+  <button class="bigbtn" style="margin-top:14px" onclick="openVerify()">🔍 التدقيق العميق</button></div>`;
  o.innerHTML=h;
  document.getElementById('plabel').textContent=periodLabel();
 }
 
-/* ===== التحقق ===== */
+/* ===== ✅ v24 التدقيق العميق: ملخص المحركات ===== */
 const st=(a,b)=>{if(a==null||b==null)return['—',''];
  if(Math.abs(a-b)<1)return['✅','okc'];return['❌','badc'];};
 function vrow(l,a,b){const[s,c]=st(a,b);
  return`<div class="vrow"><span>${l}</span><span><span class="vals">${fmt(a)} ↔ ${fmt(b)}</span> <span class="st ${c}">${s}</span></span></div>`;}
 function openVerify(){
- const ic=computeIncome();const tb=tbVals();const pl=plVals();const ip=ipAgg();const inv=invSums();
- const wf=!!P.start;
- const bl=balLast('41101');
- const fullSales=engSales(false);
- const E=wf?periodEngine():null;
- const base=acctSums(R.dj,[]),base2=acctSums(R.journal,[]);
- const djSales=E?E.jSales:(base.sales||base2.sales);
+ const ic=computeIncome();const wf=!!P.start;
+ const kinds=[['sales','المبيعات'],['ret','المردودات'],['grant','الحسم الممنوح'],['cogs','تكلفة البضاعة'],['exp','المصاريف']];
  let x='';
- x+=vrow('المبيعات (إجماع المحركات) للفترة',ic.sales,engSales(wf));
- x+=vrow('رصيد 41101 النهائي = إجمالي المبيعات',fullSales,bl?bl.v:null);
- x+=vrow('المبيعات = ميزان المراجعة 41101',ic.sales,tb?tb.sales:null);
- x+=vrow('المبيعات = دفتر اليومية 41101',ic.sales,djSales||null);
- x+=vrow('المبيعات = بحث الفواتير (الاجمالي)',ic.sales,inv?inv.total:null);
- x+=vrow('المبيعات = ورقة٤ مجموع الفاتورة',ic.sales,ip.grossSale||null);
- x+=vrow('المردودات = صفحة 41102',ic.ret,engRet(wf));
+ kinds.forEach(([k,name])=>{
+  const es=metricEngines(k,wf);
+  const chosen=choose(k,wf);
+  x+=`<div class="vrow" style="border-bottom:2px solid #334155"><span><b>${name}</b> <span class="tag">المختار: ${fmt(chosen)}</span></span><span class="st okc">${es.filter(e=>e.ok).length} محرك موثوق</span></div>`;
+  es.forEach(e=>{
+   const pick=Math.abs(e.v-chosen)<1;
+   x+=`<div class="vrow"><span style="opacity:${e.ok?1:.4}">${e.id}${e.ok?'':' (غير موثوق)'}</span><span class="vals ${pick?'okc':''}">${fmt(e.v)}${pick?' ★':''}</span></div>`;});
+ });
+ const tb=tbVals();const pl=plVals();const ip=ipAgg();const inv=wf?invSums():{total:invFullTotal()};
+ x+=`<div class="vrow" style="border-bottom:2px solid #334155"><span><b>فحوصات خارجية</b></span><span></span></div>`;
+ x+=vrow('المبيعات = بحث الفواتير',ic.sales,inv?inv.total:null);
+ x+=vrow('المبيعات = ورقة٤',ic.sales,ip.grossSale||null);
+ x+=vrow('المبيعات = المتاجرة',ic.sales,mutaj().sales||null);
  x+=vrow('صافي المبيعات = بحث الفواتير (الصافي)',ic.netSales,inv?inv.net:null);
- x+=vrow('الحسم الممنوح = إجماع المحركات',ic.granted,engGranted(wf));
- x+=vrow('الحسم الممنوح = جدول الحسم',ic.granted,discParse('grant',wf).total);
- x+=vrow('الحسم الممنوح = ميزان 41103',ic.granted,tb?tb.granted:null);
- x+=vrow('الحسم المكتسب = جدول الحسم (شراء)',ic.earned,discParse('earn',wf).total);
- x+=vrow('التكلفة = إجماع المحركات',ic.costSales,engCogs(wf));
- x+=vrow('التكلفة = ميزان 31105',ic.costSales,tb?tb.cogs:null);
  x+=vrow('التكلفة = ورقة٤',ic.costSales,ip.cost||null);
- x+=vrow('المصاريف = صفحة 32',ic.exp,R.ledgers&&R.ledgers['32']?Math.abs(ledgerSums('32',wf).net):null);
- x+=vrow('المصاريف = الارباح والخسائر 32',ic.exp,pl?pl.exp32:null);
+ x+=vrow('المصاريف = الأرباح والخسائر 32',ic.exp,pl?pl.exp32:null);
  x+=vrow('مجمل الدخل = المتاجرة 92',ic.gross,pl?pl.gross:null);
  x+=vrow('مجمل الدخل = ورقة٤ الربح',ic.gross,ip.prof||null);
- x+=vrow('توازن الميزان (مدين=دائن)',tb?tb.totD:null,tb?tb.totC:null);
+ x+=vrow('توازن الميزان',tb?tb.totD:null,tb?tb.totC:null);
  x+=vrow('صافي الدخل = المجمل − المصاريف',ic.net,(ic.gross||0)-(ic.exp||0));
- document.getElementById('mtitle').textContent='🔍 التحقق المتقاطع — '+periodLabel();
+ document.getElementById('mtitle').textContent='🔍 التدقيق العميق — '+periodLabel();
  document.getElementById('mbody').innerHTML=x;
  document.getElementById('modal').style.display='block';
 }
