@@ -112,10 +112,8 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* بطاقة Siraj ERP: كل ورقة=دفتر حساب؛ صفوف: قيد(رقم السند>0)/تفصيل(=0 بدون نوع)؛
-   الرصيد "لنا/لهم"؛ أنواع: سند دفع مصاريف/سند دفع المحاسب/سند قبض/مبيع/مرتجع مبيع/شراء/قيد تسوية/سندات إغلاق يومية الفرع
-   => استثناء (إغلاق/تسوية) من المجاميع + ✅ v22: كشف صفوف «حسم» داخل 41101 وإرجاعها للمبيعات */
-const VERSION='v22';
+/* بطاقة Siraj ERP + ✅ v23: محركات إجماع صامتة (تاريخ دقيق: يوم/فترتين/الكل) */
+const VERSION='v23';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
@@ -277,7 +275,6 @@ function ledgerSums(code,withFilter){
   if(ti>=0&&isSkipType(r[ti]))return;
   d+=num(r[mi])||0;c+=num(r[cri])||0;});
  return{net:d-c,deb:d,cred:c};}
-/* ✅ v22: قيمة صفوف «حسم» داخل صفحة 41101 (لإرجاعها للمبيعات) */
 function grantInside41101(withFilter){
  const t=R.ledgers&&R.ledgers['41101'];if(!t)return 0;
  const H=t.headers,bi=ci(H,['البيان']),ti=ci(H,['النوع']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
@@ -309,12 +306,56 @@ function calib(){
  if(anchor&&f1&&f2){const v1=(f1.net*s1)+grantInside41101(false),v2=f2.net*s2;
   plus=Math.abs(v1-anchor)>1&&Math.abs(v1+v2-anchor)<Math.abs(v1-anchor);}
  R._calib={s1,s2,s3,sc,se,plus};return R._calib;}
-/* ✅ v22: المبيعات الإجمالية = صافي 41101 + حسمياتها الداخلية */
-function salesGross(withFilter){
- const c=calib();
- const l1=ledgerSums('41101',withFilter),l2=ledgerSums('41102',withFilter);
- if(!l1)return null;
- return (l1.net*c.s1)+grantInside41101(withFilter)+(c.plus&&l2?l2.net*c.s2:0);}
+
+/* ===== ✅ v23 الإجماع: يأخذ القيمة التي تتفق عليها أغلب المحركات ===== */
+function consensus(vals){
+ const list=vals.filter(v=>v!=null&&!isNaN(v)&&Math.abs(v)>0.001);
+ if(!list.length)return null;
+ const groups=[];
+ list.forEach((v,i)=>{const g=groups.find(g=>Math.abs(g.v-v)<1);
+  if(g)g.n++;else groups.push({v,n:1});});
+ groups.sort((a,b)=>b.n-a.n||Math.abs(b.v)-Math.abs(a.v));
+ return groups[0].v;}
+/* محركات المبيعات (كلها تحترم التاريخ) */
+function engSales(wf){
+ const c=calib();const vals=[];
+ const l1=ledgerSums('41101',wf),l3=ledgerSums('41103',wf);
+ if(l1){
+  vals.push(l1.net*c.s1);                                  // محرك صافي 41101
+  if(l3)vals.push((l1.net*c.s1)+(l3.net*c.s3));           // محرك + الحسم
+  vals.push((l1.net*c.s1)+grantInside41101(wf));          // محرك الحسميات الداخلية
+  const t=R.ledgers['41101'];const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
+  let cred=0,deb=0;
+  (wf?filtered(t):t.data).forEach(r=>{
+   if(ti>=0&&isSkipType(r[ti]))return;
+   if(String(r[ti]||'').includes('مرتجع'))return;
+   cred+=num(r[cri])||0;deb+=num(r[mi])||0;});
+  if(cred||deb)vals.push(Math.max(cred,deb));             // محرك الجانب الغالب
+ }
+ const inv=wf?invSums():{total:invFullTotal()};if(inv&&inv.total)vals.push(inv.total);
+ const ip=ipAgg();if(ip.grossSale)vals.push(ip.grossSale);
+ const tb=tbVals();if(tb&&tb.sales)vals.push(tb.sales);
+ const mt=mutaj();if(mt.sales)vals.push(mt.sales);
+ return consensus(vals);}
+function engRet(wf){
+ const c=calib();const vals=[];
+ const l2=ledgerSums('41102',wf);if(l2)vals.push(l2.net*c.s2);
+ const mt=mutaj();if(mt.returns)vals.push(mt.returns);
+ return consensus(vals);}
+function engGranted(wf){
+ const c=calib();const vals=[];
+ const l3=ledgerSums('41103',wf);if(l3)vals.push(l3.net*c.s3);
+ const d=discParse('grant',wf);if(d.total)vals.push(d.total);
+ const tb=tbVals();if(tb&&tb.granted)vals.push(tb.granted);
+ const mt=mutaj();if(mt.granted)vals.push(mt.granted);
+ return consensus(vals);}
+function engCogs(wf){
+ const c=calib();const vals=[];
+ const lc=ledgerSums('31105',wf);if(lc)vals.push(lc.net*c.sc);
+ const tb=tbVals();if(tb&&tb.cogs)vals.push(tb.cogs);
+ const mt=mutaj();if(mt.cogs)vals.push(mt.cogs);
+ const ip=ipAgg();if(ip.cost)vals.push(ip.cost);
+ return consensus(vals);}
 function expBreakdown(){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
  const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
@@ -415,14 +456,14 @@ function ingestBuffer(buf,label){try{
 function showErr(m){const e=document.getElementById('err');e.style.display='block';e.textContent=m;}
 
 /* ===== المصادر ===== */
-function discParse(mode){
+function discParse(mode,wf){
  const t=R.disc;if(!t)return{total:0};
  const H=t.headers,ii=ci(H,['حسم الفاتورة']),vi=ci(H,['قيمة الحسم']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['نوع']),di=ci(H,['تاريخ']);
  let total=0;
  t.data.forEach(r=>{const ty=ti>=0?String(r[ti]):'';
   if(mode==='earn'&&!ty.includes('شراء'))return;
   if(mode==='grant'&&ty.includes('شراء'))return;
-  if(di>=0&&P.start&&!inP(toDate(r[di])))return;
+  if(wf&&di>=0&&!inP(toDate(r[di])))return;
   let d=(ii>=0||vi>=0)?(num(r[ii])||0)+(num(r[vi])||0)
    :(mode==='grant'?(num(r[mi])||0)-(num(r[cri])||0):(num(r[cri])||0)-(num(r[mi])||0));
   if(!d)return;if(ty.includes('مرتجع'))d=-d;total+=d;});
@@ -501,28 +542,28 @@ function mutaj(){
  const get=k=>{let v=null;R.mut.data.forEach(r=>{if(String(r[ai]).includes(k))v=num(r[ni])||num(r[cri])||0;});return v;};
  return{sales:get('41101'),returns:get('41102'),granted:get('41103'),cogs:get('31105'),netSales:get('الموارد')};}
 
-/* ===== قائمة الدخل ===== */
+/* ===== ✅ v23 قائمة الدخل بالمحركات ===== */
 function computeIncome(){
  const pl=plVals();
- if(P.start&&R.ledgers&&R.ledgers['41101']){
-  const c=calib();
-  const sales=salesGross(true);
-  const l2=ledgerSums('41102',true),l3=ledgerSums('41103',true),
-   lc=ledgerSums('31105',true),le=ledgerSums('32',true);
-  const ret=l2?l2.net*c.s2:0;
-  const granted=l3?l3.net*c.s3:discParse('grant').total;
-  const earned=R.ledgers['31104']?Math.abs(ledgerSums('31104',true).net):discParse('earn').total;
-  const cogs=lc?lc.net*c.sc:0;
+ if(R.ledgers&&R.ledgers['41101']){
+  const wf=!!P.start;
+  const sales=engSales(wf);
+  const ret=engRet(wf);
+  const granted=engGranted(wf);
+  const l4=R.ledgers['31104']?ledgerSums('31104',wf):null;
+  const earned=l4?Math.abs(l4.net):discParse('earn',wf).total;
+  const cogs=engCogs(wf);
+  const le=ledgerSums('32',wf);
   const expList=pl&&pl.expenses.length?pl.expenses.map(e=>({code:e.code,name:e.name,val:djByCode(e.code).net})):expBreakdown();
-  const exp=le?le.net*c.se:expList.reduce((s,x)=>s+x.val,0);
-  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
-  return{sales,ret,granted,earned,cogs,exp,netSales,costSales,gross,net,expList,filtered:true,ledger:true};
+  const exp=le?Math.abs(le.net):expList.reduce((s,x)=>s+x.val,0);
+  const netSales=(sales||0)-(ret||0)-(granted||0),costSales=cogs||0,gross=netSales-costSales,net=gross-exp;
+  return{sales:sales||0,ret:ret||0,granted:granted||0,earned:earned||0,cogs:costSales,exp,netSales,costSales,gross,net,expList,filtered:wf,ledger:true};
  }
  if(P.start){
   const E=periodEngine();const ip=ipAgg();
   const sales=E.sales||ip.grossSale;
-  const granted=discParse('grant').total||E.granted;
-  const earned=discParse('earn').total||E.earned;
+  const granted=discParse('grant',true).total||E.granted;
+  const earned=discParse('earn',true).total||E.earned;
   const ret=E.ret;
   const cogs=E.cogs||ip.cost;
   const le=R.ledgers?ledgerSums('32',true):null;
@@ -576,7 +617,7 @@ function render(){
    <span class="chip">المصاريف<b>${fmt(ic.exp)}</b></span>
    ${ledCount?`<span class="chip">صفحات الحسابات<b>${ledCount}</b></span>`:''}
   </div></div>`;
- h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'شهري'}${ic.ledger?' · صفحات الحسابات':''}</span></h2>`;
+ h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'شهري'}${ic.ledger?' · محركات الإجماع':''}</span></h2>`;
  h+=row('المبيعات',fmt(ic.sales),'',1);
  h+=row('مردودات المبيعات',fmt(ic.ret),'',2);
  h+=row('الحسم الممنوح',fmt(ic.granted),'',3);
@@ -611,34 +652,29 @@ function vrow(l,a,b){const[s,c]=st(a,b);
  return`<div class="vrow"><span>${l}</span><span><span class="vals">${fmt(a)} ↔ ${fmt(b)}</span> <span class="st ${c}">${s}</span></span></div>`;}
 function openVerify(){
  const ic=computeIncome();const tb=tbVals();const pl=plVals();const ip=ipAgg();const inv=invSums();
- const c=calib();
- const ledSales=salesGross(!!P.start);
- const fullSales=salesGross(false);
+ const wf=!!P.start;
  const bl=balLast('41101');
- const p2=ledgerSums('41102',!!P.start),p3=ledgerSums('41103',!!P.start),
-  pc=ledgerSums('31105',!!P.start),pe=ledgerSums('32',!!P.start);
- const E=P.start?periodEngine():null;
+ const fullSales=engSales(false);
+ const E=wf?periodEngine():null;
  const base=acctSums(R.dj,[]),base2=acctSums(R.journal,[]);
  const djSales=E?E.jSales:(base.sales||base2.sales);
- const djGrant=E?E.jGranted:(base.granted||base2.granted);
- const djCogs=E?E.jCogs:(base.cogs||base2.cogs);
  let x='';
- x+=vrow('المبيعات = 41101 + حسمياتها',ic.sales,ledSales);
+ x+=vrow('المبيعات (إجماع المحركات) للفترة',ic.sales,engSales(wf));
  x+=vrow('رصيد 41101 النهائي = إجمالي المبيعات',fullSales,bl?bl.v:null);
  x+=vrow('المبيعات = ميزان المراجعة 41101',ic.sales,tb?tb.sales:null);
  x+=vrow('المبيعات = دفتر اليومية 41101',ic.sales,djSales||null);
  x+=vrow('المبيعات = بحث الفواتير (الاجمالي)',ic.sales,inv?inv.total:null);
  x+=vrow('المبيعات = ورقة٤ مجموع الفاتورة',ic.sales,ip.grossSale||null);
- x+=vrow('المردودات = صفحة 41102',ic.ret,p2?p2.net*c.s2:null);
+ x+=vrow('المردودات = صفحة 41102',ic.ret,engRet(wf));
  x+=vrow('صافي المبيعات = بحث الفواتير (الصافي)',ic.netSales,inv?inv.net:null);
- x+=vrow('الحسم الممنوح = صفحة 41103',ic.granted,p3?p3.net*c.s3:null);
- x+=vrow('الحسم الممنوح = جدول الحسم',ic.granted,discParse('grant').total);
+ x+=vrow('الحسم الممنوح = إجماع المحركات',ic.granted,engGranted(wf));
+ x+=vrow('الحسم الممنوح = جدول الحسم',ic.granted,discParse('grant',wf).total);
  x+=vrow('الحسم الممنوح = ميزان 41103',ic.granted,tb?tb.granted:null);
- x+=vrow('الحسم المكتسب = جدول الحسم (شراء)',ic.earned,discParse('earn').total);
- x+=vrow('التكلفة = صفحة 31105',ic.costSales,pc?pc.net*c.sc:null);
+ x+=vrow('الحسم المكتسب = جدول الحسم (شراء)',ic.earned,discParse('earn',wf).total);
+ x+=vrow('التكلفة = إجماع المحركات',ic.costSales,engCogs(wf));
  x+=vrow('التكلفة = ميزان 31105',ic.costSales,tb?tb.cogs:null);
  x+=vrow('التكلفة = ورقة٤',ic.costSales,ip.cost||null);
- x+=vrow('المصاريف = صفحة 32',ic.exp,pe?pe.net*c.se:null);
+ x+=vrow('المصاريف = صفحة 32',ic.exp,R.ledgers&&R.ledgers['32']?Math.abs(ledgerSums('32',wf).net):null);
  x+=vrow('المصاريف = الارباح والخسائر 32',ic.exp,pl?pl.exp32:null);
  x+=vrow('مجمل الدخل = المتاجرة 92',ic.gross,pl?pl.gross:null);
  x+=vrow('مجمل الدخل = ورقة٤ الربح',ic.gross,ip.prof||null);
