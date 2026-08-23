@@ -90,7 +90,7 @@ th{background:#334155}
 </div>
 
 <div class="card">
- <h2>🗓️ الفترة (محرك 30 ألف سطر — فصل شهري)</h2>
+ <h2>🗓️ الفترة (محرك استحقاق — فصل شهري)</h2>
  <div class="seg">
   <button class="on" onclick="modeAll(this)">الكل</button>
   <button onclick="modeDay(this)">📅 يوم محدد</button>
@@ -112,8 +112,8 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* ====== v28: المبيعات=دائن 41101 | المكتسب=0 | مصاريف بفئات قائمة الدخل من صفحة 32 ====== */
-const VERSION='v28';
+/* ====== v29: محرك الاستحقاق — المصاريف تُفصل بالشهر الذي تخصه ====== */
+const VERSION='v29';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
@@ -137,6 +137,30 @@ const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 const isSkipType=ty=>{const s=String(ty||'');return s.includes('إغلاق')||s.includes('تسوية');};
 function dayOf(d){return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;}
 function inP(d){if(!P.start||!P.end)return true;if(!d)return false;const x=dayOf(d);return x>=P.start&&x<=P.end;}
+
+/* ===== ✅ v29: الشهر الذي يخصه المصروف (استحقاق) ===== */
+function belongMonth(r,H,fd){
+ const bi=ci(H,['البيان']);
+ const s=bi>=0?norm(String(r[bi]||'')):'';
+ let m=s.match(/ولغاي[ةه]\s*(\d{1,2})\/(\d{1,2})/);
+ if(m)return +m[1];
+ m=s.match(/شهر\s*(\d{1,2})/);
+ if(m)return +m[1];
+ m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+ if(m)return +m[2];
+ return fd?fd.getMonth()+1:null;}
+/* فلتر صفحة 32: يوم واحد=تاريخ الدفع | فترة=شهر الاستحقاق | الكل=الكل */
+function filtered32(t){
+ if(!t)return[];
+ if(!P.start)return t.data;
+ const di=t.di;
+ if(P.start.getTime()===P.end.getTime())return t.data.filter(r=>inP(toDate(r[di])));
+ const sm=P.start.getMonth()+1,em=P.end.getMonth()+1;
+ return t.data.filter(r=>{
+  const fd=toDate(r[di]);
+  const bm=belongMonth(r,t.headers,fd);
+  if(bm==null)return fd&&inP(fd);
+  return bm>=sm&&bm<=em;});}
 
 /* ===== حفظ محلي ===== */
 let db=null;
@@ -276,7 +300,6 @@ function ledgerTable(g){
   if(vals.every(v=>v==null||String(v).trim()===''))continue;
   data.push(vals);}
  return{headers,data,di:detectDateCol(data,headers)};}
-/* ✅ v28: 41101 = مجموع الدائن (المبيعات الخام) */
 const DIR={'41101':'cred','41102':'deb','41103':'deb','31105':'deb','32':'deb'};
 function sheetValue(code,wf){
  const t=R.ledgers&&R.ledgers[code];if(!t)return null;
@@ -429,7 +452,6 @@ function mutaj(){
   if(ks.some(k=>n.includes(k)))v=num(r[ni])||num(r[cri])||0;});return v;};
  return{sales:get(['41101','المبيعات']),returns:get(['41102','مردودات']),granted:get(['41103','الحسم الممنوح']),
   cogs:get(['31105','تكلفة']),netSales:get(['الموارد','صافي المبيعات'])};}
-/* ✅ v28: حركات فئة مصاريف من اليومية أو صفحة 32 */
 function djByCat(code,name,wf){
  const t=R.dj;if(!t)return{rows:[],net:0};
  const H=t.headers,ri=ci(H,['رمز الحساب']),ai=ci(H,['الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
@@ -440,38 +462,38 @@ function djByCat(code,name,wf){
   const hit=(code&&(c===code||c.startsWith(code+'-')||c.startsWith(code+' ')))||(!code&&name&&an.includes(name));
   if(hit){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
  return{rows,net};}
-function s32ByCat(name,wf){
+function s32Rows(name){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return{rows:[],net:0};
  const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
  if(bi<0)return{rows:[],net:0};
  let net=0;const rows=[];
- (wf?filtered(t):t.data).forEach(r=>{
+ filtered32(t).forEach(r=>{
   if(String(r[bi]||'').includes(name)){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
  return{rows,net};}
-/* ✅ v28: فئات المصاريف = فئات قائمة الدخل، القيم من اليومية ثم صفحة 32 */
-function expCategories(wf){
- const pl=plVals();
- if(!pl||!pl.expenses.length)return expBreakdown(wf);
- return pl.expenses.map(e=>{
-  let val=null,src='';
-  const dj=djByCat(e.code,e.name,wf);
-  if(dj.rows.length){val=dj.net;src='اليومية';}
-  else{const s32=s32ByCat(e.name,wf);
-   if(s32.rows.length){val=s32.net;src='صفحة 32';}}
-  if(val==null){val=wf?0:e.val;src=wf?'':'المتاجرة';}
-  return{code:e.code,name:e.name,val,src};});}
-function expBreakdown(wf){
+/* ✅ v29: المصاريف بالاستحقاق من صفحة 32 */
+function expBreakdown(){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
  const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']),si=ci(H,['رقم السند']);
  if(bi<0||mi<0)return[];
  const map={};
- (wf?filtered(t):t.data).forEach(r=>{
+ filtered32(t).forEach(r=>{
   if(ti>=0&&isSkipType(r[ti]))return;
   if(si>=0){const sn=num(r[si]);const ty=ti>=0?String(r[ti]||'').trim():'';
    if((sn==null||sn===0)&&ty==='')return;}
   const n=String(r[bi]||'').trim()||'بدون بيان';
   const v=(num(r[mi])||0)-(num(r[cri])||0);if(v)map[n]=(map[n]||0)+v;});
  return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([name,val])=>({code:'',name,val,src:'صفحة 32'}));}
+/* مصاريف مدفوعة بالتاريخ (للمقارنة) */
+function expPaid(){
+ const t=R.ledgers&&R.ledgers['32'];if(!t)return 0;
+ const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']),si=ci(H,['رقم السند']);
+ let s=0;
+ filtered(t).forEach(r=>{
+  if(ti>=0&&isSkipType(r[ti]))return;
+  if(si>=0){const sn=num(r[si]);const ty=ti>=0?String(r[ti]||'').trim():'';
+   if((sn==null||sn===0)&&ty==='')return;}
+  s+=(num(r[mi])||0)-(num(r[cri])||0);});
+ return s;}
 
 /* ===== قائمة الدخل ===== */
 function computeIncome(){
@@ -482,8 +504,8 @@ function computeIncome(){
   const ret=(sheetValue('41102',wf)||{}).net;
   const granted=(sheetValue('41103',wf)||{}).net;
   const cogs=(sheetValue('31105',wf)||{}).net;
-  const earned=0; /* ✅ لا أعتمد صفحة حسم المكتسب */
-  const expList=expCategories(wf);
+  const earned=0;
+  const expList=expBreakdown();
   const exp=expList.reduce((s,x)=>s+(x.val||0),0);
   const netSales=(sales||0)-(ret||0)-(granted||0),costSales=cogs||0,gross=netSales-costSales,net=gross-exp;
   return{sales:sales||0,ret:ret||0,granted:granted||0,earned,cogs:costSales,exp,netSales,costSales,gross,net,expList,filtered:wf,ledger:true};
@@ -536,14 +558,13 @@ function acctSums(t,expNames){
  out.exp=out.expList.reduce((s,x)=>s+x.val,0);
  return out;}
 
-/* ===== ✅ v28 مصاريف: فئة ← حركات (يومية/32) ← تفاصيل ===== */
+/* ===== مصاريف: فئة ← حركات ← تفاصيل ===== */
 function openExpMoves(code,name){
- const wf=!!P.start;
- const dj=djByCat(code,name,wf);
- const s32=s32ByCat(name,wf);
+ const dj=djByCat(code,name,!!P.start);
+ const s32=s32Rows(name);
  const rows=dj.rows.length?dj.rows:s32.rows;
  CUR_MOVES=rows;
- let x=`<div class="tag" style="margin-bottom:8px">المصدر: ${dj.rows.length?'دفتر اليومية':'صفحة 32'} — ${rows.length} حركة — اضغط للتفاصيل</div>
+ let x=`<div class="tag" style="margin-bottom:8px">المصدر: ${dj.rows.length?'دفتر اليومية':'صفحة 32 (استحقاق)'} — ${rows.length} حركة — اضغط للتفاصيل</div>
   <table><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>الحساب</th><th>البيان</th><th>مدين</th><th>دائن</th></tr>`;
  rows.forEach((r,i)=>{
   const H=(dj.rows.length?R.dj:R.ledgers['32']).headers;
@@ -588,7 +609,7 @@ function render(){
    <span class="chip">المصاريف<b>${fmt(ic.exp)}</b></span>
    ${ledCount?`<span class="chip">صفحات الحسابات<b>${ledCount}</b></span>`:''}
   </div></div>`;
- h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'كامل'}${ic.ledger?' · قواعد قطعية':''}</span></h2>`;
+ h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'كامل'}${ic.ledger?' · استحقاق':''}</span></h2>`;
  h+=row('المبيعات',fmt(ic.sales),'',1);
  h+=row('مردودات المبيعات',fmt(ic.ret),'',2);
  h+=row('الحسم الممنوح',fmt(ic.granted),'',3);
@@ -599,13 +620,13 @@ function render(){
  h+=row('مجمل الدخل',fmt(ic.gross),'sub sub-g',8);
  h+=row('إيرادات مختلفة','0','',9);
  const exps=ic.expList||[];
- h+=`<details><summary>📋 المصاريف (${exps.length} فئة) — فئة ← حركات ← تفاصيل</summary>`;
+ h+=`<details><summary>📋 المصاريف (${exps.length} فئة) — بالاستحقاق — فئة ← حركات ← تفاصيل</summary>`;
  exps.forEach((x,i)=>{
   const nm=x.name??x[0],vl=x.val??x[1];
   h+=`<div class="srow click" onclick="openExpMoves('${(x.code||'').replace(/'/g,"\\'")}','${String(nm).replace(/'/g,"\\'")}')">
    <span><span class="n">${i+10}</span>${nm}</span><b class="v">${fmt(vl)}</b></div>`;});
  h+=`</details>`;
- h+=row('مجموع المصاريف',fmt(ic.exp),'sub sub-p',exps.length+10);
+ h+=row('مجموع المصاريف (استحقاق)',fmt(ic.exp),'sub sub-p',exps.length+10);
  h+=row('صافي الدخل',fmt(ic.net),'sub sub-g','★');
  h+=`<div class="ratios">
    <div class="ratio"><b>${pct(ic.gross/(ic.netSales||1))}</b><span>مجمل الدخل / صافي المبيعات</span></div>
@@ -637,6 +658,7 @@ function openVerify(){
  x+=vrow('صافي المبيعات = بحث الفواتير (الصافي)',ic.netSales,inv?inv.net:null);
  x+=vrow('التكلفة = المتاجرة 31105',ic.costSales,mt.cogs||null);
  x+=vrow('التكلفة = ورقة٤',ic.costSales,ip.cost||null);
+ if(wf)x+=vrow('مصاريف بالاستحقاق ↔ مدفوعة بالتاريخ',ic.exp,expPaid());
  x+=vrow('المصاريف = الأرباح والخسائر 32',ic.exp,pl?pl.exp32:null);
  x+=vrow('مجمل الدخل = المتاجرة 92',ic.gross,pl?pl.gross:null);
  x+=vrow('مجمل الدخل = ورقة٤ الربح',ic.gross,ip.prof||null);
