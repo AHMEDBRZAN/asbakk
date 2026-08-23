@@ -112,18 +112,10 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* =========================================================
-   بطاقة تعريف ملف Siraj ERP (حسابات اصباغ):
-   - كل ورقة = دفتر حساب واحد، و # يعاد لكل ورقة
-   - الأعمدة: # | رقم السند | الرقم العام | النوع | التاريخ | مدين | دائن
-     | الحساب المقابل | البيان | الرصيد | اسم المادة | الوحدة | الكمية | السعر | الحسم | الاجمالي
-   - صفوف: قيد (رقم السند>0) / تفصيل مادة (رقم السند=0 وبدون نوع = ابن القيد السابق)
-   - الرصيد نص: "123.45 لنا" (لنا=مدين) / "لهم" (دائن)
-   - أنواع قيود: سند دفع مصاريف/سند دفع المحاسب/سند قبض المحاسب/سند قبض/
-     مبيع/مرتجع مبيع/شراء/قيد تسوية/سندات إغلاق يومية الفرع
-   => المحرك يستثني (إغلاق/تسوية) من المجاميع لأنها قيود نقل داخلية
-   ========================================================= */
-const VERSION='v21';
+/* بطاقة Siraj ERP: كل ورقة=دفتر حساب؛ صفوف: قيد(رقم السند>0)/تفصيل(=0 بدون نوع)؛
+   الرصيد "لنا/لهم"؛ أنواع: سند دفع مصاريف/سند دفع المحاسب/سند قبض/مبيع/مرتجع مبيع/شراء/قيد تسوية/سندات إغلاق يومية الفرع
+   => استثناء (إغلاق/تسوية) من المجاميع + ✅ v22: كشف صفوف «حسم» داخل 41101 وإرجاعها للمبيعات */
+const VERSION='v22';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
@@ -146,9 +138,7 @@ function toDate(v){if(v==null||v==='')return null;if(v instanceof Date)return v;
 const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 function codeMatch(c,pre){c=String(c).trim();if(c===pre)return true;
  return c.startsWith(pre)&&!'0123456789'.includes(c.charAt(pre.length));}
-/* ✅ v21: استثناء قيود الإغلاق والتسوية */
 const isSkipType=ty=>{const s=String(ty||'');return s.includes('إغلاق')||s.includes('تسوية');};
-/* ✅ v21: قراءة الرصيد "123.45 لنا/لهم" */
 function parseBal(v){if(v==null)return null;
  if(typeof v==='number')return{v:Math.abs(v),dir:''};
  const s=norm(v);const m=s.match(/([\d][\d,\.]*)\s*(لنا|لهم)?/);
@@ -278,7 +268,6 @@ function ledgerTable(g){
   if(vals.every(v=>v==null||String(v).trim()===''))continue;
   data.push(vals);}
  return{headers,data};}
-/* ✅ v21: مجاميع مع استثناء إغلاق/تسوية */
 function ledgerSums(code,withFilter){
  const t=R.ledgers&&R.ledgers[code];if(!t)return null;
  const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
@@ -288,7 +277,16 @@ function ledgerSums(code,withFilter){
   if(ti>=0&&isSkipType(r[ti]))return;
   d+=num(r[mi])||0;c+=num(r[cri])||0;});
  return{net:d-c,deb:d,cred:c};}
-/* ✅ v21: الرصيد الأخير للصفحة */
+/* ✅ v22: قيمة صفوف «حسم» داخل صفحة 41101 (لإرجاعها للمبيعات) */
+function grantInside41101(withFilter){
+ const t=R.ledgers&&R.ledgers['41101'];if(!t)return 0;
+ const H=t.headers,bi=ci(H,['البيان']),ti=ci(H,['النوع']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
+ if(bi<0||mi<0||cri<0)return 0;
+ let s=0;
+ (withFilter?filtered(t):t.data).forEach(r=>{
+  if(ti>=0&&isSkipType(r[ti]))return;
+  if(String(r[bi]||'').includes('حسم'))s+=(num(r[mi])||0)-(num(r[cri])||0);});
+ return Math.abs(s);}
 function balLast(code){
  const t=R.ledgers&&R.ledgers[code];if(!t)return null;
  const H=t.headers,bi=ci(H,['الرصيد']);if(bi<0)return null;
@@ -301,20 +299,22 @@ function invFullTotal(){
  let s=0;t.data.forEach(r=>{s+=num(r[gi])||0;});return s;}
 function calib(){
  if(R._calib)return R._calib;
- const mt=mutaj();const tb=tbVals();
- const anchor=mt.sales??(tb?tb.sales:null);
  const f1=ledgerSums('41101',false),f2=ledgerSums('41102',false),f3=ledgerSums('41103',false),
   fc=ledgerSums('31105',false),fe=ledgerSums('32',false);
  const s1=f1&&f1.net<0?-1:1,s2=f2&&f2.net<0?-1:1,s3=f3&&f3.net<0?-1:1,
   sc=fc&&fc.net<0?-1:1,se=fe&&fe.net<0?-1:1;
+ const mt=mutaj();const tb=tbVals();
+ const anchor=mt.sales??(tb?tb.sales:null);
  let plus=false;
- if(anchor&&f1&&f2){const v1=f1.net*s1,v2=f2.net*s2;
+ if(anchor&&f1&&f2){const v1=(f1.net*s1)+grantInside41101(false),v2=f2.net*s2;
   plus=Math.abs(v1-anchor)>1&&Math.abs(v1+v2-anchor)<Math.abs(v1-anchor);}
- const anchorG=invFullTotal();
- let addGrant=false;
- if(anchorG&&f1&&f3){const v1=f1.net*s1,v3=f3.net*s3;
-  addGrant=Math.abs(v1+v3-anchorG)<Math.abs(v1-anchorG);}
- R._calib={s1,s2,s3,sc,se,plus,addGrant};return R._calib;}
+ R._calib={s1,s2,s3,sc,se,plus};return R._calib;}
+/* ✅ v22: المبيعات الإجمالية = صافي 41101 + حسمياتها الداخلية */
+function salesGross(withFilter){
+ const c=calib();
+ const l1=ledgerSums('41101',withFilter),l2=ledgerSums('41102',withFilter);
+ if(!l1)return null;
+ return (l1.net*c.s1)+grantInside41101(withFilter)+(c.plus&&l2?l2.net*c.s2:0);}
 function expBreakdown(){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
  const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']);
@@ -506,9 +506,9 @@ function computeIncome(){
  const pl=plVals();
  if(P.start&&R.ledgers&&R.ledgers['41101']){
   const c=calib();
-  const l1=ledgerSums('41101',true),l2=ledgerSums('41102',true),l3=ledgerSums('41103',true),
+  const sales=salesGross(true);
+  const l2=ledgerSums('41102',true),l3=ledgerSums('41103',true),
    lc=ledgerSums('31105',true),le=ledgerSums('32',true);
-  const sales=(l1?l1.net*c.s1:0)+(c.addGrant&&l3?l3.net*c.s3:0)+(c.plus&&l2?l2.net*c.s2:0);
   const ret=l2?l2.net*c.s2:0;
   const granted=l3?l3.net*c.s3:discParse('grant').total;
   const earned=R.ledgers['31104']?Math.abs(ledgerSums('31104',true).net):discParse('earn').total;
@@ -612,20 +612,19 @@ function vrow(l,a,b){const[s,c]=st(a,b);
 function openVerify(){
  const ic=computeIncome();const tb=tbVals();const pl=plVals();const ip=ipAgg();const inv=invSums();
  const c=calib();
- const p1=ledgerSums('41101',!!P.start),p2=ledgerSums('41102',!!P.start),
-  p3=ledgerSums('41103',!!P.start),pc=ledgerSums('31105',!!P.start),pe=ledgerSums('32',!!P.start);
- const ledSales=p1?(p1.net*c.s1+(c.addGrant&&p3?p3.net*c.s3:0)+(c.plus&&p2?p2.net*c.s2:0)):null;
- const f1=ledgerSums('41101',false),f3=ledgerSums('41103',false),f2=ledgerSums('41102',false);
- const fullSales=f1?(f1.net*c.s1+(c.addGrant&&f3?f3.net*c.s3:0)+(c.plus&&f2?f2.net*c.s2:0)):null;
+ const ledSales=salesGross(!!P.start);
+ const fullSales=salesGross(false);
  const bl=balLast('41101');
+ const p2=ledgerSums('41102',!!P.start),p3=ledgerSums('41103',!!P.start),
+  pc=ledgerSums('31105',!!P.start),pe=ledgerSums('32',!!P.start);
  const E=P.start?periodEngine():null;
  const base=acctSums(R.dj,[]),base2=acctSums(R.journal,[]);
  const djSales=E?E.jSales:(base.sales||base2.sales);
  const djGrant=E?E.jGranted:(base.granted||base2.granted);
  const djCogs=E?E.jCogs:(base.cogs||base2.cogs);
  let x='';
- x+=vrow('المبيعات = صفحة 41101 (معايرة)',ic.sales,ledSales);
- x+=vrow('رصيد 41101 النهائي (لهم) = إجمالي المبيعات',fullSales,bl?bl.v:null);
+ x+=vrow('المبيعات = 41101 + حسمياتها',ic.sales,ledSales);
+ x+=vrow('رصيد 41101 النهائي = إجمالي المبيعات',fullSales,bl?bl.v:null);
  x+=vrow('المبيعات = ميزان المراجعة 41101',ic.sales,tb?tb.sales:null);
  x+=vrow('المبيعات = دفتر اليومية 41101',ic.sales,djSales||null);
  x+=vrow('المبيعات = بحث الفواتير (الاجمالي)',ic.sales,inv?inv.total:null);
