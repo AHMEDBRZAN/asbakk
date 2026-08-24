@@ -26,8 +26,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:4px
 .mini.rf{background:#24344f;color:var(--txt)}
 .mini.rn{background:#24344f;color:var(--txt)}
 .savebtn{width:100%;border:0;border-radius:14px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#201404;margin-top:10px;box-shadow:0 8px 20px #f59e0b33}
-.seg{display:flex;background:#0d1420;border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
-.seg button{flex:1;border:0;background:transparent;color:var(--mut);padding:10px 4px;border-radius:11px;font-weight:800;font-size:12px}
+.seg{display:flex;background:#0d1420;border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:transparent;color:var(--mut);padding:10px 4px;border-radius:11px;font-weight:800;font-size:12px;min-width:70px}
 .seg button.on{background:linear-gradient(135deg,#38bdf8,#22c55e);color:#06121f}
 .dates{display:none;gap:8px;margin-top:10px;align-items:center;font-size:12px;color:var(--mut)}
 .dates.show{display:flex}
@@ -90,11 +90,12 @@ th{background:#334155}
 </div>
 
 <div class="card">
- <h2>🗓️ الفترة (محرك استحقاق — فصل شهري)</h2>
+ <h2>🗓️ الفترة — الفئات تعمل بكل الأوضاع</h2>
  <div class="seg">
   <button class="on" onclick="modeAll(this)">الكل</button>
+  <button onclick="modeYear(this)">📆 سنة</button>
   <button onclick="modeDay(this)">📅 يوم محدد</button>
-  <button onclick="modeRange(this)">📆 بين فترتين</button>
+  <button onclick="modeRange(this)">⇄ بين فترتين</button>
  </div>
  <div class="dates" id="dayBox">اليوم <input type="date" id="dDay" onchange="applyDay()"></div>
  <div class="dates" id="rangeBox">من <input type="date" id="d1" onchange="applyRange()"> إلى <input type="date" id="d2" onchange="applyRange()"></div>
@@ -112,8 +113,8 @@ th{background:#334155}
 </div></div>
 
 <script>
-/* ====== v29: محرك الاستحقاق — المصاريف تُفصل بالشهر الذي تخصه ====== */
-const VERSION='v29';
+/* ====== v31: فئات المصاريف تعمل بـ يوم / فترتين / سنة / الكل ====== */
+const VERSION='v31';
 document.getElementById('ver').textContent=VERSION;
 const REPO='ahmedbrzan/asbakk';
 const API='https://api.github.com/repos/'+REPO+'/contents/';
@@ -137,8 +138,6 @@ const ci=(H,ks)=>H.findIndex(h=>ks.some(k=>String(h).includes(k)));
 const isSkipType=ty=>{const s=String(ty||'');return s.includes('إغلاق')||s.includes('تسوية');};
 function dayOf(d){return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;}
 function inP(d){if(!P.start||!P.end)return true;if(!d)return false;const x=dayOf(d);return x>=P.start&&x<=P.end;}
-
-/* ===== ✅ v29: الشهر الذي يخصه المصروف (استحقاق) ===== */
 function belongMonth(r,H,fd){
  const bi=ci(H,['البيان']);
  const s=bi>=0?norm(String(r[bi]||'')):'';
@@ -149,7 +148,6 @@ function belongMonth(r,H,fd){
  m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
  if(m)return +m[2];
  return fd?fd.getMonth()+1:null;}
-/* فلتر صفحة 32: يوم واحد=تاريخ الدفع | فترة=شهر الاستحقاق | الكل=الكل */
 function filtered32(t){
  if(!t)return[];
  if(!P.start)return t.data;
@@ -161,6 +159,35 @@ function filtered32(t){
   const bm=belongMonth(r,t.headers,fd);
   if(bm==null)return fd&&inP(fd);
   return bm>=sm&&bm<=em;});}
+
+/* ===== فئات سراج الرسمية ===== */
+const CATS=[
+ {code:'32201',name:'ايجار بنايلة',kw:['ايجار بنا','اجار بنا','ايجار البنا','استحقاق ايجار','استحقاق شهر']},
+ {code:'32202',name:'كهرباء',kw:['كهرباء','كهربا']},
+ {code:'32205',name:'اشتراك مولد',kw:['اشتراك مولد','مولد']},
+ {code:'32207',name:'شراء ماء للمحل',kw:['ماء للمحل','قناني','مياه','ابي ماء']},
+ {code:'32208',name:'شراء قرطاسية متنوعة',kw:['قرطاسية','طباعة','ورق']},
+ {code:'32209',name:'شراء منظفات',kw:['منظفات','معطر','صابون','تنظيف']},
+ {code:'32210',name:'شراء علاليك',kw:['علايك','علاليك','اكياس']},
+ {code:'32212',name:'مكافئات تشجيعية',kw:['مكافاة','مكافئات','مكافئه']},
+ {code:'32213',name:'اجور نقل',kw:['اجور نقل','نقل','محروس','ابو اثير']},
+ {code:'32214',name:'مشروبات ساخنة',kw:['مشروبات','شاي','قهوة','عصير']},
+ {code:'32215',name:'صيانة',kw:['صيانة','تصليح','تصليحات']},
+ {code:'32216',name:'اعانة محتاجين',kw:['اعانة','محتاجين','تبرع','صدقة']},
+ {code:'32217',name:'عمولة حوالات الشركات',kw:['عمولة','حوالات']},
+ {code:'32218',name:'زيادة ونقص صندوق',kw:['زيادة ونقص','نقص صندوق','فرق صندوق']},
+ {code:'32223',name:'طعام موظفين',kw:['طعام','غداء','فطور','مطعم','اكل']},
+ {code:'32224',name:'مصاريف تسويق وتطوير',kw:['تسويق','تطوير','اعلان','دعاية','لوحة']},
+ {code:'32228',name:'اجور توصيل بضاعة',kw:['توصيل بضاعة','توصيل']},
+ {code:'32231',name:'اعلام ونشر الشركة',kw:['اعلام','نشر','سوشيال','فيسبوك']},
+ {code:'32211',name:'مشتريات المحل',kw:['مشتريات المحل','شراء','اثاث','رفوف']},
+ {code:'32206',name:'مصاريف مختلفة',kw:['مختلفة','متفرقة','بدون بيان','سحب','كابز','لابتوب','لا بتوب']},
+ {code:'32219',name:'اجور الموظفين',kw:['اجور','راتب','رواتب','استحقاق']}
+];
+function classifyExp(stmt){
+ const s=norm(stmt||'');
+ for(const c of CATS){for(const k of c.kw){if(s.includes(norm(k)))return c;}}
+ return null;}
 
 /* ===== حفظ محلي ===== */
 let db=null;
@@ -246,17 +273,22 @@ async function openGit(i){
  }catch(e){setStatus('⚠️ فشل: '+e.message);}
 }
 
-/* ===== الفلتر ===== */
+/* ===== الفلتر (الكل / سنة / يوم / فترتين) ===== */
 function sel(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
 function modeAll(b){sel(b);dayBox.classList.remove('show');rangeBox.classList.remove('show');P={start:null,end:null};safeRender();}
+function modeYear(b){sel(b);dayBox.classList.remove('show');rangeBox.classList.remove('show');
+ const mx=maxDate();const y=mx?mx.getFullYear():2026;
+ P={start:new Date(y,0,1),end:new Date(y,11,31)};safeRender();}
 function modeDay(b){sel(b);dayBox.classList.add('show');rangeBox.classList.remove('show');
  if(!dDay.value){const mx=maxDate();if(mx)dDay.value=mx.toISOString().slice(0,10);}applyDay();}
 function applyDay(){const d=toDate(dDay.value);if(!d)return;P={start:d,end:d};safeRender();}
 function modeRange(b){sel(b);rangeBox.classList.add('show');dayBox.classList.remove('show');applyRange();}
-function applyRange(){const a=toDate(d1.value),b=toDate(d2.value);if(!a||!b)return;P={start:a,end:b};safeRender();}
-function periodLabel(){return P.start?(P.start.getTime()===P.end.getTime()?
- 'اليوم: '+P.start.toLocaleDateString('en-GB'):
- 'الفترة: '+P.start.toLocaleDateString('en-GB')+' → '+P.end.toLocaleDateString('en-GB')):'كامل المدة';}
+function applyRange(){const a=toDate(d1.value),b2=toDate(d2.value);if(!a||!b2)return;P={start:a,end:b2};safeRender();}
+function periodLabel(){
+ if(!P.start)return 'كامل المدة';
+ if(P.start.getTime()===P.end.getTime())return 'اليوم: '+P.start.toLocaleDateString('en-GB');
+ if(P.start.getMonth()===0&&P.end.getMonth()===11&&P.end.getDate()===31)return 'سنة '+P.start.getFullYear();
+ return 'الفترة: '+P.start.toLocaleDateString('en-GB')+' → '+P.end.toLocaleDateString('en-GB');}
 function filtered(t){if(!t)return[];if(t.di==null||t.di<0)return t.data;
  return t.data.filter(r=>inP(toDate(r[t.di])));}
 function maxDate(){let mx=null;const scan=t=>{if(!t||t.di<0)return;
@@ -452,26 +484,9 @@ function mutaj(){
   if(ks.some(k=>n.includes(k)))v=num(r[ni])||num(r[cri])||0;});return v;};
  return{sales:get(['41101','المبيعات']),returns:get(['41102','مردودات']),granted:get(['41103','الحسم الممنوح']),
   cogs:get(['31105','تكلفة']),netSales:get(['الموارد','صافي المبيعات'])};}
-function djByCat(code,name,wf){
- const t=R.dj;if(!t)return{rows:[],net:0};
- const H=t.headers,ri=ci(H,['رمز الحساب']),ai=ci(H,['الحساب']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
- let net=0;const rows=[];
- (wf?filtered(t):t.data).forEach(r=>{
-  const c=ri>=0?String(r[ri]||'').trim():'';
-  const an=ai>=0?String(r[ai]||''):'';
-  const hit=(code&&(c===code||c.startsWith(code+'-')||c.startsWith(code+' ')))||(!code&&name&&an.includes(name));
-  if(hit){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
- return{rows,net};}
-function s32Rows(name){
- const t=R.ledgers&&R.ledgers['32'];if(!t)return{rows:[],net:0};
- const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
- if(bi<0)return{rows:[],net:0};
- let net=0;const rows=[];
- filtered32(t).forEach(r=>{
-  if(String(r[bi]||'').includes(name)){rows.push(r);net+=(num(r[mi])||0)-(num(r[cri])||0);}});
- return{rows,net};}
-/* ✅ v29: المصاريف بالاستحقاق من صفحة 32 */
-function expBreakdown(){
+
+/* ===== المصاريف المصنفة ===== */
+function expByCats(){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
  const H=t.headers,bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']),si=ci(H,['رقم السند']);
  if(bi<0||mi<0)return[];
@@ -480,10 +495,25 @@ function expBreakdown(){
   if(ti>=0&&isSkipType(r[ti]))return;
   if(si>=0){const sn=num(r[si]);const ty=ti>=0?String(r[ti]||'').trim():'';
    if((sn==null||sn===0)&&ty==='')return;}
-  const n=String(r[bi]||'').trim()||'بدون بيان';
-  const v=(num(r[mi])||0)-(num(r[cri])||0);if(v)map[n]=(map[n]||0)+v;});
- return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([name,val])=>({code:'',name,val,src:'صفحة 32'}));}
-/* مصاريف مدفوعة بالتاريخ (للمقارنة) */
+  const v=(num(r[mi])||0)-(num(r[cri])||0);if(!v)return;
+  const c=classifyExp(r[bi]);
+  const key=c?c.code:'zzz';
+  const name=c?c.name:'غير مصنف';
+  if(!map[key])map[key]={code:key,name,val:0};
+  map[key].val+=v;});
+ return Object.values(map).sort((a,b)=>b.val-a.val);}
+function expRowsFor(code){
+ const t=R.ledgers&&R.ledgers['32'];if(!t)return[];
+ const H=t.headers,bi=ci(H,['البيان']),ti=ci(H,['النوع']),si=ci(H,['رقم السند']);
+ const out=[];
+ filtered32(t).forEach(r=>{
+  if(ti>=0&&isSkipType(r[ti]))return;
+  if(si>=0){const sn=num(r[si]);const ty=ti>=0?String(r[ti]||'').trim():'';
+   if((sn==null||sn===0)&&ty==='')return;}
+  const c=classifyExp(r[bi]);
+  const key=c?c.code:'zzz';
+  if(key===code)out.push(r);});
+ return out;}
 function expPaid(){
  const t=R.ledgers&&R.ledgers['32'];if(!t)return 0;
  const H=t.headers,mi=ci(H,['مدين']),cri=ci(H,['دائن']),ti=ci(H,['النوع']),si=ci(H,['رقم السند']);
@@ -505,7 +535,7 @@ function computeIncome(){
   const granted=(sheetValue('41103',wf)||{}).net;
   const cogs=(sheetValue('31105',wf)||{}).net;
   const earned=0;
-  const expList=expBreakdown();
+  const expList=expByCats();
   const exp=expList.reduce((s,x)=>s+(x.val||0),0);
   const netSales=(sales||0)-(ret||0)-(granted||0),costSales=cogs||0,gross=netSales-costSales,net=gross-exp;
   return{sales:sales||0,ret:ret||0,granted:granted||0,earned,cogs:costSales,exp,netSales,costSales,gross,net,expList,filtered:wf,ledger:true};
@@ -527,7 +557,7 @@ function computeIncome(){
   exp=pl?(pl.exp32??pl.expenses.reduce((s,x)=>s+x.val,0)):(m['مجموع المصاريف']||0);
  const netSales=sales-ret-granted,costSales=cogs,gross=netSales-costSales,net=gross-exp;
  return{sales,ret,granted,earned:0,cogs,exp,netSales,costSales,gross,net,
-  expList:pl?pl.expenses.map(e=>({code:e.code,name:e.name,val:e.val,src:'المتاجرة'})):[],filtered:false,ledger:false};}
+  expList:pl?pl.expenses.map(e=>({code:e.code,name:e.name,val:e.val})):[],filtered:false,ledger:false};}
 function periodEngine(){
  const pl=plVals();const en=pl?pl.expenses.map(x=>x.name):[];
  const A=acctSums(R.dj,en),B=acctSums(R.journal,en);
@@ -554,44 +584,30 @@ function acctSums(t,expNames){
   if(code.startsWith('322')||nm.includes('322')||(expNames&&expNames.some(n=>n&&n.length>3&&nm.includes(n)))){
    const clean=String(n1>=0?r[n1]??'':code).replace(/\s*-\s*\d+.*$/,'').trim()||code;
    out.expMap[clean]=(out.expMap[clean]||0)+(d-c);}});
- out.expList=Object.entries(out.expMap).map(([name,val])=>({code:'',name,val,src:'اليومية'}));
+ out.expList=Object.entries(out.expMap).map(([name,val])=>({code:'',name,val}));
  out.exp=out.expList.reduce((s,x)=>s+x.val,0);
  return out;}
 
 /* ===== مصاريف: فئة ← حركات ← تفاصيل ===== */
 function openExpMoves(code,name){
- const dj=djByCat(code,name,!!P.start);
- const s32=s32Rows(name);
- const rows=dj.rows.length?dj.rows:s32.rows;
+ const rows=expRowsFor(code);
  CUR_MOVES=rows;
- let x=`<div class="tag" style="margin-bottom:8px">المصدر: ${dj.rows.length?'دفتر اليومية':'صفحة 32 (استحقاق)'} — ${rows.length} حركة — اضغط للتفاصيل</div>
-  <table><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>الحساب</th><th>البيان</th><th>مدين</th><th>دائن</th></tr>`;
+ const t=R.ledgers&&R.ledgers['32'];const H=t?t.headers:[];
+ let x=`<div class="tag" style="margin-bottom:8px">${rows.length} حركة ضمن «${name}» — ${periodLabel()} — اضغط للتفاصيل</div>
+  <table><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>البيان</th><th>مدين</th><th>دائن</th></tr>`;
  rows.forEach((r,i)=>{
-  const H=(dj.rows.length?R.dj:R.ledgers['32']).headers;
-  const di=ci(H,['تاريخ']),ty=ci(H,['النوع']),bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']),ai=ci(H,['الحساب']);
-  x+=`<tr style="cursor:pointer" onclick="openMoveDetail(${i},${dj.rows.length?1:0})"><td>${i+1}</td><td>${r[di]??''}</td><td>${r[ty]??''}</td><td>${ai>=0?(r[ai]??''):''}</td><td>${r[bi]??''}</td><td>${fmt(num(r[mi]))}</td><td>${fmt(num(r[cri]))}</td></tr>`;});
+  const di=ci(H,['تاريخ']),ty=ci(H,['النوع']),bi=ci(H,['البيان']),mi=ci(H,['مدين']),cri=ci(H,['دائن']);
+  x+=`<tr style="cursor:pointer" onclick="openMoveDetail(${i})"><td>${i+1}</td><td>${r[di]??''}</td><td>${r[ty]??''}</td><td>${r[bi]??''}</td><td>${fmt(num(r[mi]))}</td><td>${fmt(num(r[cri]))}</td></tr>`;});
  x+='</table>';
  if(!rows.length)x='<div class="tag">لا حركات لهذه الفئة ضمن الفترة</div>';
- document.getElementById('mtitle').textContent='💠 حركات: '+name;
+ document.getElementById('mtitle').textContent='💠 فئة: '+name;
  document.getElementById('mbody').innerHTML=x;
  document.getElementById('modal').style.display='block';}
-function openMoveDetail(i,fromDj){
- const t=fromDj?R.dj:R.ledgers['32'];const H=t.headers;const r=CUR_MOVES[i];if(!r)return;
+function openMoveDetail(i){
+ const t=R.ledgers&&R.ledgers['32'];const H=t.headers;const r=CUR_MOVES[i];if(!r)return;
  let x='<table><tr><th>الحقل</th><th>القيمة</th></tr>';
  H.forEach((h,k)=>{if(r[k]!=null&&String(r[k]).trim()!=='')x+=`<tr><td>${h}</td><td>${typeof r[k]==='number'?fmt(r[k]):r[k]}</td></tr>`;});
  x+='</table>';
- if(fromDj){
-  const s32=R.ledgers&&R.ledgers['32'];
-  if(s32){
-   const ty=String(r[ci(H,['النوع'])]||'');const mN=ty.match(/-\s*(\d+)\s*$/);
-   const vn=mN?num(mN[1]):(num(r[ci(H,['الرقم'])])||num(r[ci(H,['#'])]));
-   if(vn!=null){
-    const H32=s32.headers,si32=ci(H32,['رقم السند']);
-    const kids=s32.data.filter(rr=>num(rr[si32])===vn);
-    if(kids.length){
-     x+=`<br><div class="tag">بنود السند ${vn} من صفحة 32:</div><table><tr>`+H32.slice(0,10).map(h=>`<th>${h}</th>`).join('')+'</tr>';
-     kids.forEach(rr=>{x+='<tr>'+H32.slice(0,10).map(h=>{const v=rr[H32.indexOf(h)];return `<td>${typeof v==='number'?fmt(v):(v??'')}</td>`;}).join('')+'</tr>';});
-     x+='</table>';}}}}
  document.getElementById('mtitle').textContent='🧾 تفاصيل الحركة '+(i+1);
  document.getElementById('mbody').innerHTML=x;
  document.getElementById('modal').style.display='block';}
@@ -609,7 +625,7 @@ function render(){
    <span class="chip">المصاريف<b>${fmt(ic.exp)}</b></span>
    ${ledCount?`<span class="chip">صفحات الحسابات<b>${ledCount}</b></span>`:''}
   </div></div>`;
- h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'كامل'}${ic.ledger?' · استحقاق':''}</span></h2>`;
+ h+=`<div class="card"><h2>📊 قائمة الدخل <span class="tag">${ic.filtered?'للفترة':'كامل'}${ic.ledger?' · فئات سراج':''}</span></h2>`;
  h+=row('المبيعات',fmt(ic.sales),'',1);
  h+=row('مردودات المبيعات',fmt(ic.ret),'',2);
  h+=row('الحسم الممنوح',fmt(ic.granted),'',3);
@@ -620,13 +636,13 @@ function render(){
  h+=row('مجمل الدخل',fmt(ic.gross),'sub sub-g',8);
  h+=row('إيرادات مختلفة','0','',9);
  const exps=ic.expList||[];
- h+=`<details><summary>📋 المصاريف (${exps.length} فئة) — بالاستحقاق — فئة ← حركات ← تفاصيل</summary>`;
+ h+=`<details><summary>📋 المصاريف (${exps.length} فئة سراج) — فئة ← حركات ← تفاصيل</summary>`;
  exps.forEach((x,i)=>{
   const nm=x.name??x[0],vl=x.val??x[1];
   h+=`<div class="srow click" onclick="openExpMoves('${(x.code||'').replace(/'/g,"\\'")}','${String(nm).replace(/'/g,"\\'")}')">
    <span><span class="n">${i+10}</span>${nm}</span><b class="v">${fmt(vl)}</b></div>`;});
  h+=`</details>`;
- h+=row('مجموع المصاريف (استحقاق)',fmt(ic.exp),'sub sub-p',exps.length+10);
+ h+=row('مجموع المصاريف',fmt(ic.exp),'sub sub-p',exps.length+10);
  h+=row('صافي الدخل',fmt(ic.net),'sub sub-g','★');
  h+=`<div class="ratios">
    <div class="ratio"><b>${pct(ic.gross/(ic.netSales||1))}</b><span>مجمل الدخل / صافي المبيعات</span></div>
