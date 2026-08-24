@@ -5,349 +5,297 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الميزان — قائمة الدخل</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg:#F7F3EC; --bg2:#EFE9DD; --card:#FFFFFF; --card2:#FBF8F2;
-  --ink:#1A1814; --ink2:#5C5850; --ink3:#9A958A; --ink4:#C8C2B4;
-  --accent:#2C4A3E; --accent2:#3E6354; --gold:#B8935A; --gold2:#D4B17A; --gold-soft:#E8D9B8;
-  --red:#B84C3A; --red-soft:#F3DCD5; --green:#3A7A5A; --green-soft:#DCEEE3;
-  --line:#E8E2D5; --line2:#F0EBDF;
-  --sh-sm:0 1px 2px rgba(28,24,18,.04),0 2px 8px rgba(28,24,18,.04);
-  --sh-md:0 4px 14px rgba(28,24,18,.06),0 2px 4px rgba(28,24,18,.04);
-  --sh-lg:0 22px 50px rgba(28,24,18,.10),0 6px 18px rgba(28,24,18,.05);
+  --bg:#0A1310; --bg2:#0D1814; --card:#0F1D17; --card2:#122319;
+  --line:rgba(233,200,124,.12); --line2:rgba(233,200,124,.06);
+  --ink:#EDE8DA; --ink2:#A9B8A6; --ink3:#6F8172;
+  --gold:#D9A94E; --gold2:#F0CE84; --mint:#4ED598; --red:#EF6E55; --teal:#54C0AE;
+  --sh:0 14px 34px rgba(0,0,0,.35);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:'Tajawal',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
-.num{font-family:'Fraunces','Times New Roman',serif;font-feature-settings:"lnum","tnum";font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-::selection{background:var(--gold-soft);color:var(--accent)}
+body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden;font-size:14.5px;line-height:1.6}
+h1,h2,h3,.chg{font-family:'Changa','IBM Plex Sans Arabic',sans-serif}
+::selection{background:rgba(217,169,78,.35)}
 
-/* زخارف خفيفة */
-.deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.deco::before{content:'';position:absolute;top:-20%;right:-10%;width:60%;height:60%;background:radial-gradient(circle,rgba(184,147,90,.08),transparent 60%);filter:blur(40px)}
-.deco::after{content:'';position:absolute;bottom:-20%;left:-10%;width:55%;height:55%;background:radial-gradient(circle,rgba(44,74,62,.06),transparent 60%);filter:blur(40px)}
+/* خلفية هادئة متعددة الطبقات */
+.bgfx{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-rows{background:repeating-linear-gradient(to bottom,transparent 0 37px,rgba(233,200,124,.028) 37px 38px)}
+.bg-glow{background:
+ radial-gradient(640px 380px at 86% -8%,rgba(217,169,78,.12),transparent 70%),
+ radial-gradient(720px 460px at 6% 110%,rgba(84,192,174,.08),transparent 70%);
+ animation:breathe 9s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.75}to{opacity:1}}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px 56px}
 
-.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 28px}
+/* الترويسة */
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:22px 0 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:13px}
+.mark{width:48px;height:48px;border-radius:11px;background:linear-gradient(160deg,#183427,#0e2018);border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--sh)}
+.brand h1{font-size:25px;font-weight:800;color:var(--gold2);line-height:1.15}
+.brand small{display:block;font-size:12px;color:var(--ink2);font-weight:400}
+.hbtns{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border:1px solid var(--line);border-radius:99px;font-size:12px;color:var(--ink2);background:rgba(15,29,23,.6)}
+.chip b{color:var(--gold2);font-family:'Changa';font-size:13px}
+.chip.live{border-color:rgba(78,213,152,.4);color:var(--mint)}
 
-/* ============ الهيدر ============ */
-.top{padding:34px 0 24px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:14px}
-.brand .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);display:grid;place-items:center;box-shadow:var(--sh-md)}
-.brand .logo svg{width:26px;height:26px;stroke:var(--gold-soft);fill:none;stroke-width:1.8}
-.brand h1{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--accent);letter-spacing:-.02em}
-.brand h1 em{font-style:italic;color:var(--gold);font-weight:500}
-.brand small{display:block;font-size:12px;color:var(--ink3);font-weight:400;letter-spacing:.04em;margin-top:1px}
-.top-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:var(--card);border:1px solid var(--line);border-radius:99px;font-size:12.5px;color:var(--ink2);box-shadow:var(--sh-sm)}
-.status-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ink4);transition:.3s}
-.status-pill.ok .dot{background:var(--green);box-shadow:0 0 0 3px rgba(58,122,90,.15)}
-.status-pill.err .dot{background:var(--red)}
-.status-pill.loading .dot{background:var(--gold);animation:pulse 1.2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+/* أزرار وحقول */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:9px;border:1px solid transparent;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn.gold{background:linear-gradient(180deg,#EFCB7E,#D8A63F);color:#241A04;box-shadow:0 8px 20px rgba(216,166,63,.25)}
+.btn.gold:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.btn.gold:disabled{opacity:.55;transform:none;cursor:wait}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.mini{padding:6px 13px;font-size:12px;border-radius:7px}
+.btn:active{transform:scale(.98)}
+input,select{font-family:inherit;font-size:13px;background:#0B1712;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 12px;transition:.2s;outline:none}
+input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,169,78,.14)}
+input[type=date],input[type=month]{direction:ltr;text-align:right}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh)}
 
-/* ============ زر التحديث ============ */
-.refresh-section{margin:36px 0 44px;text-align:center}
-.refresh-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:40px 34px;box-shadow:var(--sh-md);max-width:640px;margin:0 auto;position:relative;overflow:hidden}
-.refresh-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(184,147,90,.04),transparent 60%);pointer-events:none}
-.refresh-ico{width:68px;height:68px;margin:0 auto 18px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 10px 28px rgba(44,74,62,.22);transition:.4s}
-.refresh-ico svg{width:30px;height:30px;stroke:var(--gold-soft);fill:none;stroke-width:1.8;transition:.6s}
-.refresh-card:hover .refresh-ico svg{transform:rotate(90deg)}
-.refresh-card h2{font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:var(--accent);margin-bottom:8px;letter-spacing:-.01em}
-.refresh-card h2 em{font-style:italic;color:var(--gold)}
-.refresh-card p{color:var(--ink2);font-size:14.5px;max-width:440px;margin:0 auto 26px;line-height:1.85}
-.refresh-btn{display:inline-flex;align-items:center;gap:11px;padding:14px 34px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(44,74,62,.28);transition:.25s;letter-spacing:.01em}
-.refresh-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(44,74,62,.35)}
-.refresh-btn:active{transform:translateY(0)}
-.refresh-btn:disabled{opacity:.6;cursor:wait;transform:none}
-.refresh-btn .sp{width:18px;height:18px;border:2px solid rgba(251,248,242,.3);border-top-color:#FBF8F2;border-radius:50%;animation:spin .8s linear infinite;display:none}
-.refresh-btn.loading .sp{display:block}
-.refresh-btn.loading .rb-txt{opacity:.8}
-@keyframes spin{to{transform:rotate(360deg)}}
-.refresh-meta{margin-top:18px;font-size:12.5px;color:var(--ink3)}
-.refresh-meta b{color:var(--accent);font-weight:500}
-.files-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
-.fch{font-size:11.5px;padding:5px 12px;border-radius:99px;background:var(--bg2);color:var(--ink2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;transition:.2s}
-.fch.loaded{background:var(--green-soft);color:var(--green);border-color:transparent}
-.fch.fail{background:var(--red-soft);color:var(--red);border-color:transparent}
-.fch .fi{width:6px;height:6px;border-radius:50%;background:currentColor}
+/* لوحة ربط GitHub */
+#ghPanel{display:none;margin:18px 0 0;padding:20px 22px}
+#ghPanel.open{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-8px)}}
+#ghPanel h2{font-size:17px;color:var(--gold2);margin-bottom:4px}
+#ghPanel .hint{font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.9}
+.ghgrid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
+.ghgrid label{font-size:11px;color:var(--ink3);display:flex;flex-direction:column;gap:5px}
+.steps{margin-top:14px;font-size:12px;color:var(--ink2);border-top:1px dashed var(--line);padding-top:12px;line-height:2}
+.steps b{color:var(--gold2)}
 
-/* ============ قسم النتائج ============ */
-.results{opacity:0;transform:translateY(20px);transition:.7s ease;display:none}
-.results.on{display:block;opacity:1;transform:none}
+/* شريط الحالة */
+#status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 0;min-height:34px}
+.schip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:5px 12px;border-radius:99px;border:1px solid var(--line);color:var(--ink3);background:rgba(15,29,23,.5)}
+.schip.on{border-color:rgba(78,213,152,.35);color:var(--ink2)}
+.schip.on b{color:var(--mint);font-family:'Changa';font-size:12.5px}
+.schip.on::before{content:'✔';color:var(--mint);font-size:10px}
+#loadMsg{font-size:12px;color:var(--teal)}
 
-/* ============ الفلترة ============ */
-.filt{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 22px;box-shadow:var(--sh-sm);margin-bottom:32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.seg{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:4px;gap:2px}
-.seg button{border:none;background:transparent;color:var(--ink2);font-family:inherit;font-size:13.5px;font-weight:500;padding:9px 18px;border-radius:99px;cursor:pointer;transition:.25s;letter-spacing:.01em}
-.seg button.on{background:var(--card);color:var(--accent);box-shadow:var(--sh-sm);font-weight:700}
-.filt input[type=date]{font-family:inherit;font-size:13.5px;padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--ink);outline:none;transition:.2s;direction:ltr;text-align:right}
-.filt input[type=date]:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,147,90,.15)}
-.filt .sep{color:var(--ink4);font-size:14px}
-.filt-meta{margin-inline-start:auto;font-size:12.5px;color:var(--ink3);font-style:italic;font-family:'Fraunces',serif}
-.filt-meta b{color:var(--accent);font-weight:500;font-style:normal}
-.filt-actions{display:flex;gap:8px}
-.gh-btn{border:1px solid var(--line);background:var(--card2);color:var(--ink2);font-family:inherit;font-size:12.5px;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
-.gh-btn:hover{border-color:var(--gold);color:var(--accent)}
+/* شريط المعادلة المتحرك */
+.ticker{margin:16px 0 0;border:1px solid var(--line);border-radius:10px;background:rgba(15,29,23,.5);overflow:hidden;position:relative}
+.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none}
+.ticker::before{right:0;background:linear-gradient(to left,var(--card),transparent)}
+.ticker::after{left:0;background:linear-gradient(to right,var(--card),transparent)}
+.tkin{display:inline-flex;white-space:nowrap;animation:tk 44s linear infinite;padding:7px 0;direction:ltr}
+.ticker:hover .tkin{animation-play-state:paused}
+@keyframes tk{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.tkg{display:inline-flex;align-items:center;gap:24px;padding:0 12px}
+.tki{display:inline-flex;align-items:center;gap:8px;direction:rtl;font-size:12px;color:var(--ink3)}
+.tki b{color:var(--ink2);font-weight:500}
+.tki span{font-family:'Changa';font-weight:700;font-size:13.5px;direction:ltr}
+.tksep{color:var(--gold);opacity:.5;font-size:10px}
 
-/* ============ KPI ============ */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:36px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--sh-sm);transition:.3s;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;inset-inline-end:0;width:3px;height:100%;background:var(--ac,var(--gold));border-radius:0 3px 3px 0}
-.kpi:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
-.kpi-lbl{font-size:12px;color:var(--ink3);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
-.kpi-val{font-family:'Fraunces',serif;font-size:28px;font-weight:500;color:var(--ink);line-height:1.05;letter-spacing:-.02em}
-.kpi-val small{font-size:13px;color:var(--ink3);font-weight:400;margin-inline-start:4px}
-.kpi-sub{font-size:11.5px;color:var(--ink3);margin-top:6px}
+/* شريط الفلترة اللاصق */
+.filterbar{position:sticky;top:0;z-index:40;background:rgba(10,19,16,.93);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0;box-shadow:var(--sh)}
+.seg{display:flex;background:#0B1712;border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:none;background:transparent;color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 15px;border-radius:7px;cursor:pointer;transition:.2s}
+.seg button.on{background:linear-gradient(180deg,#EFCB7E,#D8A63F);color:#241A04;font-weight:700}
+.finputs{display:flex;gap:9px;align-items:center}
+.finputs span{font-size:12px;color:var(--ink3)}
+.period-lbl{font-size:12px;color:var(--teal);border:1px dashed rgba(84,192,174,.35);padding:6px 13px;border-radius:8px}
+.fspace{flex:1}
 
-/* ============ قائمة الدخل ============ */
-.layout{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:start}
-@media(max-width:980px){.layout{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-md);overflow:hidden}
-.card-h{padding:24px 28px 18px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
-.card-h .tit{display:flex;align-items:center;gap:12px}
-.card-h .bar{width:4px;height:26px;border-radius:3px;background:linear-gradient(var(--gold),#8a6836)}
-.card-h h2{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:var(--accent);letter-spacing:-.01em}
-.card-h h2 em{font-style:italic;color:var(--gold);font-weight:400}
-.card-h .tag{font-size:11.5px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
+/* مؤشرات */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-inline-start:3px solid var(--ac,var(--gold));transition:.25s}
+.kpi:hover{transform:translateY(-4px);box-shadow:var(--sh)}
+.k-lbl{font-size:11.5px;color:var(--ink2);margin-bottom:5px}
+.k-val{font-family:'Changa';font-weight:800;font-size:22px;line-height:1.2;direction:ltr;text-align:right}
+.k-sub{font-size:10.5px;color:var(--ink3);margin-top:3px}
 
-/* صفوف البيان */
-.stmt{padding:6px 0}
-.srow{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line2);transition:.2s;cursor:default;position:relative}
-.srow[data-g]{cursor:pointer}
-.srow[data-g]:hover{background:var(--card2)}
-.srow[data-g]:hover .arr{opacity:1;transform:translateX(-2px)}
-.srow:last-child{border-bottom:none}
-.srow .mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;font-size:18px;flex:none;transition:.25s}
-.mark.plus{background:var(--green-soft);color:var(--green)}
-.mark.minus{background:var(--red-soft);color:var(--red)}
-.mark.eq{background:var(--gold-soft);color:var(--gold)}
-.mark.sum{background:rgba(44,74,62,.08);color:var(--accent)}
-.srow .tx{flex:1;min-width:0}
-.srow .tx b{display:block;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.005em}
-.srow .tx small{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px}
-.srow .cnt{font-size:11px;color:var(--ink3);background:var(--bg2);padding:3px 10px;border-radius:99px;font-weight:500;white-space:nowrap}
-.srow .amt{font-family:'Fraunces',serif;font-size:20px;font-weight:500;letter-spacing:-.015em;min-width:120px;text-align:left;flex:none}
-.amt.red{color:var(--red)} .amt.green{color:var(--green)} .amt.gold{color:var(--gold)} .amt.accent{color:var(--accent)}
-.arr{margin-inline-start:4px;color:var(--ink4);transition:.25s;opacity:0}
-.res{background:linear-gradient(to left,rgba(184,147,90,.07),transparent 70%);border-inline-start:3px solid var(--gold)}
-.res .tx b{font-family:'Fraunces',serif;font-size:16.5px;font-weight:500;color:var(--accent)}
-.res .amt{font-size:22px;color:var(--accent);font-weight:500}
+/* الشبكة الرئيسية */
+.layout{display:grid;grid-template-columns:1.25fr .92fr;gap:20px;align-items:start}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:16px 22px;border-bottom:1px solid var(--line2)}
+.card-head h2{font-size:19px;font-weight:700;display:flex;align-items:center;gap:9px}
+.bar{width:5px;height:21px;border-radius:3px;background:linear-gradient(var(--gold),#8a651f);display:inline-block}
+.kick{font-size:11.5px;color:var(--ink3)}
 
-/* قسم المصاريف القابل للفتح */
-.exph{cursor:pointer;user-select:none}
-.exph .chev{margin-inline-start:4px;transition:.3s;color:var(--ink3);font-size:12px}
-.exp.open>.exph .chev{transform:rotate(180deg);color:var(--gold)}
-.acc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
-.exp.open>.acc{grid-template-rows:1fr}
+/* صفوف القائمة */
+.srow{display:flex;align-items:center;gap:12px;padding:13px 22px;border-bottom:1px solid var(--line2);transition:.2s;position:relative}
+.srow[data-act]{cursor:pointer}
+.srow[data-act]:hover{background:rgba(217,169,78,.05)}
+.srow[data-act]:hover .go{opacity:1}
+.go{position:absolute;left:12px;top:50%;translate:0 -50%;opacity:0;transition:.2s;color:var(--gold);font-size:13px}
+.sig{width:27px;height:27px;flex:none;border-radius:8px;display:grid;place-items:center;font-family:'Changa';font-weight:800;font-size:15px}
+.sig.plus{background:rgba(78,213,152,.12);color:var(--mint)}
+.sig.minus{background:rgba(239,110,85,.12);color:var(--red)}
+.sig.eq{background:rgba(217,169,78,.13);color:var(--gold)}
+.tx{display:flex;flex-direction:column;gap:1px}
+.tx b{font-size:14.5px;font-weight:600}
+.tx small{font-size:10.5px;color:var(--ink3)}
+.cnt{margin-inline-start:auto;font-size:10.5px;color:var(--ink3);background:rgba(255,255,255,.04);padding:3px 10px;border-radius:99px;white-space:nowrap}
+.amt{font-family:'Changa';font-weight:700;font-size:16.5px;min-width:130px;text-align:left;direction:ltr;font-variant-numeric:tabular-nums}
+.amt.red{color:var(--red)} .amt.green{color:var(--mint)} .amt.gold{color:var(--gold2)} .amt.teal{color:var(--teal)}
+.res{background:linear-gradient(to left,rgba(217,169,78,.08),transparent 65%);border-inline-start:3px solid var(--gold)}
+.res .tx b{font-family:'Changa';font-size:15.5px}
+.res .amt{font-size:20px;color:var(--gold2)}
+.final-row{padding:22px;background:radial-gradient(480px 120px at 18% 50%,rgba(217,169,78,.11),transparent);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.f-lbl{font-family:'Changa';font-size:23px;font-weight:800}
+.f-lbl small{display:block;font-family:'IBM Plex Sans Arabic';font-size:11px;color:var(--ink3);font-weight:400}
+.f-amt{font-family:'Changa';font-size:34px;font-weight:800;color:var(--gold2);direction:ltr;text-shadow:0 0 28px rgba(217,169,78,.28)}
+.final-row.neg .f-amt{color:var(--red)}
+.stackbar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:14px 22px 12px;background:rgba(255,255,255,.05)}
+.stackbar i{display:block;height:100%;transition:width .6s}
+.stack-legend{display:flex;gap:14px;flex-wrap:wrap;padding:0 22px 18px;font-size:11px;color:var(--ink2)}
+.stack-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-inline-end:5px;vertical-align:middle}
+
+/* المصاريف المتدرجة */
+.exp-head .chev,.crow .chev{margin-inline-start:4px;transition:.3s;color:var(--ink3);font-size:11px}
+.open>.exp-head .chev,.cat.open>.crow .chev{transform:rotate(180deg);color:var(--gold)}
+.acc{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s ease}
+.open>.acc{grid-template-rows:1fr}
 .accin{overflow:hidden;min-height:0}
-.catlist{background:var(--card2);padding:8px 0}
-.crow{padding:11px 28px 11px 46px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;border-bottom:1px solid var(--line2);font-size:14px}
-.crow:last-child{border-bottom:none}
-.crow:hover{background:rgba(184,147,90,.06)}
-.crow .cdot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none;opacity:.6}
-.crow .cname{flex:1;color:var(--ink);font-weight:500}
-.crow .cnt{font-size:10.5px}
-.crow .amt{font-size:15px;color:var(--red);font-weight:500}
-.crow .chev{font-size:10px;color:var(--ink4);transition:.3s}
-.cat.open>.crow .chev{transform:rotate(180deg);color:var(--gold)}
-.cat.open>.crow .cdot{opacity:1;background:var(--accent)}
-.irow{display:flex;align-items:center;gap:14px;padding:10px 28px 10px 64px;font-size:13px;color:var(--ink2);border-bottom:1px dashed var(--line2);background:var(--card)}
-.irow:last-child{border-bottom:1px solid var(--line2)}
-.irow .idate{font-family:'Fraunces',serif;font-size:12.5px;color:var(--ink3);min-width:88px}
-.irow .idesc{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
-.irow .amt{font-size:14px;min-width:100px;color:var(--red);font-weight:500}
-.iempty{padding:18px 28px;text-align:center;font-size:12.5px;color:var(--ink3);font-style:italic}
+.crow{padding:9px 22px 9px 34px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.2s;border-bottom:1px solid rgba(233,200,124,.04);font-size:13px}
+.crow:hover{background:rgba(84,192,174,.05)}
+.cdot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none}
+.cname{font-weight:500}
+.crow .cnt{font-size:10px}
+.crow .amt{font-size:13.5px}
+.irow{display:flex;align-items:center;gap:10px;padding:7px 22px 7px 56px;font-size:12px;color:var(--ink2);border-bottom:1px dashed rgba(233,200,124,.05)}
+.irow:hover{background:rgba(217,169,78,.04)}
+.idate{font-size:11px;color:var(--ink3);min-width:76px}
+.idesc{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.isrc{font-size:9.5px;color:var(--ink3);border:1px solid var(--line2);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.irow .amt{font-size:12.5px;min-width:95px}
 
-/* الصافي النهائي */
-.final{padding:30px 28px;background:linear-gradient(135deg,var(--accent) 0%,#1e3429 100%);color:#FBF8F2;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;position:relative;overflow:hidden}
-.final::before{content:'';position:absolute;top:-50%;right:-10%;width:60%;height:200%;background:radial-gradient(circle,rgba(184,147,90,.15),transparent 60%);pointer-events:none}
-.final .flbl{position:relative}
-.final .flbl small{display:block;font-size:11px;color:rgba(251,248,242,.6);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
-.final .flbl b{font-family:'Fraunces',serif;font-size:22px;font-weight:500;letter-spacing:-.01em;color:var(--gold-soft)}
-.final .famt{position:relative;font-family:'Fraunces',serif;font-size:40px;font-weight:500;color:#FBF8F2;letter-spacing:-.02em;text-align:left;direction:ltr}
-.final .famt small{font-size:14px;color:rgba(251,248,242,.7);font-weight:400;margin-inline-start:4px}
-.final.neg{background:linear-gradient(135deg,#6b2a20 0%,#3e1a14 100%)}
-.final.neg .famt{color:#F3DCD5}
-.final.neg .flbl b{color:#F3DCD5}
+/* لوحة التفاصيل */
+.side{position:sticky;top:82px}
+.dtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.dtable th{font-size:11px;color:var(--gold);font-weight:500;text-align:right;padding:9px 14px;border-bottom:1px solid var(--line);background:rgba(217,169,78,.05)}
+.dtable td{padding:8px 14px;border-bottom:1px solid var(--line2);color:var(--ink2)}
+.dtable tr:hover td{background:rgba(217,169,78,.04);color:var(--ink)}
+.dtable td.num{font-family:'Changa';font-weight:600;direction:ltr;text-align:left;color:var(--ink)}
+.dtable td.num.neg{color:var(--red)}
+.dempty{padding:38px 22px;text-align:center;color:var(--ink3);font-size:13px;line-height:2.2}
+.dempty .big{font-size:30px;display:block;margin-bottom:6px;opacity:.5}
+.dsum{display:flex;justify-content:space-between;padding:10px 14px;font-size:12.5px;background:rgba(217,169,78,.06);border-top:1px solid var(--line)}
+.dsum b{font-family:'Changa';color:var(--gold2)}
 
-/* شريط النسب */
-.stackbar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:18px 28px 14px;background:var(--bg2)}
-.stackbar i{display:block;height:100%;transition:width .6s ease}
-.stack-legend{display:flex;gap:18px;flex-wrap:wrap;padding:0 28px 22px;font-size:11.5px;color:var(--ink2)}
-.stack-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-inline-end:6px;vertical-align:middle}
-
-/* ============ قسم التفاصيل ============ */
-.dcard{position:sticky;top:24px}
-.dempty{padding:60px 30px;text-align:center;color:var(--ink3)}
-.dempty .em-ico{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--bg2);display:grid;place-items:center}
-.dempty .em-ico svg{width:28px;height:28px;stroke:var(--ink4);fill:none;stroke-width:1.5}
-.dempty h3{font-family:'Fraunces',serif;font-size:17px;font-weight:500;color:var(--ink2);margin-bottom:6px}
-.dempty p{font-size:13px;line-height:1.8}
-
-.dtable{width:100%;border-collapse:collapse;font-size:13px}
-.dtable thead th{font-family:'Fraunces',serif;font-size:11.5px;color:var(--ink3);font-weight:500;text-align:right;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card2);letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0}
-.dtable tbody td{padding:11px 16px;border-bottom:1px solid var(--line2);color:var(--ink);vertical-align:middle}
-.dtable tbody tr:hover td{background:var(--card2)}
-.dtable td.n{font-family:'Fraunces',serif;font-weight:500;text-align:left;direction:ltr;color:var(--accent);font-size:14px}
-.dtable td.n.neg{color:var(--red)}
-.dtable td.d{font-family:'Fraunces',serif;font-size:12.5px;color:var(--ink3);direction:ltr;text-align:left;min-width:90px}
-.dtable td.ds{color:var(--ink2);font-size:12.5px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dtable-wrap{max-height:520px;overflow:auto}
-.dsum{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--card2);border-top:1px solid var(--line);font-size:14px}
-.dsum b{font-family:'Fraunces',serif;font-size:18px;color:var(--accent);font-weight:600}
-
-/* التوست */
-.toasts{position:fixed;bottom:24px;inset-inline-start:24px;z-index:99;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.toast{background:var(--card);border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:12px;padding:13px 18px;font-size:13.5px;box-shadow:var(--sh-lg);animation:tin .35s ease;max-width:360px;display:flex;gap:10px;align-items:center;pointer-events:auto}
-.toast.err{border-inline-start-color:var(--red)}
-.toast.ok{border-inline-start-color:var(--green)}
-@keyframes tin{from{transform:translateY(16px);opacity:0}}
-
-footer{margin-top:60px;padding:24px 0;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--ink3);font-family:'Fraunces',serif;font-style:italic;letter-spacing:.01em}
-
-@media(max-width:640px){
-  .wrap{padding:0 16px}
-  .brand h1{font-size:21px}
-  .refresh-card{padding:28px 20px}
-  .refresh-card h2{font-size:21px}
-  .srow{padding:13px 18px;gap:10px}
-  .srow .amt{font-size:16px;min-width:90px}
-  .final .famt{font-size:30px}
-  .card-h{padding:18px 20px 14px}
-  .kpis{grid-template-columns:repeat(2,1fr);gap:10px}
-  .kpi-val{font-size:22px}
-}
-
+footer{margin-top:46px;padding:18px 0 4px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--ink3)}
+#toasts{position:fixed;bottom:22px;left:22px;z-index:99;display:flex;flex-direction:column;gap:9px}
+.toast{background:var(--card2);border:1px solid var(--gold);border-radius:10px;padding:12px 18px;font-size:13px;box-shadow:var(--sh);animation:tin .35s ease;max-width:340px}
+.toast.err{border-color:var(--red)} .toast.ok{border-color:var(--mint)}
+@keyframes tin{from{transform:translateY(14px);opacity:0}}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{position:static}.ghgrid{grid-template-columns:1fr 1fr}.wrap{padding-inline:14px}}
 @media print{
-  .refresh-section,.filt,.toasts,.deco,.dcard{display:none!important}
-  body{background:#fff}
-  .card{box-shadow:none;border:1px solid #ccc}
+  header,#ghPanel,#status,.filterbar,.side,.ticker,footer,#toasts,.noprint{display:none!important}
+  body{background:#fff;color:#111}.card{background:#fff;border-color:#aaa;box-shadow:none}
+  .tx b,.amt,.res .amt,.f-lbl,.f-amt,.card-head h2,.k-val{color:#111!important}
 }
 </style>
 </head>
 <body>
-
-<div class="deco"></div>
+<div class="bgfx bg-rows"></div>
+<div class="bgfx bg-glow"></div>
 
 <div class="wrap">
 
-  <!-- ============ الهيدر ============ -->
-  <header class="top">
+  <header>
     <div class="brand">
-      <div class="logo">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 21h12"/><path d="M12 5l-6 2m6-2l6 2"/><path d="M6 7l-3 6a3 3 0 0 0 6 0L6 7zm12 0l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg>
+      <div class="mark">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D9A94E" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v18M7 21h10M12 5l-6 2m6-2l6 2"/><path d="M6 7l-3 6a3.2 3.2 0 0 0 6 0L6 7zm12 0l-3 6a3.2 3.2 0 0 0 6 0l-3-6z"/></svg>
       </div>
-      <div>
-        <h1>الميزان <em>·</em> قائمة الدخل</h1>
-        <small>نظام قراءة وعرض — بيانات مؤتمتة من الملفات</small>
-      </div>
+      <div><h1>الميزان</h1><small>قائمة الدخل — قراءة مباشرة من ملفاتك على GitHub</small></div>
     </div>
-    <div class="top-right">
-      <span class="status-pill" id="statPill"><span class="dot"></span><span id="statTxt">في انتظار التحميل</span></span>
+    <div class="hbtns">
+      <span class="chip" id="lastUpd">لم يتم التحديث بعد</span>
+      <button class="btn ghost" id="ghBtn">⚙ ربط المستودع</button>
+      <button class="btn gold" id="updBtn">⟳ تحديث البيانات</button>
     </div>
   </header>
 
-  <!-- ============ قسم التحديث ============ -->
-  <section class="refresh-section">
-    <div class="refresh-card">
-      <div class="refresh-ico">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-      </div>
-      <h2>تحديث <em>البيانات</em></h2>
-      <p>يقرأ النظام ملفات الإكسل المحمّلة مسبقاً (المبيعات، المردودات، الحسم الممنوح، تكلفة البضاعة المباعة، الإيرادات، المصاريف) ويعرض قائمة الدخل مفصّلة.</p>
-      <button class="refresh-btn" id="refreshBtn">
-        <span class="sp"></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-        <span class="rb-txt">تحديث البيانات</span>
-      </button>
-      <div class="refresh-meta" id="refreshMeta">لم يتم تحميل أي بيانات بعد</div>
-      <div class="files-chips" id="filesChips"></div>
+  <!-- لوحة ربط GitHub -->
+  <div class="card" id="ghPanel">
+    <h2>⚙ ربط مستودع GitHub</h2>
+    <p class="hint">ضع ملفات الإكسل داخل مستودعك على GitHub (عام، أو خاص مع رمز وصول) وسيقرأها النظام تلقائياً عند الضغط على «تحديث البيانات». الأسماء المتعرَّف عليها: <b style="color:var(--gold2)">المبيعات، مردودات المبيعات، الحسم الممنوح، تكلفة البضاعة المباعة (مدين/دائن)، إيرادات مختلفة، المصاريف</b>.</p>
+    <div class="ghgrid">
+      <label>رابط المستودع أو اسمه
+        <input type="text" id="ghRepo" placeholder="example: username/my-data  أو  https://github.com/username/my-data" style="direction:ltr;text-align:left">
+      </label>
+      <label>الفرع (اختياري)
+        <input type="text" id="ghBranch" placeholder="main" style="direction:ltr;text-align:left">
+      </label>
+      <label>رمز وصول (اختياري — للخاص)
+        <input type="password" id="ghToken" placeholder="token" style="direction:ltr;text-align:left">
+      </label>
+      <button class="btn gold" id="ghSave">حفظ</button>
     </div>
-  </section>
+    <div class="steps">
+      <b>خطوات سريعة:</b> ① أنشئ مستودعاً عاماً على GitHub &nbsp;② ارفع ملفات الإكسل بأسماء أوراقها (المبيعات.xlsx …) &nbsp;③ الصق الرابط هنا واحفظ &nbsp;④ اضغط <b>⟳ تحديث البيانات</b> في أي وقت لجلب أحدث نسخة.
+    </div>
+  </div>
 
-  <!-- ============ النتائج ============ -->
-  <section class="results" id="results">
+  <!-- شريط الحالة -->
+  <div id="status">
+    <span id="loadMsg"></span>
+  </div>
 
-    <!-- الفلترة -->
-    <div class="filt">
-      <div class="seg" id="seg">
-        <button data-m="all" class="on">كل الفترة</button>
-        <button data-m="day">يوم محدد</button>
-        <button data-m="range">بين فترتين</button>
-      </div>
+  <!-- شريط المعادلة -->
+  <div class="ticker" id="tickerBox" style="display:none"><div class="tkin"><div class="tkg" id="tk1"></div><div class="tkg" id="tk2"></div></div></div>
+
+  <!-- الفلترة -->
+  <div class="filterbar reveal">
+    <div class="seg" id="seg">
+      <button data-m="all" class="on">كل الفترة</button>
+      <button data-m="day">يوم</button>
+      <button data-m="month">شهر</button>
+      <button data-m="range">بين فترتين</button>
+    </div>
+    <div class="finputs">
       <input type="date" id="dInp" hidden>
-      <input type="date" id="fInp" hidden>
-      <span class="sep" id="fSep" hidden>—</span>
-      <input type="date" id="tInp" hidden>
-      <span class="filt-meta" id="filtMeta"></span>
-      <div class="filt-actions">
-        <button class="gh-btn" id="printBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-          طباعة
-        </button>
-      </div>
+      <input type="month" id="mInp" hidden>
+      <input type="date" id="fInp" hidden><span id="arrow" hidden>←</span><input type="date" id="tInp" hidden>
     </div>
+    <span class="period-lbl" id="periodLbl">لا توجد بيانات بعد — اربط المستودع ثم اضغط تحديث</span>
+    <div class="fspace"></div>
+    <button class="btn ghost mini noprint" id="printBtn">🖨 طباعة القائمة</button>
+  </div>
 
-    <!-- KPIs -->
-    <div class="kpis" id="kpis"></div>
+  <section class="kpis reveal" id="kpis"></section>
 
-    <!-- قائمة الدخل + التفاصيل -->
-    <div class="layout">
-      <div class="card">
-        <div class="card-h">
-          <div class="tit"><span class="bar"></span><h2>قائمة <em>الدخل</em></h2></div>
-          <span class="tag" id="stmtTag"></span>
-        </div>
-        <div class="stmt" id="stmt"></div>
+  <section class="layout">
+    <div class="card reveal">
+      <div class="card-head">
+        <h2><span class="bar"></span> قائمة الدخل</h2>
+        <span class="kick" id="stmtPeriod"></span>
       </div>
-
-      <div class="card dcard">
-        <div class="card-h">
-          <div class="tit"><span class="bar"></span><h2 id="dTitle">تفاصيل <em>البند</em></h2></div>
-          <span class="tag" id="dCount"></span>
-        </div>
-        <div id="dBody">
-          <div class="dempty">
-            <div class="em-ico">
-              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <h3>اضغط على أي بند</h3>
-            <p>انقر على أي صف في قائمة الدخل (المبيعات، المردودات، الحسم، التكلفة، الإيرادات، المصاريف) لعرض سجلاته المفصّلة هنا حسب الفترة المختارة.</p>
-          </div>
-        </div>
-      </div>
+      <div id="stmtRows"><div class="dempty"><span class="big">📊</span>لا توجد بيانات بعد.<br>اربط مستودع GitHub من الأعلى ثم اضغط <b style="color:var(--gold2)">⟳ تحديث البيانات</b>.<br><br><button class="btn ghost mini" id="demoBtn">✨ أو عرض تجريبي سريع</button></div></div>
     </div>
+    <aside class="side">
+      <div class="card reveal">
+        <div class="card-head"><h2 style="font-size:16px"><span class="bar"></span> <span id="dTitle">سجل التفاصيل</span></h2><span class="kick" id="dCount"></span></div>
+        <div id="dBody"><div class="dempty"><span class="big">🔍</span>انقر على أي بند في قائمة الدخل<br>لعرض سجلاته المفصّلة حسب الفترة المحددة.</div></div>
+      </div>
+    </aside>
   </section>
 
-  <footer>الميزان — نظام احتساب وعرض قائمة الدخل · جميع البيانات تُقرأ من ملفات إكسل دون تعديل عليها</footer>
+  <footer>
+    <span>⚖ الميزان — نظام عرض فقط: يقرأ ويفصل البيانات حسب التاريخ، اليوم أو الشهر</span>
+    <span>العملة: دينار عراقي (د.ع)</span>
+  </footer>
 </div>
 
-<div class="toasts" id="toasts"></div>
+<div id="toasts"></div>
 
 <script>
-/* =========================================================
-   🔧 إعدادات الملفات — عدّل هذه الروابط لتطابق ملفاتك
-   يمكنك استخدام روابط GitHub Raw مباشرة أو مسارات نسبية
-   ========================================================= */
-const FILES = [
-  { key:'sales', label:'المبيعات',            url:'./files/المبيعات.xlsx' },
-  { key:'ret',   label:'مردودات المبيعات',     url:'./files/مردودات المبيعات.xlsx' },
-  { key:'disc',  label:'الحسم الممنوح',       url:'./files/الحسم الممنوح.xlsx' },
-  { key:'cogs',  label:'تكلفة البضاعة المباعة', url:'./files/تكلفة البضاعة المباعة.xlsx' },
-  { key:'rev',   label:'إيرادات مختلفة',      url:'./files/ايرادات مختلفة.xlsx', optional:true },
-  { key:'exp',   label:'المصاريف',            url:'./files/المصاريف.xlsx',       optional:true },
-];
+/* ============ أساسيات ============ */
+const $=s=>document.querySelector(s);
 const CUR='د.ع';
 const CATS=['ايجار بناية','كهرباء','اشتراك مولد','مصاريف مختلفة','شراء ماء للمحل','شراء قرطاسية متنوعة','شراء منظفات','شراء علاليك','مشتريات المحل','مكافئات تشجيعية','اجور نقل','مشروبات ساخنة','صيانة','اعانة محتاجين','عمولة حوالات الشركات','زيادة ونقص صندوق','اجور الموظفين','طعام الموظفين','مصاريف تسويق وتطوير','ايجار المخزن الخارجي','اجور توصيل البضاعة','اعلام ونشر الشركة'];
-
-/* ================= أساسيات ================= */
-const $=s=>document.querySelector(s);
-let DS=null, uid=1;
-const F={mode:'all',day:null,from:null,to:null};
-const UI={detail:null,exp:true,cats:new Set()};
+const MN=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
+const GKEY={sales:'sales',ret:'rets',disc:'disc',cogs:'cogs',rev:'rev',exp:'exp'};
+const GNAME={sales:'المبيعات',ret:'مردودات المبيعات',disc:'الحسم الممنوح',cogs:'تكلفة البضاعة المباعة',rev:'إيرادات مختلفة',exp:'المصاريف'};
+const KEY_GH='mizan_gh_v2',KEY_CACHE='mizan_cache_v2';
+let DS=null,SETTINGS={repo:'',branch:'',token:''};
+const F={mode:'all',day:null,month:null,from:null,to:null};
+const ui={detail:null,exp:true,cats:new Set()};
 
 const fmt=n=>{n=Math.round((+n||0)*100)/100;return Number.isInteger(n)?n.toLocaleString('en-US'):n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})};
 const money=n=>fmt(n)+' '+CUR;
@@ -355,7 +303,6 @@ const normA=s=>String(s??'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').repla
 const AR='٠١٢٣٤٥٦٧٨٩',FA='۰۱۲۳۴۵۶۷۸۹';
 const toEn=s=>String(s).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[۰-۹]/g,d=>FA.indexOf(d));
 const parseNum=v=>{if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;const n=parseFloat(toEn(String(v)).replace(/[^\d.\-]/g,''));return isFinite(n)?n:0};
-
 function parseDate(v){
   if(v==null||v==='')return null;
   if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate()).getTime();
@@ -369,10 +316,144 @@ function parseDate(v){
 }
 const fd=t=>{const d=new Date(t);return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')};
 const todayStr=()=>fd(Date.now());
-function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=msg;$('#toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.4s';setTimeout(()=>t.remove(),400)},3400)}
-function countUp(el,to){const from=+(el.dataset.v||0);el.dataset.v=to;const t0=performance.now(),dur=700;function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=msg;$('#toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.4s';setTimeout(()=>t.remove(),400)},3600)}
+function countUp(el,to){const from=+(el.dataset.v||0);el.dataset.v=to;const t0=performance.now(),dur=650;
+  function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
 
-/* ================= التحميل ================= */
+/* ============ الفلترة والاحتساب ============ */
+function rangeOf(){
+  if(F.mode==='day'&&F.day!=null)return[F.day,F.day];
+  if(F.mode==='month'&&F.month){const[y,m]=F.month.split('-').map(Number);return[new Date(y,m-1,1).getTime(),new Date(y,m,0).getTime()]}
+  if(F.mode==='range')return[F.from??0,F.to??864e12];
+  return null;
+}
+const inP=t=>{const r=rangeOf();return r?(t>=r[0]&&t<=r[1]):true};
+const flt=a=>a.filter(r=>inP(r.t));
+function sums(){
+  const s=flt(DS.sales),r=flt(DS.rets),d=flt(DS.disc),c=flt(DS.cogs),v=flt(DS.rev),e=flt(DS.exp);
+  const sum=a=>a.reduce((x,y)=>x+(+y.amt||0),0);
+  const deb=c.reduce((x,y)=>x+(+y.deb||0),0),cred=c.reduce((x,y)=>x+(+y.cred||0),0);
+  const sales=sum(s),rets=sum(r),disc=sum(d),cogs=deb-cred,rev=sum(v),exp=sum(e);
+  const net=sales-rets-disc,gross=net-cogs,after=gross+rev,final=after-exp;
+  return{s,r,d,c,v,e,deb,cred,sales,rets,disc,cogs,rev,exp,net,gross,after,final};
+}
+function periodLabel(){
+  if(!DS)return'لا توجد بيانات بعد — اربط المستودع ثم اضغط تحديث';
+  if(F.mode==='day'&&F.day!=null)return'📌 اليوم: '+fd(F.day);
+  if(F.mode==='month'&&F.month){const[y,m]=F.month.split('-');return'📌 شهر '+MN[+m-1]+' '+y}
+  if(F.mode==='range')return'📌 الفترة: '+fd(F.from??0)+' ← '+fd(F.to??Date.now());
+  const ts=[...DS.sales,...DS.rets,...DS.disc,...DS.cogs,...DS.rev,...DS.exp].map(r=>r.t).filter(Boolean);
+  return ts.length?('📌 كامل الفترة: '+fd(Math.min(...ts))+' ← '+fd(Math.max(...ts))):'📌 كامل الفترة';
+}
+const matchCat=(rc,cat)=>{const a=normA(rc),b=normA(cat);return a===b||(a.length>3&&b.includes(a))||(b.length>3&&a.includes(b))};
+
+/* ============ العرض ============ */
+function renderChips(){
+  const defs=[['sales','المبيعات'],['ret','المردودات'],['disc','الحسم الممنوح'],['cogs','التكلفة'],['rev','إيرادات'],['exp','المصاريف']];
+  const files=[...new Set([...DS.sales,...DS.rets,...DS.disc,...DS.cogs,...DS.rev,...DS.exp].map(r=>r.src).filter(Boolean))];
+  let h='';
+  if(files.length)h+=`<span class="schip on">📁 المصادر <b>${files.length}</b></span>`;
+  defs.forEach(([k,l])=>{const c=DS[GKEY[k]].length;
+    h+=c?`<span class="schip on">${l} <b>${c} سجل</b></span>`:`<span class="schip">${l} — لا يوجد</span>`});
+  $('#status').innerHTML=h;
+}
+function renderKPIs(x){
+  const defs=[
+    ['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' حركة'],
+    ['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' حركة'],
+    ['الحسم الممنوح',x.disc,'#E08B3C',x.d.length+' حركة'],
+    ['صافي المبيعات',x.net,'var(--mint)','بعد المردودات والحسم'],
+    ['تكلفة المبيعات',x.cogs,'#D98E73','مدين − دائن'],
+    ['مجمل الدخل',x.gross,'var(--teal)','صافي المبيعات − التكلفة'],
+    ['صافي الدخل',x.final,'var(--gold2)','بعد الإيرادات والمصاريف'],
+  ];
+  $('#kpis').innerHTML=defs.map(d=>`<div class="kpi" style="--ac:${d[2]}"><div class="k-lbl">${d[0]}</div><div class="k-val">0</div><div class="k-sub">${d[3]}</div></div>`).join('');
+  document.querySelectorAll('#kpis .k-val').forEach((el,i)=>countUp(el,defs[i][1]));
+}
+function renderTicker(x){
+  const it=(l,v,c)=>`<span class="tki"><b>${l}</b><span style="color:${c}">${money(v)}</span></span><span class="tksep">✦</span>`;
+  const h=it('إجمالي المبيعات',x.sales,'#D9A94E')+it('المردودات',x.rets,'#EF6E55')+it('الحسم',x.disc,'#E08B3C')+it('صافي المبيعات',x.net,'#4ED598')+it('التكلفة',x.cogs,'#EF6E55')+it('مجمل الدخل',x.gross,'#54C0AE')+it('الإيرادات المختلفة',x.rev,'#7FB5DA')+it('المصاريف',x.exp,'#EF6E55')+it('صافي الدخل',x.final,'#F0CE84');
+  $('#tk1').innerHTML=h;$('#tk2').innerHTML=h;$('#tickerBox').style.display='block';
+}
+const srow=o=>`<div class="srow ${o.cls||''}" ${o.g?`data-act="det" data-g="${o.g}"`:''}>
+  <span class="sig ${o.ic}">${o.it}</span>
+  <span class="tx"><b>${o.lbl}</b>${o.note?`<small>${o.note}</small>`:''}</span>
+  <span class="cnt">${o.cnt} حركة</span>
+  <span class="amt ${o.ac}">${o.sign||''}${fmt(o.amt)} <small style="font-size:10px;color:var(--ink3)">${CUR}</small></span>
+  ${o.g?'<span class="go">↗</span>':''}</div>`;
+function renderStatement(x){
+  let h='';
+  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'كل مبيعات الفترة مفصّلة حسب التاريخ',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
+  h+=srow({ic:'minus',it:'−',lbl:'مردودات المبيعات',note:'تُطرح من إجمالي المبيعات',cnt:x.r.length,amt:x.rets,ac:'red',sign:'− ',g:'ret'});
+  h+=srow({ic:'minus',it:'−',lbl:'الحسم الممنوح',note:'الخصومات الممنوحة خلال الفترة',cnt:x.d.length,amt:x.disc,ac:'red',sign:'− ',g:'disc'});
+  h+=srow({ic:'eq',it:'＝',lbl:'صافي المبيعات',note:'إجمالي المبيعات − المردودات − الحسم الممنوح',cnt:'',amt:x.net,ac:'green',cls:'res'});
+  h+=srow({ic:'minus',it:'−',lbl:'تكلفة البضاعة المباعة',note:`مدين ${fmt(x.deb)} − دائن ${fmt(x.cred)}`,cnt:x.c.length,amt:x.cogs,ac:'red',sign:'− ',g:'cogs'});
+  h+=srow({ic:'eq',it:'＝',lbl:'مجمل الدخل',note:'صافي المبيعات − تكلفة المبيعات',cnt:'',amt:x.gross,ac:'gold',cls:'res'});
+  h+=srow({ic:'plus',it:'＋',lbl:'إيرادات مختلفة',note:x.v.length?'إيرادات مسجّلة خلال الفترة':'لا توجد إيرادات خلال الفترة — القيمة صفر',cnt:x.v.length,amt:x.rev,ac:'teal',sign:'+ ',g:'rev'});
+  h+=srow({ic:'eq',it:'＝',lbl:'إجمالي صافي الدخل بعد الإيرادات المختلفة',note:'مجمل الدخل + الإيرادات المختلفة',cnt:'',amt:x.after,ac:'gold',cls:'res'});
+  h+=`<div class="exp ${ui.exp?'open':''}">
+    <div class="srow exp-head" data-act="texp" style="cursor:pointer">
+      <span class="sig minus">−</span>
+      <span class="tx"><b>المصاريف</b><small>${CATS.length} صنفاً — انقر للفتح، وكل صنف يُفتح تفاصيله</small></span>
+      <span class="cnt">${x.e.length} حركة</span>
+      <span class="amt red">− ${fmt(x.exp)} <small style="font-size:10px;color:var(--ink3)">${CUR}</small></span>
+      <span class="chev">▼</span></div>
+    <div class="acc"><div class="accin">`;
+  CATS.forEach(c=>{
+    const items=x.e.filter(r=>matchCat(r.cat,c));
+    const tot=items.reduce((a,b)=>a+(+b.amt||0),0);
+    h+=`<div class="cat ${ui.cats.has(c)?'open':''}">
+      <div class="crow" data-act="tcat" data-i="${c.replace(/"/g,'&quot;')}">
+        <span class="cdot"></span><span class="cname">${c}</span>
+        <span class="cnt">${items.length} حركة</span>
+        <span class="amt ${tot?'red':''}" style="opacity:${tot?1:.45}">${fmt(tot)}</span>
+        <span class="chev">▼</span></div>
+      <div class="acc"><div class="accin">`;
+    h+=items.length
+      ? items.map(r=>`<div class="irow"><span class="idate">${fd(r.t)}</span><span class="idesc">${r.desc||'—'}</span>${r.src?`<span class="isrc">${r.src}</span>`:''}<span class="amt">${fmt(r.amt)}</span></div>`).join('')
+      : `<div class="irow" style="color:var(--ink3)">لا توجد مصاريف في هذا الصنف خلال الفترة</div>`;
+    h+=`</div></div></div>`;
+  });
+  h+=`</div></div></div>`;
+  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يُطرح من إجمالي صافي الدخل بعد الإيرادات',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
+  h+=`<div class="final-row ${x.final<0?'neg':''}">
+      <div class="f-lbl">＝ صافي الدخل <small>${periodLabel()}</small></div>
+      <div class="f-amt">${fmt(x.final)} <span style="font-size:15px">${CUR}</span></div></div>`;
+  if(x.sales>0){
+    const seg=[['مردودات',x.rets,'#EF6E55'],['حسم',x.disc,'#E08B3C'],['التكلفة',x.cogs,'#D98E73'],['المصاريف',x.exp,'#B85C8A'],['صافي الربح',Math.max(0,x.final),'#D9A94E']];
+    h+=`<div class="stackbar">${seg.map(s=>`<i style="width:${Math.max(0,s[1]/x.sales*100)}%;background:${s[2]}" title="${s[0]}: ${money(s[1])}"></i>`).join('')}</div>
+    <div class="stack-legend">${seg.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]} ${Math.round(Math.max(0,s[1]/x.sales*100))}٪</span>`).join('')}</div>`;
+  }
+  $('#stmtRows').innerHTML=h;
+  $('#stmtPeriod').textContent=periodLabel();
+}
+function renderDetail(x){
+  const g=ui.detail,body=$('#dBody');
+  if(!g||!DS){body.innerHTML=`<div class="dempty"><span class="big">🔍</span>انقر على أي بند في قائمة الدخل لعرض سجلاته المفصّلة.</div>`;$('#dTitle').textContent='سجل التفاصيل';$('#dCount').textContent='';return}
+  $('#dTitle').textContent='تفاصيل — '+GNAME[g];
+  let rows=[],tot=0;
+  if(g==='cogs'){
+    rows=x.c.map(r=>`<tr><td>${fd(r.t)}</td><td>${r.desc||'—'}</td><td class="num">${fmt(r.deb)}</td><td class="num">${fmt(r.cred)}</td><td class="num ${r.amt<0?'neg':''}">${fmt(r.amt)}</td></tr>`);tot=x.cogs;
+    rows.unshift('<tr><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>الصافي</th></tr>');
+    body.innerHTML=rows.length>1?dtable(rows,x.c.length,tot):dempty();
+  }else if(g==='exp'){
+    rows=x.e.map(r=>`<tr><td>${fd(r.t)}</td><td>${r.cat||'—'}</td><td>${r.desc||'—'}</td><td class="num">${fmt(r.amt)}</td></tr>`);tot=x.exp;
+    rows.unshift('<tr><th>التاريخ</th><th>الصنف</th><th>البيان</th><th>المبلغ</th></tr>');
+    body.innerHTML=rows.length>1?dtable(rows,x.e.length,tot):dempty();
+  }else{
+    const arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g];
+    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g];
+    rows=arr.map(r=>`<tr><td>${fd(r.t)}</td><td>${r.desc||'—'}</td><td>${r.src||'—'}</td><td class="num">${fmt(r.amt)}</td></tr>`);
+    rows.unshift('<tr><th>التاريخ</th><th>البيان</th><th>المصدر</th><th>المبلغ</th></tr>');
+    body.innerHTML=rows.length>1?dtable(rows,arr.length,tot):dempty();
+  }
+  function dtable(rw,n,tot){$('#dCount').textContent=n+' سجل ضمن الفترة';
+    return `<div style="max-height:400px;overflow:auto"><table class="dtable">${rw.join('')}</table></div><div class="dsum"><span>الإجمالي ضمن الفترة</span><b>${money(tot)}</b></div>`}
+  function dempty(){$('#dCount').textContent='';return `<div class="dempty"><span class="big">🗒</span>لا توجد سجلات لهذا البند ضمن الفترة المحددة.</div>`}
+}
+function renderAll(){if(!DS)return;const x=sums();renderChips();renderKPIs(x);renderTicker(x);renderStatement(x);renderDetail(x);$('#periodLbl').textContent=periodLabel()}
+
+/* ============ قراءة ملفات الإكسل ============ */
 function detectRole(name){
   const n=normA(name);
   if(/مردود/.test(n))return'ret';
@@ -383,260 +464,180 @@ function detectRole(name){
   if(/مبيعات/.test(n))return'sales';
   return null;
 }
-function guessCols(H,rows){
+function guessCols(H,R){
   const hs=H.map(h=>normA(h));
   const find=re=>hs.findIndex(h=>re.test(h));
-  const sample=rows.slice(0,50);
-  const isNum=i=>{let n=0;sample.forEach(r=>{if(parseNum(r[i]))n++});return sample.length?n/sample.length>.5:false};
+  const sample=R.slice(0,40);
+  const isNumCol=i=>{let n=0;sample.forEach(r=>{if(parseNum(r[i]))n++});return sample.length?n/sample.length>.5:false};
   let date=find(/تاريخ|اليوم|التوقيت/);
-  if(date<0)for(let i=0;i<hs.length;i++){let n=0;sample.forEach(r=>{if(parseDate(r[i]))n++});if(n>=Math.max(1,sample.length*.4)){date=i;break}}
-  let deb=find(/مدين/),cred=find(/دائن/);
+  if(date<0)for(let i=0;i<hs.length;i++){let n=0;sample.forEach(r=>{if(parseDate(r[i]))n++});if(sample.length&&n>=Math.max(1,sample.length*.5)){date=i;break}}
+  const deb=find(/مدين/),cred=find(/دائن/);
   let amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|مبيعات|مردود|حسم|خصم|سعر/);
-  if(amt<0||amt===date||amt===deb||amt===cred)for(let i=0;i<hs.length;i++){if(i!==date&&i!==deb&&i!==cred&&isNum(i)){amt=i;break}}
-  const desc=find(/بيان|وصف|تفاصيل|ملاحظ|الماده|المنتج|الصنف|اسم|الفقره/);
-  const cat=find(/نوع|فئه|بند|التصنيف|المصروف/);
+  if(amt<0||amt===date)for(let i=0;i<hs.length;i++){if(i!==date&&i!==deb&&i!==cred&&isNumCol(i)){amt=i;break}}
+  const desc=find(/بيان|وصف|تفاصيل|ملاحظ|الماده|المنتج|اسم|الفقره/);
+  const cat=find(/نوع|فئه|بند|التصنيف|المصروف|الصنف/);
   return{date,amt,deb,cred,desc,cat};
 }
-async function fetchFile(url){
-  const res=await fetch(url,{cache:'no-store'});
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  return res.arrayBuffer();
+function readSheet(ws){
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+  let hr=aoa.findIndex(r=>r.filter(c=>c!=null&&String(c).trim()!=='').length>=2);
+  if(hr<0)hr=0;
+  const H=aoa[hr]||[];
+  return{H,rows:aoa.slice(hr+1).filter(r=>r.some(c=>c!=null&&String(c).trim()!==''))};
 }
-async function loadOne(file){
-  const buf=await fetchFile(file.url);
-  const wb=XLSX.read(buf,{type:'array',cellDates:true});
-  const records=[];
-  wb.SheetNames.forEach(name=>{
-    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
-    let hr=aoa.findIndex(r=>r.filter(c=>c!=null&&c!=='').length>=2);
-    if(hr<0)hr=0;
-    const H=aoa[hr]||[];
-    const rows=aoa.slice(hr+1).filter(r=>r.some(c=>c!=null&&c!==''));
-    const g=guessCols(H,rows);
-    rows.forEach(r=>{
-      const t=parseDate(r[g.date]); if(t==null)return;
-      const desc=g.desc>=0?String(r[g.desc]??'').trim():'';
-      if(file.key==='cogs'){
-        const deb=parseNum(r[g.deb]),cred=parseNum(r[g.cred]);
-        if(!deb&&!cred)return;
-        records.push({_id:uid++,t,desc,deb,cred,amt:deb-cred});
-      }else{
-        const amt=parseNum(r[g.amt]); if(!amt)return;
-        const rec={_id:uid++,t,desc,amt};
-        if(file.key==='exp')rec.cat=g.cat>=0?String(r[g.cat]??'').trim():'';
-        records.push(rec);
-      }
-    });
-  });
-  return records;
-}
-async function refreshAll(){
-  const btn=$('#refreshBtn');
-  btn.classList.add('loading');btn.disabled=true;
-  $('#statPill').className='status-pill loading';$('#statTxt').textContent='جارٍ التحميل...';
-  const chips=FILES.map(f=>`<span class="fch" data-k="${f.key}"><span class="fi"></span>${f.label}</span>`).join('');
-  $('#filesChips').innerHTML=chips;
-  const data={sales:[],ret:[],disc:[],cogs:[],rev:[],exp:[]};
-  let ok=0,fail=0;
-  for(const f of FILES){
-    const chip=$(`.fch[data-k="${f.key}"]`);
-    try{
-      const recs=await loadOne(f);
-      data[f.key]=recs;
-      chip.classList.add('loaded');
-      chip.innerHTML=`<span class="fi"></span>${f.label} · <b>${recs.length}</b>`;
-      ok++;
-    }catch(e){
-      console.warn(f.label,e);
-      if(f.optional){
-        chip.classList.add('loaded');
-        chip.innerHTML=`<span class="fi"></span>${f.label} · غير متوفر`;
-        chip.style.opacity='.6';
-      }else{
-        chip.classList.add('fail');
-        chip.innerHTML=`<span class="fi"></span>${f.label} · فشل`;
-        fail++;
-      }
+function pushRows(role,sheet,fileName){
+  const g=guessCols(sheet.H,sheet.rows),key=GKEY[role];
+  sheet.rows.forEach(r=>{
+    const t=g.date>=0?parseDate(r[g.date]):null;if(t==null)return;
+    const desc=g.desc>=0?String(r[g.desc]??'').trim():'';
+    if(/اجمالي|المجموع/.test(desc))return;
+    if(role==='cogs'){
+      let deb=g.deb>=0?parseNum(r[g.deb]):0,cred=g.cred>=0?parseNum(r[g.cred]):0;
+      if(!deb&&!cred&&g.amt>=0){deb=parseNum(r[g.amt])}
+      if(!deb&&!cred)return;
+      DS[key].push({t,desc,deb,cred,amt:deb-cred,src:fileName});
+    }else{
+      const amt=g.amt>=0?parseNum(r[g.amt]):0;if(!amt)return;
+      const rec={t,desc,amt,src:fileName};
+      if(role==='exp')rec.cat=g.cat>=0?String(r[g.cat]??'').trim():'';
+      DS[key].push(rec);
     }
-  }
-  btn.classList.remove('loading');btn.disabled=false;
-  const total=Object.values(data).reduce((a,b)=>a+b.length,0);
-  if(total===0){
-    $('#statPill').className='status-pill err';$('#statTxt').textContent='فشل التحميل — تحقق من الملفات';
-    toast('⚠ لم يتم العثور على بيانات صالحة','err');
-    return;
-  }
-  DS=data;
-  UI.detail='sales';UI.exp=true;UI.cats.clear();
-  F.mode='all';syncSeg();
-  $('#results').classList.add('on');
-  $('#statPill').className='status-pill ok';$('#statTxt').textContent=`تم التحميل — ${total} سجل`;
-  const now=new Date();$('#refreshMeta').innerHTML=`آخر تحديث: <b>${now.toLocaleString('ar-IQ')}</b> · ${ok} ملف ناجح${fail?` · ${fail} فشل`:''}`;
-  renderAll();
-  toast('✔ تم تحديث البيانات — '+total+' سجل','ok');
-  setTimeout(()=>$('#results').scrollIntoView({behavior:'smooth',block:'start'}),150);
-}
-
-/* ================= الفلترة والاحتساب ================= */
-const inP=t=>{if(!DS)return false;
-  if(F.mode==='day')return F.day&&t===F.day;
-  if(F.mode==='range'){const a=F.from??0,b=F.to??864e15;return t>=a&&t<=b}
-  return true};
-const flt=a=>a.filter(r=>inP(r.t));
-function sums(){
-  const s=flt(DS.sales),r=flt(DS.rets),d=flt(DS.disc),c=flt(DS.cogs),v=flt(DS.rev),e=flt(DS.exp);
-  const sum=a=>a.reduce((x,y)=>x+(+y.amt||0),0);
-  const deb=c.reduce((x,y)=>x+(+y.deb||0),0),cred=c.reduce((x,y)=>x+(+y.cred||0),0);
-  const sales=sum(s),rets=sum(r),disc=sum(d),cogs=deb-cred,rev=sum(v),exp=sum(e);
-  const net=sales-rets-disc, gross=net-cogs, after=gross+rev, final=after-exp;
-  return{s,r,d,c,v,e,deb,cred,sales,rets,disc,cogs,rev,exp,net,gross,after,final};
-}
-function periodLabel(){
-  if(!DS)return'';
-  if(F.mode==='day'&&F.day!=null)return'اليوم المحدد · '+fd(F.day);
-  if(F.mode==='range')return fd(F.from??0)+' ← '+fd(F.to??Date.now());
-  const ts=[...DS.sales,...DS.rets,...DS.disc,...DS.cogs,...DS.rev,...DS.exp].map(r=>r.t).filter(Boolean);
-  return ts.length?(fd(Math.min(...ts))+' ← '+fd(Math.max(...ts))):'كامل الفترة';
-}
-
-/* ================= العرض ================= */
-function renderKPIs(x){
-  const defs=[
-    ['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' سجل'],
-    ['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' سجل'],
-    ['الحسم الممنوح',x.disc,'#C98A3C',x.d.length+' سجل'],
-    ['صافي المبيعات',x.net,'var(--green)','بعد الطرح'],
-    ['تكلفة المبيعات',x.cogs,'#B84C3A','مدين − دائن'],
-    ['مجمل الدخل',x.gross,'var(--accent2)','صافي − تكلفة'],
-    ['صافي الدخل',x.final,'var(--accent)','النتيجة النهائية'],
-  ];
-  $('#kpis').innerHTML=defs.map(d=>`<div class="kpi" style="--ac:${d[2]}">
-    <div class="kpi-lbl">${d[0]}</div>
-    <div class="kpi-val num" data-v="0">0<small>${CUR}</small></div>
-    <div class="kpi-sub">${d[3]}</div>
-  </div>`).join('');
-  document.querySelectorAll('#kpis .kpi-val').forEach((el,i)=>countUp(el,defs[i][1]));
-}
-function srow(o){
-  return `<div class="srow ${o.cls||''}" ${o.g?`data-g="${o.g}"`:''}>
-    <span class="mark ${o.ic}">${o.it}</span>
-    <span class="tx"><b>${o.lbl}</b>${o.note?`<small>${o.note}</small>`:''}</span>
-    ${o.cnt!==''?`<span class="cnt num">${o.cnt}</span>`:''}
-    <span class="amt num ${o.ac}">${o.sign||''}${fmt(o.amt)}</span>
-    ${o.g?'<span class="arr">‹</span>':''}
-  </div>`;
-}
-function matchCat(rc,cat){const a=normA(rc),b=normA(cat);return a===b||(a.length>3&&b.includes(a))||(b.length>3&&a.includes(b))}
-function renderStatement(x){
-  let h='';
-  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'كل مبيعات الفترة مفصّلة حسب التاريخ',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
-  h+=srow({ic:'minus',it:'−',lbl:'مردودات المبيعات',note:'تُطرح من الإجمالي',cnt:x.r.length,amt:x.rets,ac:'red',sign:'− ',g:'ret'});
-  h+=srow({ic:'minus',it:'−',lbl:'الحسم الممنوح',note:'الخصومات خلال الفترة',cnt:x.d.length,amt:x.disc,ac:'red',sign:'− ',g:'disc'});
-  h+=srow({ic:'eq',it:'＝',lbl:'صافي المبيعات',note:'الإجمالي − المردودات − الحسم',cnt:'',amt:x.net,ac:'accent',cls:'res'});
-  h+=srow({ic:'minus',it:'−',lbl:'تكلفة البضاعة المباعة',note:`مدين ${fmt(x.deb)} − دائن ${fmt(x.cred)}`,cnt:x.c.length,amt:x.cogs,ac:'red',sign:'− ',g:'cogs'});
-  h+=srow({ic:'eq',it:'＝',lbl:'مجمل الدخل',note:'صافي المبيعات − التكلفة',cnt:'',amt:x.gross,ac:'accent',cls:'res'});
-  h+=srow({ic:'plus',it:'＋',lbl:'إيرادات مختلفة',note:x.v.length?'إيرادات خلال الفترة':'لا توجد إيرادات — صفر',cnt:x.v.length,amt:x.rev,ac:'green',sign:'+ ',g:'rev'});
-  h+=srow({ic:'eq',it:'＝',lbl:'إجمالي صافي الدخل بعد الإيرادات',note:'المجمل + الإيرادات المختلفة',cnt:'',amt:x.after,ac:'accent',cls:'res'});
-
-  /* المصاريف */
-  h+=`<div class="exp ${UI.exp?'open':''}">
-    <div class="srow exph" data-act="texp">
-      <span class="mark sum">∑</span>
-      <span class="tx"><b>المصاريف</b><small>22 صنفاً · اضغط للتوسيع والاطلاع على كل صنف</small></span>
-      <span class="cnt num">${x.e.length}</span>
-      <span class="amt num red">− ${fmt(x.exp)}</span>
-      <span class="chev">▾</span>
-    </div>
-    <div class="acc"><div class="accin"><div class="catlist">`;
-  CATS.forEach(c=>{
-    const items=x.e.filter(r=>matchCat(r.cat,c));
-    const tot=items.reduce((a,b)=>a+(+b.amt||0),0);
-    const open=UI.cats.has(c);
-    h+=`<div class="cat ${open?'open':''}">
-      <div class="crow" data-act="tcat" data-c="${c.replace(/"/g,'&quot;')}">
-        <span class="cdot"></span><span class="cname">${c}</span>
-        <span class="cnt num">${items.length}</span>
-        <span class="amt num" style="opacity:${tot?1:.45}">${fmt(tot)}</span>
-        <span class="chev">▾</span>
-      </div>
-      <div class="acc"><div class="accin">`;
-    if(items.length){items.forEach(r=>{h+=`<div class="irow"><span class="idate num">${fd(r.t)}</span><span class="idesc">${r.desc||'—'}</span><span class="amt num">${fmt(r.amt)}</span></div>`})}
-    else h+=`<div class="iempty">لا توجد مصاريف خلال الفترة</div>`;
-    h+=`</div></div></div>`;
   });
-  h+=`</div></div></div></div>`;
-  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يُطرح من إجمالي صافي الدخل بعد الإيرادات',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
-  h+=`<div class="final ${x.final<0?'neg':''}">
-      <div class="flbl"><small>النتيجة النهائية</small><b>صافي الدخل</b></div>
-      <div class="famt num">${fmt(x.final)}<small>${CUR}</small></div>
-    </div>`;
-  if(x.sales>0){
-    const seg=[['مردودات',x.rets,'#B84C3A'],['حسم',x.disc,'#C98A3C'],['التكلفة',x.cogs,'#8a6836'],['المصاريف',x.exp,'#6b2a20'],['صافي',Math.max(0,x.final),'#B8935A']];
-    h+=`<div class="stackbar">${seg.map(s=>`<i style="width:${Math.max(0,s[1]/x.sales*100)}%;background:${s[2]}"></i>`).join('')}</div>
-    <div class="stack-legend">${seg.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]} ${Math.round(Math.max(0,s[1]/x.sales*100))}٪</span>`).join('')}</div>`;
-  }
-  $('#stmt').innerHTML=h;
-  $('#stmtTag').textContent=periodLabel();
 }
-function renderDetail(x){
-  const g=UI.detail,body=$('#dBody');
-  if(!g||!DS){body.innerHTML=`<div class="dempty"><div class="em-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div><h3>اضغط على أي بند</h3><p>انقر على أي صف في قائمة الدخل لعرض سجلاته المفصّلة هنا.</p></div>`;$('#dTitle').innerHTML='تفاصيل <em>البند</em>';$('#dCount').textContent='';return}
-  const titles={sales:'المبيعات',ret:'مردودات المبيعات',disc:'الحسم الممنوح',cogs:'تكلفة البضاعة المباعة',rev:'الإيرادات المختلفة',exp:'المصاريف'};
-  $('#dTitle').innerHTML='تفاصيل <em>'+titles[g]+'</em>';
-  let rows=[],head='',tot=0;
-  if(g==='cogs'){
-    head='<tr><th>التاريخ</th><th>البيان</th><th style="text-align:left">مدين</th><th style="text-align:left">دائن</th><th style="text-align:left">الصافي</th></tr>';
-    rows=x.c.map(r=>`<tr><td class="d">${fd(r.t)}</td><td class="ds">${r.desc||'—'}</td><td class="n">${fmt(r.deb)}</td><td class="n">${fmt(r.cred)}</td><td class="n ${r.amt<0?'neg':''}">${fmt(r.amt)}</td></tr>`);
-    tot=x.cogs;
-  }else if(g==='exp'){
-    head='<tr><th>التاريخ</th><th>الصنف</th><th>البيان</th><th style="text-align:left">المبلغ</th></tr>';
-    rows=x.e.map(r=>`<tr><td class="d">${fd(r.t)}</td><td class="ds">${r.cat||'—'}</td><td class="ds">${r.desc||'—'}</td><td class="n">${fmt(r.amt)}</td></tr>`);
-    tot=x.exp;
-  }else{
-    head='<tr><th>التاريخ</th><th>البيان</th><th style="text-align:left">المبلغ</th></tr>';
-    const arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g];
-    rows=arr.map(r=>`<tr><td class="d">${fd(r.t)}</td><td class="ds">${r.desc||'—'}</td><td class="n">${fmt(r.amt)}</td></tr>`);
-    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g];
-  }
-  $('#dCount').textContent=rows.length+' سجل';
-  body.innerHTML=rows.length
-    ?`<div class="dtable-wrap"><table class="dtable"><thead>${head}</thead><tbody>${rows.join('')}</tbody></table></div><div class="dsum"><span>الإجمالي ضمن الفترة</span><b class="num">${money(tot)}</b></div>`
-    :`<div class="dempty"><div class="em-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></div><h3>لا توجد سجلات</h3><p>لا توجد بيانات لهذا البند ضمن الفترة المحددة.</p></div>`;
-}
-function renderAll(){
-  if(!DS)return;
-  const x=sums();
-  renderKPIs(x);renderStatement(x);renderDetail(x);
-  $('#filtMeta').innerHTML='<b>'+periodLabel()+'</b>';
+function ingestWB(wb,fileName){
+  const sheets=wb.SheetNames.map(n=>({n,g:readSheet(wb.Sheets[n])})).filter(s=>s.g.rows.length);
+  let known=false;
+  sheets.forEach(s=>{s.role=detectRole(s.n);if(s.role)known=true});
+  if(!known){const fr=detectRole(fileName);if(fr&&sheets[0])sheets[0].role=fr}
+  sheets.forEach(s=>{if(s.role)pushRows(s.role,s.g,fileName)});
 }
 
-/* ================= الفلاتر ================= */
+/* ============ الاتصال بـ GitHub ============ */
+function parseRepo(input){
+  let s=String(input||'').trim().replace(/^https?:\/\/(www\.)?github\.com\//i,'').replace(/\.git$/,'').replace(/\/+$/,'');
+  const parts=s.split('/').filter(Boolean);
+  let branch='';
+  const ti=parts.indexOf('tree');
+  if(ti>=0&&parts[ti+1]){branch=parts[ti+1];parts.splice(ti,2)}
+  if(parts.length<2)throw new Error('رابط المستودع غير صحيح — مثال: username/repo');
+  return{user:parts[0],repo:parts[1],branch};
+}
+async function gh(path){
+  const h={Accept:'application/vnd.github+json'};
+  if(SETTINGS.token)h.Authorization='Bearer '+SETTINGS.token;
+  const res=await fetch('https://api.github.com/'+path,{headers:h});
+  if(res.status===403)throw new Error('رفض الوصول (403) — تحقق من رمز الوصول أو حد الطلبات');
+  if(res.status===404)throw new Error('المستودع غير موجود أو خاص — أضف رمز وصول');
+  if(!res.ok)throw new Error('خطأ من GitHub ('+res.status+')');
+  return res.json();
+}
+async function loadFromGitHub(){
+  if(!SETTINGS.repo){$('#ghPanel').classList.add('open');toast('⚙ اربط مستودع GitHub أولاً','err');return}
+  const btn=$('#updBtn');btn.disabled=true;
+  const msg=t=>{$('#loadMsg').textContent=t};
+  try{
+    let pr;msg('جارٍ الاتصال بالمستودع…');
+    try{pr=parseRepo(SETTINGS.repo)}catch(e){throw new Error(e.message)}
+    const branch=SETTINGS.branch||pr.branch||(await gh(`repos/${pr.user}/${pr.repo}`)).default_branch||'main';
+    msg('جارٍ فهرسة الملفات…');
+    const tree=await gh(`repos/${pr.user}/${pr.repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+    const files=(tree.tree||[]).filter(f=>f.type==='blob'&&/\.(xlsx|xls)$/i.test(f.path)&&!/~\$/.test(f.path)&&!f.path.split('/').pop().startsWith('.'));
+    if(!files.length)throw new Error('لا توجد ملفات إكسل (xlsx / xls) في المستودع');
+    DS={sales:[],rets:[],disc:[],cogs:[],rev:[],exp:[]};
+    for(let i=0;i<files.length;i++){
+      const f=files[i],fname=f.path.split('/').pop();
+      msg(`جارٍ قراءة ${fname} … (${i+1}/${files.length})`);
+      const hdr=SETTINGS.token?{Authorization:'Bearer '+SETTINGS.token}:{};
+      const res=await fetch(`https://raw.githubusercontent.com/${pr.user}/${pr.repo}/${encodeURIComponent(branch)}/${encodeURI(f.path)}`,{headers:hdr});
+      if(!res.ok)throw new Error('تعذّر تنزيل '+fname);
+      ingestWB(XLSX.read(await res.arrayBuffer(),{type:'array',cellDates:true}),fname);
+    }
+    const total=Object.values(DS).reduce((a,b)=>a+b.length,0);
+    if(!total)throw new Error('تمت قراءة الملفات لكن لم يُعثر على سجلات صالحة — تأكد من وجود عمود تاريخ ومبالغ');
+    const when=Date.now();
+    try{localStorage.setItem(KEY_CACHE,JSON.stringify({when,data:DS}))}catch(e){}
+    $('#lastUpd').innerHTML='آخر تحديث: <b>'+fd(when)+' '+new Date(when).toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'})+'</b>';
+    $('#lastUpd').classList.add('live');
+    F.mode='all';syncSeg();ui.detail='sales';
+    renderAll();msg('');
+    toast(`✔ تم التحديث — ${total} سجل من ${files.length} ملف`,'ok');
+  }catch(e){msg('');toast('⚠ '+e.message,'err')}
+  btn.disabled=false;
+}
+
+/* ============ بيانات تجريبية ============ */
+function demo(){
+  const R=(a,b)=>Math.round(a+Math.random()*(b-a));
+  const mk=(d,desc,amt,src)=>({t:new Date(2026,7,d).getTime(),desc,amt,src});
+  const sales=[],rets=[],disc=[],cogs=[],rev=[],exp=[];
+  const sd=['بيع مواد غذائية','بيع منظفات','بيع جملة','بيع تجزئة','بيع علاليك','بيع قرطاسية','بيع مشروبات'];
+  for(let d=1;d<=24;d++){const n=d%3===0?2:1;for(let i=0;i<n;i++)sales.push(mk(d,sd[R(0,6)],R(45,185)*1000,'المبيعات.xlsx'))}
+  [[2,'مردود بيع مواد',24000],[5,'مردود منظفات',18000],[9,'مردود بضاعة تالفة',42000],[13,'مردود بيع جملة',36000],[18,'مردود زبون',15000],[22,'مردود مواد غذائية',28000]].forEach(x=>rets.push(mk(x[0],x[1],x[2],'مردودات المبيعات.xlsx')));
+  [[3,'حسم زبون دائم',7500],[6,'حسم كمية',12000],[10,'حسم ترويجي',5000],[14,'حسم جملة',15000],[17,'حسم موظف',4000],[21,'حسم افتتاحية',9000],[23,'حسم زبون',6500]].forEach(x=>disc.push(mk(x[0],x[1],x[2],'الحسم الممنوح.xlsx')));
+  [[1,'شراء بضاعة — مورد بغداد',850000,0],[4,'شراء منظفات',320000,0],[6,'مردود شراء لمورد',0,60000],[8,'شراء علاليك بالجملة',210000,0],[12,'شراء مشروبات ومواد',430000,0],[15,'خصم شراء من المورد',0,35000],[18,'شراء قرطاسية',140000,0],[21,'شراء بضاعة متنوعة',560000,0]].forEach(x=>cogs.push({t:new Date(2026,7,x[0]).getTime(),desc:x[1],deb:x[2],cred:x[3],amt:x[2]-x[3],src:'تكلفة البضاعة المباعة.xlsx'}));
+  [[7,'إيراد تأجير رف عرض',50000],[15,'إيراد عمولة خدمات',35000],[20,'بيع كارتون فارغ',22000]].forEach(x=>rev.push(mk(x[0],x[1],x[2],'ايرادات مختلفة.xlsx')));
+  const EX=[[1,'ايجار بناية','إيجار شهر آب',500000],[1,'اجور الموظفين','راتب موظف — أحمد',600000],[1,'اجور الموظفين','راتب موظف — علي',600000],[1,'ايجار المخزن الخارجي','إيجار المخزن شهري',200000],[3,'كهرباء','فاتورة كهرباء',120000],[3,'اشتراك مولد','اشتراك المولد الأهلي',75000],[5,'شراء ماء للمحل','ماء RO',15000],[6,'شراء منظفات','منظفات للمحل',25000],[8,'شراء علاليك','علاليك للاستخدام',18000],[9,'اجور نقل','نقل بضاعة من السوق',30000],[10,'طعام الموظفين','غداء الموظفين',45000],[12,'صيانة','صيانة ثلاجة العرض',55000],[13,'مصاريف تسويق وتطوير','تصميم منشورات',40000],[14,'مشروبات ساخنة','شاي وسكر وقهوة',12000],[16,'شراء قرطاسية متنوعة','دفاتر وأقلام',17000],[17,'اعلام ونشر الشركة','إعلان ممول',35000],[18,'اجور توصيل البضاعة','توصيل طلبات',28000],[19,'مكافئات تشجيعية','مكافأة موظف متميز',50000],[20,'اعانة محتاجين','مساعدة عائلة متعففة',25000],[21,'عمولة حوالات الشركات','عمولة حوالة',8000],[22,'مصاريف مختلفة','نثريات متنوعة',14000],[23,'زيادة ونقص صندوق','تسوية فرق الصندوق',6000],[23,'مشتريات المحل','مستلزمات تشغيل',32000]];
+  EX.forEach(x=>exp.push({t:new Date(2026,7,x[0]).getTime(),cat:x[1],desc:x[2],amt:x[3],src:'المصاريف.xlsx'}));
+  DS={sales,rets,disc,cogs,rev,exp};
+  F.mode='all';syncSeg();ui.detail='sales';ui.exp=true;
+  renderAll();toast('✨ بيانات تجريبية للعرض — اربط مستودعك لقراءة ملفاتك الحقيقية','ok');
+}
+
+/* ============ الفلاتر والأحداث ============ */
 function syncSeg(){
   document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===F.mode));
   $('#dInp').hidden=F.mode!=='day';
-  $('#fInp').hidden=$('#tInp').hidden=$('#fSep').hidden=F.mode!=='range';
+  $('#mInp').hidden=F.mode!=='month';
+  $('#fInp').hidden=$('#tInp').hidden=$('#arrow').hidden=F.mode!=='range';
 }
 $('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;F.mode=b.dataset.m;syncSeg();renderAll()});
-function dval(v){return v?parseDate(v):null}
+const dval=v=>v?parseDate(v):null;
 $('#dInp').addEventListener('change',e=>{F.day=dval(e.target.value);renderAll()});
+$('#mInp').addEventListener('change',e=>{F.month=e.target.value||null;renderAll()});
 $('#fInp').addEventListener('change',e=>{F.from=dval(e.target.value);renderAll()});
 $('#tInp').addEventListener('change',e=>{F.to=dval(e.target.value);renderAll()});
 $('#dInp').value=$('#fInp').value=$('#tInp').value=todayStr();
-F.day=F.from=F.to=dval(todayStr());
+$('#mInp').value=todayStr().slice(0,7);
+F.day=F.from=F.to=dval(todayStr());F.month=todayStr().slice(0,7);
+syncSeg();
 
-/* ================= تفويض الأحداث ================= */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-act],[data-g]');if(!t)return;
-  if(t.matches('[data-g]:not([data-act])')){UI.detail=t.dataset.g;renderDetail(sums());if(innerWidth<980)document.querySelector('.dcard').scrollIntoView({behavior:'smooth',block:'nearest'})}
-  else if(t.dataset.act==='texp'){UI.exp=!UI.exp;renderStatement(sums())}
-  else if(t.dataset.act==='tcat'){const c=t.dataset.c;UI.cats.has(c)?UI.cats.delete(c):UI.cats.add(c);renderStatement(sums())}
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act;
+  if(a==='det'){ui.detail=t.dataset.g;renderDetail(sums());if(innerWidth<1000)document.querySelector('.side').scrollIntoView({behavior:'smooth'})}
+  else if(a==='texp'){ui.exp=!ui.exp;renderStatement(sums())}
+  else if(a==='tcat'){const i=t.dataset.i;ui.cats.has(i)?ui.cats.delete(i):ui.cats.add(i);renderStatement(sums())}
 });
+$('#ghBtn').addEventListener('click',()=>$('#ghPanel').classList.toggle('open'));
+$('#ghSave').addEventListener('click',()=>{
+  SETTINGS={repo:$('#ghRepo').value.trim(),branch:$('#ghBranch').value.trim(),token:$('#ghToken').value.trim()};
+  localStorage.setItem(KEY_GH,JSON.stringify(SETTINGS));
+  toast('✔ حُفظت إعدادات المستودع — اضغط «تحديث البيانات» للقراءة','ok');
+});
+$('#updBtn').addEventListener('click',loadFromGitHub);
+$('#demoBtn')?.addEventListener('click',demo);
+$('#printBtn').addEventListener('click',()=>DS?window.print():toast('⚠ لا توجد بيانات للطباعة','err'));
 
-$('#refreshBtn').addEventListener('click',refreshAll);
-$('#printBtn').addEventListener('click',()=>{if(DS)window.print();else toast('⚠ حدّث البيانات أولاً','err')});
+/* الظهور التدريجي */
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-/* تحميل تلقائي عند فتح الصفحة — يمكنك إزالته إن أردت أن يكون يدوياً فقط */
-window.addEventListener('load',()=>{setTimeout(refreshAll,400)});
+/* ============ الإقلاع ============ */
+(function init(){
+  const wd=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const now=new Date();
+  document.title+=' — '+fd(now.getTime());
+  try{SETTINGS=JSON.parse(localStorage.getItem(KEY_GH))||SETTINGS}catch(e){}
+  $('#ghRepo').value=SETTINGS.repo||'';$('#ghBranch').value=SETTINGS.branch||'';$('#ghToken').value=SETTINGS.token||'';
+  if(SETTINGS.repo)$('#ghPanel').classList.remove('open');
+  try{
+    const c=JSON.parse(localStorage.getItem(KEY_CACHE));
+    if(c&&c.data&&c.data.sales){
+      DS=c.data;ui.detail='sales';renderAll();
+      $('#lastUpd').innerHTML='آخر تحديث: <b>'+fd(c.when)+'</b>';$('#lastUpd').classList.add('live');
+    }
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
