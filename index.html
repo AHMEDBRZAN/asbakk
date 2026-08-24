@@ -21,6 +21,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);font
 .brand .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:var(--sh)}
 .brand .logo svg{width:26px;height:26px;stroke:var(--gold-soft);fill:none;stroke-width:1.8}
 .brand-txt h1{font-family:'Fraunces',serif;font-size:25px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brand-txt h1 em{color:var(--gold)}
 .brand-txt small{display:block;font-size:12px;color:var(--ink3);margin-top:2px}
 .ver{font-family:'Fraunces',serif;font-size:11px;font-weight:700;color:var(--gold);background:linear-gradient(135deg,var(--gold-soft),#F4E2B8);padding:3px 10px;border-radius:99px;letter-spacing:.08em;border:1px solid rgba(184,147,90,.3);white-space:nowrap}
 .ver.new{animation:flash 1.4s ease 2}
@@ -51,11 +52,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);font
 .fp.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border-color:transparent;box-shadow:0 8px 20px rgba(44,74,62,.25)}
 .fp .fn{font-weight:700}.fp .fm{font-size:10.5px;color:var(--ink3);font-family:'Fraunces',serif}
 .fp.on .fm{color:rgba(251,248,242,.7)}
-.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.rbtn{display:inline-flex;align-items:center;gap:11px;padding:14px 30px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(44,74,62,.28);transition:.25s}
+.rbtn{display:inline-flex;align-items:center;gap:11px;padding:14px 34px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(44,74,62,.28);transition:.25s}
 .rbtn:hover{transform:translateY(-2px)}.rbtn:active{transform:scale(.98)}
-.rbtn[hidden]{display:none}
-.rbtn.save{background:linear-gradient(135deg,var(--gold),#9c7433);box-shadow:0 10px 26px rgba(184,147,90,.35)}
 .rbtn .sp{width:18px;height:18px;border:2px solid rgba(251,248,242,.3);border-top-color:#FBF8F2;border-radius:50%;animation:sp .8s linear infinite;display:none}
 .rbtn.loading .sp{display:block}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -179,31 +177,28 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
     <div class="logo"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 21h12"/><path d="M12 5l-6 2m6-2l6 2"/><path d="M6 7l-3 6a3 3 0 0 0 6 0L6 7zm12 0l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></div>
     <div class="brand-txt">
       <h1>الميزان <span class="ver" id="verLbl">—</span></h1>
-      <small>قائمة الدخل · المبالغ من مدين/دائن · التصنيف من اسم الحساب</small>
+      <small>قائمة الدخل · نسخة محلية تلقائية</small>
     </div>
   </div>
-  <span class="pill" id="statPill"><span class="dot"></span><span id="statTxt">في انتظار الفحص</span></span>
+  <span class="pill" id="statPill"><span class="dot"></span><span id="statTxt">في انتظار التحميل</span></span>
 </header>
 
 <section class="rsec">
   <div class="rcard">
     <div class="rico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg></div>
-    <h2>مركز <em>التحميل</em></h2>
-    <p>اختر ملف الشهر ثم اضغط <b>تحميل</b>. المبالغ تُقرأ من عمود <b>مدين</b>، والتكلفة <b>مدين − دائن</b>، والمصاريف تُصنّف من <b>اسم الحساب</b>. الحفظ بزر مستقل.</p>
+    <h2>تحديث <em>البيانات</em></h2>
+    <p>يجلب النظام ملف الإكسل من المستودع ويحفظ نسخة منه في متصفحك تلقائياً. رقم النسخة (V) بالأعلى يتغير عند كل تحديث ناجح.</p>
     <div class="rchip">🗂 المستودع: <b id="repoLbl">—</b></div>
     <div class="fpw" id="fpw">
       <div class="stit">ملفات الإكسل المكتشفة — اختر ملفاً</div>
       <div id="fpills"></div>
       <div class="hint" id="discNote"></div>
     </div>
-    <div class="btn-row">
-      <button class="rbtn" id="refreshBtn" hidden><span class="sp"></span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-        <span id="btnLbl">تحميل البيانات</span>
-      </button>
-      <button class="rbtn save" id="saveBtn" hidden><span class="sp"></span>💾 حفظ نسخة محلية</button>
-    </div>
-    <div class="rmeta" id="rmeta">اختر ملفاً ثم اضغط تحميل — الحفظ بزر مستقل يظهر بعد نجاح التحميل</div>
+    <button class="rbtn" id="refreshBtn"><span class="sp"></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      <span>تحديث البيانات</span>
+    </button>
+    <div class="rmeta" id="rmeta">لم يتم تحميل أي بيانات بعد</div>
     <div class="dbg" id="dbg"></div>
     <div class="swrap" id="swrap">
       <div class="stit">الأوراق المكتشفة داخل الملف</div>
@@ -238,287 +233,236 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
     </div>
   </div>
 </section>
-<footer>الميزان — قائمة الدخل · تُحفظ نسخة محلية بطلبك فقط</footer>
+<footer>الميزان — قائمة الدخل · نسخة محلية تُحفظ تلقائياً في متصفحك</footer>
 </div>
 <div class="toasts" id="toasts"></div>
 
 <script>
-var MANUAL_FILES=['./الشهر 6 فقط.xlsx','./الشهر 7 .xlsx'];
-var CUR='د.ع';
-var CATS=['ايجار بناية','كهرباء','اشتراك مولد','مصاريف مختلفة','شراء ماء للمحل','شراء قرطاسية متنوعة','شراء منظفات','شراء علاليك','مشتريات المحل','مكافئات تشجيعية','اجور نقل','مشروبات ساخنة','صيانة','اعانة محتاجين','عمولة حوالات الشركات','زيادة ونقص صندوق','اجور الموظفين','طعام الموظفين','مصاريف تسويق وتطوير','ايجار المخزن الخارجي','اجور توصيل البضاعة','اعلام ونشر الشركة'];
-var ROLES=[{key:'sales',label:'المبيعات',req:1},{key:'ret',label:'مردودات المبيعات',req:1},{key:'disc',label:'الحسم الممنوح',req:1},{key:'cogs',label:'تكلفة البضاعة المباعة',req:1},{key:'rev',label:'إيرادات مختلفة'},{key:'exp',label:'المصاريف'}];
-var $=function(s){return document.querySelector(s)};
-var DS=null,REPO_FILES=[],SEL=null,uid=1,busy=false,PENDING=null;
-var F={mode:'all',day:null,from:null,to:null};
-var UI={detail:null,exp:true,cats:new Set()};
+/* ===== الإعدادات ===== */
+const MANUAL_FILES=['./الشهر 6 فقط.xlsx','./الشهر 7 .xlsx'];
+const CUR='د.ع';
+const CATS=['ايجار بناية','كهرباء','اشتراك مولد','مصاريف مختلفة','شراء ماء للمحل','شراء قرطاسية متنوعة','شراء منظفات','شراء علاليك','مشتريات المحل','مكافئات تشجيعية','اجور نقل','مشروبات ساخنة','صيانة','اعانة محتاجين','عمولة حوالات الشركات','زيادة ونقص صندوق','اجور الموظفين','طعام الموظفين','مصاريف تسويق وتطوير','ايجار المخزن الخارجي','اجور توصيل البضاعة','اعلام ونشر الشركة'];
+const ROLES=[{key:'sales',label:'المبيعات',req:1},{key:'ret',label:'مردودات المبيعات',req:1},{key:'disc',label:'الحسم الممنوح',req:1},{key:'cogs',label:'تكلفة البضاعة المباعة',req:1},{key:'rev',label:'إيرادات مختلفة'},{key:'exp',label:'المصاريف'}];
 
-function fmt(n){n=Math.round((+n||0)*100)/100;return Number.isInteger(n)?n.toLocaleString('en-US'):n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function money(n){return fmt(n)+' '+CUR}
-function normA(s){return String(s==null?'':s).replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim()}
-function norm2(s){return normA(s).replace(/ال/g,'')}
-function cleanN(s){return String(s).replace(/\.xlsx?$/i,'').trim()}
-var AR='٠١٢٣٤٥٦٧٨٩',FA='۰۱۲۳۴۵۶۷۸۹';
-function toEn(s){return String(s).replace(/[٠-٩]/g,function(d){return AR.indexOf(d)}).replace(/[۰-۹]/g,function(d){return FA.indexOf(d)})}
-function parseNum(v){if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;var n=parseFloat(toEn(String(v)).replace(/[^\d.\-]/g,''));return isFinite(n)?n:0}
+/* ===== الأساسيات ===== */
+const $=s=>document.querySelector(s);
+let DS=null,REPO_FILES=[],SEL=null,uid=1,busy=false;
+const F={mode:'all',day:null,from:null,to:null};
+const UI={detail:null,exp:true,cats:new Set()};
+
+const fmt=n=>{n=Math.round((+n||0)*100)/100;return Number.isInteger(n)?n.toLocaleString('en-US'):n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})};
+const money=n=>fmt(n)+' '+CUR;
+const normA=s=>String(s==null?'':s).replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+const cleanN=s=>String(s).replace(/\.xlsx?$/i,'').trim();
+const AR='٠١٢٣٤٥٦٧٨٩',FA='۰۱۲۳۴۵۶۷۸۹';
+const toEn=s=>String(s).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[۰-۹]/g,d=>FA.indexOf(d));
+const parseNum=v=>{if(typeof v==='number')return isFinite(v)?v:0;if(v==null)return 0;const n=parseFloat(toEn(String(v)).replace(/[^\d.\-]/g,''));return isFinite(n)?n:0};
+
 function parseDate(v){
   if(v==null||v==='')return null;
   if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate()).getTime();
   if(typeof v==='number')return v>15000&&v<80000?new Date(Math.round((v-25569)*864e5)).getTime():null;
-  var s=toEn(String(v)).trim(),m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  const s=toEn(String(v)).trim();
+  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
   if(m)return new Date(+m[3],+m[2]-1,+m[1]).getTime();
   m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
   if(m)return new Date(+m[1],+m[2]-1,+m[3]).getTime();
-  var t=Date.parse(s);return isNaN(t)?null:new Date(new Date(t).getFullYear(),new Date(t).getMonth(),new Date(t).getDate()).getTime();
+  const t=Date.parse(s);return isNaN(t)?null:new Date(new Date(t).getFullYear(),new Date(t).getMonth(),new Date(t).getDate()).getTime();
 }
-function fd(t){var d=new Date(t);return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')}
-function safeNow(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
-function toast(m,t){var e=document.createElement('div');e.className='toast '+(t||'');e.innerHTML=m;$('#toasts').appendChild(e);setTimeout(function(){e.style.opacity='0';e.style.transition='.4s';setTimeout(function(){e.remove()},400)},3400)}
-function countUp(el,to){var from=+(el.dataset.v||0);el.dataset.v=to;var t0=performance.now();function st(t){var p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st)}requestAnimationFrame(st)}
+const fd=t=>{const d=new Date(t);return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')};
+function safeNow(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function toast(m,t){const e=document.createElement('div');e.className='toast '+(t||'');e.innerHTML=m;$('#toasts').appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='.4s';setTimeout(()=>e.remove(),400)},3400)}
+function countUp(el,to){const from=+(el.dataset.v||0);el.dataset.v=to;const t0=performance.now();function st(t){const p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st)}requestAnimationFrame(st)}
 function setPill(c,t){$('#statPill').className='pill '+c;$('#statTxt').textContent=t}
-function dbg(m){var e=$('#dbg');if(m){e.textContent=m;e.classList.add('on')}else e.classList.remove('on')}
-function showSaveBtn(v){$('#saveBtn').hidden=!v}
-function recT(r){return r?r.t:null}
-function recAmt(r){return r?(+r.amt||0):0}
+function dbg(m){const e=$('#dbg');if(m){e.textContent=m;e.classList.add('on')}else e.classList.remove('on')}
 
-/* مطابقة صنف المصروف مع قائمة الأصناف (باسم الحساب) */
-function assignCat(acc){
-  var a=norm2(acc);
-  if(!a)return 'مصاريف مختلفة';
-  for(var i=0;i<CATS.length;i++){
-    var b=norm2(CATS[i]);
-    if(a===b||(a.length>3&&b.indexOf(a)>=0)||(b.length>3&&a.indexOf(b)>=0))return CATS[i];
-  }
-  return String(acc).trim();
-}
-
-/* رقم النسخة V */
+/* ===== رقم النسخة V ===== */
 function makeVer(ts,name){
-  var d=new Date(ts),p=function(n){return String(n).padStart(2,'0')};
-  var code=(d.getFullYear()%100)+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
-  var h=0;for(var i=0;i<(name||'').length;i++){h=((h<<5)-h+(name.charCodeAt(i)))|0}
-  return 'V'+code+'-'+Math.abs(h).toString(36).slice(0,3).toUpperCase();
+  const d=new Date(ts);
+  const p=n=>String(n).padStart(2,'0');
+  const code=(d.getFullYear()%100)+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
+  let h=0;for(let i=0;i<(name||'').length;i++){h=((h<<5)-h+(name.charCodeAt(i)))|0}
+  const suf=Math.abs(h).toString(36).slice(0,3).toUpperCase();
+  return 'V'+code+'-'+suf;
 }
-function updateVerLbl(v,isNew){var e=$('#verLbl');e.textContent=v||'—';if(isNew){e.classList.remove('new');void e.offsetWidth;e.classList.add('new')}}
-function saveVer(v){try{localStorage.setItem('mizan_ver',v)}catch(e){}}
-function loadVer(){try{return localStorage.getItem('mizan_ver')}catch(e){return null}}
-function saveSel(i){try{localStorage.setItem('mizan_sel',String(i))}catch(e){}}
-function loadSel(){try{var v=parseInt(localStorage.getItem('mizan_sel'),10);return isNaN(v)?null:v}catch(e){return null}}
+function updateVerLbl(v,isNew){
+  const e=$('#verLbl');e.textContent=v||'—';
+  if(isNew){e.classList.remove('new');void e.offsetWidth;e.classList.add('new')}
+}
+async function saveVer(v){try{localStorage.setItem('mizan_ver',v)}catch(e){}}
+async function loadVer(){try{return localStorage.getItem('mizan_ver')}catch(e){return null}}
 
-/* IndexedDB */
-function idb(){return new Promise(function(res,rej){var r=indexedDB.open('mizan_cache_v5',1);r.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=function(e){res(e.target.result)};r.onerror=function(e){rej(e.target.error)}})}
-function cachePut(k,v){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction('files','readwrite');tx.objectStore('files').put(v,k);tx.oncomplete=res;tx.onerror=rej})}).catch(function(e){console.warn('cache put fail',e)})}
-function cacheGet(k){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction('files').objectStore('files').get(k);q.onsuccess=function(){res(q.result||null)};q.onerror=rej})}).catch(function(){return null})}
-function fetchT(url,ms){
-  if(typeof AbortController!=='undefined'){
-    var c=new AbortController();var t=setTimeout(function(){c.abort()},ms);
-    return fetch(url,{cache:'no-store',signal:c.signal}).then(function(r){clearTimeout(t);return r},function(e){clearTimeout(t);throw e});
-  }
-  return fetch(url,{cache:'no-store'});
-}
-function ghInfo(){var m=location.hostname.match(/^([^.]+)\.github\.io$/);if(!m)return null;var seg=location.pathname.split('/').filter(Boolean);return{user:m[1],repo:seg[0]||m[1]+'.github.io'}}
+/* ===== التخزين المحلي IndexedDB ===== */
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('mizan_cache_v2',1);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=e=>res(e.target.result);r.onerror=e=>rej(e.target.error)})}
+async function cachePut(k,v){try{const db=await idb();await new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(v,k);tx.oncomplete=res;tx.onerror=rej})}catch(e){console.warn('cache put fail',e)}}
+async function cacheGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const q=db.transaction('files').objectStore('files').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=rej})}catch(e){return null}}
+function fetchT(url,ms){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,{cache:'no-store',signal:c.signal}).finally(()=>clearTimeout(t))}
 
-function listFiles(){
-  var g=ghInfo();
-  if(!g)return fallbackList();
-  return fetchT('https://api.github.com/repos/'+g.user+'/'+g.repo+'/contents/',20000)
-    .then(function(r){if(!r.ok)throw r.status;return r.json()})
-    .then(function(a){
-      var x=a.filter(function(f){return f.type==='file'&&/\.xlsx?$/i.test(f.name)});
-      if(!x.length)throw 'empty';
-      cachePut('__list__',x.map(function(f){return{name:f.name,size:f.size}}));
-      $('#discNote').textContent='';$('#discNote').className='hint';
-      return x;
-    })
-    .catch(function(){return fallbackList()});
-}
-function fallbackList(){
-  return cacheGet('__list__').then(function(c){
-    if(c&&c.length){$('#discNote').textContent='📦 قائمة الملفات من النسخة المحلية المحفوظة.';$('#discNote').className='hint err';return c.map(function(o){return{name:o.name,size:o.size}})}
+function ghInfo(){const m=location.hostname.match(/^([^.]+)\.github\.io$/);if(!m)return null;const seg=location.pathname.split('/').filter(Boolean);return{user:m[1],repo:seg[0]||m[1]+'.github.io'}}
+
+async function listFiles(){
+  try{
+    const g=ghInfo();if(!g)throw 0;
+    const r=await fetchT('https://api.github.com/repos/'+g.user+'/'+g.repo+'/contents/',20000);
+    if(!r.ok)throw r.status;
+    const a=await r.json();
+    const x=a.filter(f=>f.type==='file'&&/\.xlsx?$/i.test(f.name));
+    if(!x.length)throw 'empty';
+    cachePut('__list__',x.map(f=>({name:f.name,size:f.size})));
+    $('#discNote').textContent='';$('#discNote').className='hint';
+    return x;
+  }catch(e){
+    const c=await cacheGet('__list__');
+    if(c&&c.length){$('#discNote').textContent='📦 قائمة الملفات من النسخة المحلية المحفوظة.';$('#discNote').className='hint err';return c.map(o=>({name:o.name,size:o.size}))}
     $('#discNote').textContent='تعذر الاتصال بواجهة GitHub — القائمة الاحتياطية.';$('#discNote').className='hint err';
-    return MANUAL_FILES.map(function(u){return{name:u.replace(/^\.\//,''),download_url:u}});
-  });
+    return MANUAL_FILES.map(u=>({name:u.replace(/^\.\//,''),download_url:u}));
+  }
 }
-function defaultSel(){var best=0,bn=-1;REPO_FILES.forEach(function(f,i){var m=String(f.name).match(/\d+/);var n=m?+m[0]:i;if(n>bn){bn=n;best=i}});return best}
-function renderPills(){$('#fpills').innerHTML=REPO_FILES.map(function(f,i){return '<button class="fp '+(SEL===i?'on':'')+'" data-i="'+i+'"><span>📄</span><span class="fn">'+cleanN(f.name)+'</span>'+(f.size?'<span class="fm">'+Math.max(1,Math.round(f.size/1024))+' KB</span>':'')+'</button>'}).join('')}
-function updateBtn(){var b=$('#refreshBtn');if(REPO_FILES.length&&SEL!=null){b.hidden=false;$('#btnLbl').textContent='تحميل البيانات: '+cleanN(REPO_FILES[SEL].name)}else{b.hidden=true}}
+function defaultSel(){let best=0,bn=-1;REPO_FILES.forEach((f,i)=>{const m=String(f.name).match(/\d+/);const n=m?+m[0]:i;if(n>bn){bn=n;best=i}});return best}
+function renderPills(){$('#fpills').innerHTML=REPO_FILES.map((f,i)=>'<button class="fp '+(SEL===i?'on':'')+'" data-i="'+i+'"><span>📄</span><span class="fn">'+cleanN(f.name)+'</span>'+(f.size?'<span class="fm">'+Math.max(1,Math.round(f.size/1024))+' KB</span>':'')+'</button>').join('')}
 
-/* ===== قراءة الأوراق: مدين/دائن/التاريخ/البيان/اسم الحساب ===== */
 function detectRole(n){n=normA(n);if(/مردود/.test(n))return'ret';if(/حسم|خصم/.test(n))return'disc';if(/تكلف|بضاع/.test(n))return'cogs';if(/ايراد/.test(n))return'rev';if(/مصاريف|مصروف|نفقات/.test(n))return'exp';if(/مبيعات/.test(n))return'sales';return null}
 function guessCols(H,rows){
-  var hs=H.map(function(h){return normA(h)});
-  var find=function(re){var i=-1;hs.some(function(h,idx){if(re.test(h)){i=idx;return true}return false});return i};
-  var date=find(/تاريخ|اليوم|التوقيت/);
-  var deb=find(/مدين/),cred=find(/دائن/);
-  var desc=find(/بيان|وصف|تفاصيل/);
-  var acc=find(/اسم الحساب|الحساب/);
-  var amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|سعر/);
-  return{date:date,amt:amt,deb:deb,cred:cred,desc:desc,acc:acc};
+  const hs=H.map(h=>normA(h));
+  const find=re=>hs.findIndex(h=>re.test(h));
+  const smp=rows.slice(0,50);
+  const isNum=i=>{let n=0;smp.forEach(r=>{if(parseNum(r[i]))n++});return smp.length?n/smp.length>.5:false};
+  let date=find(/تاريخ|اليوم|التوقيت/);
+  if(date<0)for(let i=0;i<hs.length;i++){let n=0;smp.forEach(r=>{if(parseDate(r[i]))n++});if(n>=Math.max(1,smp.length*.4)){date=i;break}}
+  let deb=find(/مدين/),cred=find(/دائن/);
+  let amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|مبيعات|مردود|حسم|خصم|سعر/);
+  if(amt<0||amt===date||amt===deb||amt===cred)for(let i=0;i<hs.length;i++){if(i!==date&&i!==deb&&i!==cred&&isNum(i)){amt=i;break}}
+  const desc=find(/بيان|وصف|تفاصيل|ملاحظ|الماده|المنتج|الصنف|اسم|الفقره/);
+  const cat=find(/نوع|فئه|بند|التصنيف|المصروف/);
+  return{date,amt,deb,cred,desc,cat};
 }
 function readSheet(wb,name,key){
-  var aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
-  var hr=-1;aoa.some(function(r,idx){if(r&&r.filter(function(c){return c!=null&&c!==''}).length>=2){hr=idx;return true}return false});
+  const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
+  let hr=aoa.findIndex(r=>r.filter(c=>c!=null&&c!=='').length>=2);
   if(hr<0)hr=0;
-  var H=aoa[hr]||[];
-  var rows=aoa.slice(hr+1).filter(function(r){return r&&r.some(function(c){return c!=null&&c!==''})});
-  var g=guessCols(H,rows),out=[];
-  rows.forEach(function(r){
-    if(!r)return;
-    var t=parseDate(g.date>=0?r[g.date]:null);if(t==null)return;
-    var desc=g.desc>=0?String(r[g.desc]==null?'':r[g.desc]).trim():'';
-    var deb=g.deb>=0?parseNum(r[g.deb]):0;
-    var cred=g.cred>=0?parseNum(r[g.cred]):0;
+  const H=aoa[hr]||[];
+  const rows=aoa.slice(hr+1).filter(r=>r.some(c=>c!=null&&c!==''));
+  const g=guessCols(H,rows);
+  const out=[];
+  rows.forEach(r=>{
+    const t=parseDate(r[g.date]);if(t==null)return;
+    const desc=g.desc>=0?String(r[g.desc]==null?'':r[g.desc]).trim():'';
     if(key==='cogs'){
+      const deb=parseNum(r[g.deb]),cred=parseNum(r[g.cred]);
       if(!deb&&!cred)return;
-      out.push({_id:uid++,t:t,desc:desc,deb:deb,cred:cred,amt:deb-cred});
+      out.push({_id:uid++,t,desc,deb,cred,amt:deb-cred});
     }else{
-      /* المبلغ من مدين، فإن لم يوجد فمن دائن، وإلا فمن عمود مبلغ إن وُجد */
-      var amt=deb>0?deb:(cred>0?cred:(g.amt>=0?parseNum(r[g.amt]):0));
-      if(!amt)return;
-      var rec={_id:uid++,t:t,desc:desc,amt:amt};
-      if(key==='exp'){
-        var accRaw=g.acc>=0?String(r[g.acc]==null?'':r[g.acc]).trim():'';
-        rec.cat=assignCat(accRaw);
-        rec.acc=accRaw;
-      }
+      const amt=parseNum(r[g.amt]);if(!amt)return;
+      const rec={_id:uid++,t,desc,amt};
+      if(key==='exp')rec.cat=g.cat>=0?String(r[g.cat]==null?'':r[g.cat]).trim():'';
       out.push(rec);
     }
   });
   return out;
 }
-function parseWorkbook(wb){
-  var data={sales:[],ret:[],disc:[],cogs:[],rev:[],exp:[]},found={};
-  (wb.SheetNames||[]).forEach(function(sn){var role=detectRole(sn);if(role&&!found[role]){found[role]=1;data[role]=readSheet(wb,sn,role)}});
-  var miss=false,total=0,fc=0;
-  ROLES.forEach(function(r){var has=!!found[r.key];if(has){fc++;total+=(data[r.key]||[]).length}if(r.req&&!has)miss=true});
-  return{data:data,found:found,total:total,fc:fc,miss:miss};
-}
-function sheetsHtml(P){
-  return ROLES.map(function(r){
-    var has=!!P.found[r.key],recs=P.data[r.key]||[];
-    var cls=has?(recs.length?'found':'miss'):(r.req?'fail':'miss');
-    return '<div class="sch '+cls+'"><div class="sn"><i></i>'+r.label+'</div><div class="sv num">'+(has?recs.length:'—')+' <small>'+(has?(recs.length?'سجل':'فارغة'):(r.req?'مطلوبة':'اختيارية'))+'</small></div></div>';
-  }).join('');
-}
-function applyParsed(P,label,fromCache,savedAt){
-  $('#sgrid').innerHTML=sheetsHtml(P);
+
+function applyWorkbook(wb,label,fromCache,savedAt){
+  const data={sales:[],ret:[],disc:[],cogs:[],rev:[],exp:[]};const found={};
+  wb.SheetNames.forEach(sn=>{const role=detectRole(sn);if(role&&!found[role]){found[role]=1;data[role]=readSheet(wb,sn,role)}});
+  let miss=false,total=0,fc=0;
+  $('#sgrid').innerHTML=ROLES.map(r=>{const has=!!found[r.key];const recs=data[r.key];if(has){fc++;total+=recs.length}if(r.req&&!has)miss=true;const cls=has?(recs.length?'found':'miss'):(r.req?'fail':'miss');return '<div class="sch '+cls+'"><div class="sn"><i></i>'+r.label+'</div><div class="sv num">'+(has?recs.length:'—')+' <small>'+(has?(recs.length?'سجل':'فارغة'):(r.req?'مطلوبة':'اختيارية'))+'</small></div></div>'}).join('');
   $('#swrap').classList.add('on');
-  if(P.miss||!P.total){
-    setPill('err','ملف غير مكتمل');
-    $('#rmeta').innerHTML='⚠ الأوراق الأساسية غير مكتملة داخل <b>'+label+'</b> — لا يمكن الحفظ';
-    toast('⚠ الأوراق الأساسية غير مكتملة','err');
-    return false;
-  }
-  DS=P.data;UI.detail='sales';UI.exp=true;UI.cats.clear();F.mode='all';syncSeg();
-  var ts=[].concat(DS.sales||[],DS.rets||[],DS.disc||[],DS.cogs||[],DS.rev||[],DS.exp||[]).map(recT).filter(Boolean);
-  if(ts.length){var mn=Math.min.apply(null,ts),mx=Math.max.apply(null,ts);$('#fInp').value=fd(mn);$('#tInp').value=fd(mx);F.from=mn;F.to=mx;$('#dInp').value=fd(mx);F.day=mx}
+  if(miss||!total){setPill('err','ملف غير مكتمل');$('#rmeta').innerHTML='⚠ الأوراق الأساسية غير مكتملة داخل <b>'+label+'</b>';toast('⚠ الأوراق الأساسية غير مكتملة','err');return false}
+  DS=data;UI.detail='sales';UI.exp=true;UI.cats.clear();F.mode='all';syncSeg();
+  const ts=[].concat(DS.sales,DS.rets,DS.disc,DS.cogs,DS.rev,DS.exp).map(r=>r.t).filter(Boolean);
+  if(ts.length){const mn=Math.min.apply(null,ts),mx=Math.max.apply(null,ts);$('#fInp').value=fd(mn);$('#tInp').value=fd(mx);F.from=mn;F.to=mx;$('#dInp').value=fd(mx);F.day=mx}
   $('#results').classList.add('on');
-  setPill('ok',label+' · '+P.total+' سجل'+(fromCache?' · 📦 نسخة محلية':''));
+  setPill('ok',label+' · '+total+' سجل'+(fromCache?' · 📦 نسخة محلية':''));
   $('#rmeta').innerHTML=fromCache
-    ?'📦 فُتحت <b>النسخة المحلية المحفوظة</b>'+(savedAt?' بتاريخ <b>'+fd(savedAt)+'</b>':'')+' · '+P.fc+' ورقة · '+P.total+' سجل'
-    :'تم التحميل: <b>'+safeNow()+'</b> · الملف: <b>'+label+'</b> · <b>'+P.fc+'</b> ورقة · <b>'+P.total+'</b> سجل · اضغط 💾 حفظ لتخزين نسخة محلية';
+    ?'📦 تعذر الجلب من المستودع — تم فتح <b>النسخة المحلية المحفوظة</b>'+(savedAt?' بتاريخ <b>'+fd(savedAt)+'</b>':'')+' · '+fc+' ورقة · '+total+' سجل'
+    :'آخر تحديث: <b>'+safeNow()+'</b> · الملف: <b>'+label+'</b> · <b>'+fc+'</b> ورقة · <b>'+total+'</b> سجل · 💾 حُفظت نسخة محلية';
   dbg('');renderAll();
-  toast((fromCache?'📦 فُتحت النسخة المحلية':'✔ تم تحميل الملف — الحفظ بزر مستقل')+' · '+P.total+' سجل',fromCache?'':'ok');
-  setTimeout(function(){$('#results').scrollIntoView({behavior:'smooth'})},150);
+  toast((fromCache?'📦 فُتحت النسخة المحلية':'✔ تم التحديث والحفظ محلياً')+' — '+total+' سجل',fromCache?'':'ok');
+  setTimeout(()=>$('#results').scrollIntoView({behavior:'smooth'}),150);
   return true;
 }
-function openCache(i){
-  var f=REPO_FILES[i];if(!f)return Promise.resolve(false);
-  return cacheGet('file:'+cleanN(f.name)).then(function(c){
-    if(!c||!c.buf)return false;
-    try{
-      var wb=XLSX.read(new Uint8Array(c.buf).buffer,{type:'array',cellDates:true});
-      return applyParsed(parseWorkbook(wb),cleanN(f.name),true,c.at);
-    }catch(e){console.error('cache read fail',e);return false}
-  });
-}
-function loadFromNet(){
-  if(busy){toast('⏳ جارٍ التحميل حالياً');return}
-  var f=REPO_FILES[SEL];if(!f)return;
+
+async function refreshAll(){
+  if(busy){toast('⏳ عملية تحميل قائمة حالياً','');return}
   busy=true;
-  var b=$('#refreshBtn');b.classList.add('loading');
-  setPill('loading','جارٍ تحميل '+cleanN(f.name)+'...');
-  PENDING=null;showSaveBtn(false);
-  var url=f.download_url||('./'+encodeURI(f.name));
-  url+=(url.indexOf('?')>=0?'&':'?')+'t='+Date.now();
-  fetchT(url,25000)
-    .then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.arrayBuffer()})
-    .then(function(buf){
-      var wb=XLSX.read(buf,{type:'array',cellDates:true});
-      var P=parseWorkbook(wb);
-      if(P.miss||!P.total){applyParsed(P,cleanN(f.name),false,null);return}
-      PENDING={name:cleanN(f.name),bytes:Array.from(new Uint8Array(buf)),at:Date.now()};
-      applyParsed(P,cleanN(f.name),false,null);
-      showSaveBtn(true);
-    })
-    .catch(function(e){
-      console.warn('net fail, try cache:',e);
-      openCache(SEL).then(function(ok){
-        if(ok){toast('⚠ فشل الجلب ('+e.message+') — فُتحت النسخة المحلية','err')}
-        else{
-          setPill('err','فشل التحميل');
-          $('#rmeta').innerHTML='⚠ فشل تحميل <b>'+cleanN(f.name)+'</b>: '+e.message;
-          dbg('LOAD ERROR: '+e.message);
-          toast('⚠ فشل تحميل الملف: '+e.message,'err');
-        }
-      });
-    })
-    .then(function(){b.classList.remove('loading');busy=false});
-}
-function saveLocal(){
-  if(!PENDING){toast('⚠ لا توجد بيانات جديدة للحفظ — حمّل الملف أولاً','err');return}
-  var b=$('#saveBtn');b.classList.add('loading');
-  cachePut('file:'+PENDING.name,{buf:PENDING.bytes,at:PENDING.at}).then(function(){
-    var nv=makeVer(PENDING.at,PENDING.name);
-    saveVer(nv);updateVerLbl(nv,true);
-    b.classList.remove('loading');
-    showSaveBtn(false);
-    setPill('ok',PENDING.name+' · محفوظ محلياً');
-    $('#rmeta').innerHTML='💾 حُفظت نسخة محلية من <b>'+PENDING.name+'</b> بتاريخ <b>'+safeNow()+'</b> — ستُفتح مباشرة المرة القادمة';
-    toast('💾 تم الحفظ محلياً بنجاح','ok');
-    PENDING=null;
-  });
-}
-function boot(){
-  var v=loadVer();if(v)updateVerLbl(v,false);
-  var g=ghInfo();$('#repoLbl').textContent=g?(g.user+'/'+g.repo):'غير معروف';
+  const btn=$('#refreshBtn');btn.classList.add('loading');
   setPill('loading','جارٍ فحص المستودع...');
-  listFiles().then(function(list){
-    REPO_FILES=list;
-    if(!REPO_FILES.length){setPill('err','لا توجد ملفات');$('#rmeta').innerHTML='⚠ لم يتم العثور على ملفات إكسل في المستودع';return}
+  const g=ghInfo();$('#repoLbl').textContent=g?(g.user+'/'+g.repo):'غير معروف';
+  try{
+    REPO_FILES=await listFiles();
     $('#fpw').classList.add('on');
-    var saved=loadSel();
-    SEL=(saved!=null&&saved<REPO_FILES.length)?saved:defaultSel();
-    renderPills();updateBtn();
-    setPill('','جاهز — اختر ملفاً واضغط تحميل');
-    openCache(SEL);
-  }).catch(function(e){setPill('err','خطأ بالفحص');dbg('BOOT ERROR: '+(e&&e.message?e.message:e))});
+    if(SEL==null||!REPO_FILES[SEL])SEL=defaultSel();
+    renderPills();
+    await loadSelected();
+  }catch(e){
+    setPill('err','خطأ: '+e.message);toast('⚠ '+e.message,'err');
+  }finally{
+    btn.classList.remove('loading');busy=false;
+  }
+}
+
+async function loadSelected(){
+  const f=REPO_FILES[SEL];if(!f)return;
+  setPill('loading','جارٍ تحميل '+cleanN(f.name)+'...');
+  let wb=null,fromCache=false,savedAt=null;
+  const cacheKey='file:'+cleanN(f.name);
+  try{
+    let url=f.download_url||('./'+encodeURI(f.name));
+    url+=(url.includes('?')?'&':'?')+'t='+Date.now();
+    const res=await fetchT(url,25000);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const buf=await res.arrayBuffer();
+    wb=XLSX.read(buf,{type:'array',cellDates:true});
+    await cachePut(cacheKey,{buf:Array.from(new Uint8Array(buf)),at:Date.now()});
+    // تحديث رقم النسخة بعد نجاح الجلب والحفظ
+    const newVer=makeVer(Date.now(),f.name);
+    await saveVer(newVer);
+    updateVerLbl(newVer,true);
+  }catch(e){
+    console.warn('جلب من الشبكة فشل، محاولة الكاش:',e);
+    const c=await cacheGet(cacheKey);
+    if(c&&c.buf){
+      try{
+        wb=XLSX.read(new Uint8Array(c.buf).buffer,{type:'array',cellDates:true});
+        fromCache=true;savedAt=c.at;
+      }catch(e2){console.error('فشل قراءة الكاش',e2)}
+    }
+    if(!wb){
+      setPill('err','فشل التحميل');
+      $('#rmeta').innerHTML='⚠ فشل تحميل <b>'+cleanN(f.name)+'</b> ('+e.message+') ولا توجد نسخة محلية محفوظة';
+      dbg('LOAD ERROR: '+e.message);
+      toast('⚠ فشل تحميل الملف: '+e.message,'err');
+      return;
+    }
+  }
+  applyWorkbook(wb,cleanN(f.name),fromCache,savedAt);
 }
 
 /* ===== الاحتساب ===== */
-function inP(t){if(!DS)return false;if(F.mode==='day')return F.day!=null&&t===F.day;if(F.mode==='range'){var a=F.from==null?0:F.from,b=F.to==null?864e15:F.to;return t>=a&&t<=b}return true}
-function flt(a){return (a||[]).filter(function(r){return r!=null&&inP(r.t)})}
+const inP=t=>{if(!DS)return false;if(F.mode==='day')return F.day!=null&&t===F.day;if(F.mode==='range'){const a=F.from??0,b=F.to??864e15;return t>=a&&t<=b}return true};
+const flt=a=>a.filter(r=>inP(r.t));
 function sums(){
-  var s=flt(DS.sales),r=flt(DS.rets),d=flt(DS.disc),c=flt(DS.cogs),v=flt(DS.rev),e=flt(DS.exp);
-  var sum=function(a){return a.reduce(function(x,y){return x+recAmt(y)},0)};
-  var deb=c.reduce(function(x,y){return x+(y?(+y.deb||0):0)},0),cred=c.reduce(function(x,y){return x+(y?(+y.cred||0):0)},0);
-  var sales=sum(s),rets=sum(r),disc=sum(d),cogs=deb-cred,rev=sum(v),exp=sum(e);
-  var net=sales-rets-disc,gross=net-cogs,after=gross+rev,fin=after-exp;
-  return{s:s,r:r,d:d,c:c,v:v,e:e,deb:deb,cred:cred,sales:sales,rets:rets,disc:disc,cogs:cogs,rev:rev,exp:exp,net:net,gross:gross,after:after,final:fin};
+  const s=flt(DS.sales),r=flt(DS.rets),d=flt(DS.disc),c=flt(DS.cogs),v=flt(DS.rev),e=flt(DS.exp);
+  const sum=a=>a.reduce((x,y)=>x+(+y.amt||0),0);
+  const deb=c.reduce((x,y)=>x+(+y.deb||0),0),cred=c.reduce((x,y)=>x+(+y.cred||0),0);
+  const sales=sum(s),rets=sum(r),disc=sum(d),cogs=deb-cred,rev=sum(v),exp=sum(e);
+  const net=sales-rets-disc,gross=net-cogs,after=gross+rev,final=after-exp;
+  return{s,r,d,c,v,e,deb,cred,sales,rets,disc,cogs,rev,exp,net,gross,after,final};
 }
 function periodLabel(){
   if(!DS)return'';
   if(F.mode==='day'&&F.day!=null)return'اليوم · '+fd(F.day);
-  if(F.mode==='range')return fd(F.from==null?0:F.from)+' ← '+fd(F.to==null?Date.now():F.to);
-  var ts=[].concat(DS.sales||[],DS.rets||[],DS.disc||[],DS.cogs||[],DS.rev||[],DS.exp||[]).map(recT).filter(Boolean);
+  if(F.mode==='range')return fd(F.from??0)+' ← '+fd(F.to??Date.now());
+  const ts=[].concat(DS.sales,DS.rets,DS.disc,DS.cogs,DS.rev,DS.exp).map(r=>r.t).filter(Boolean);
   return ts.length?(fd(Math.min.apply(null,ts))+' ← '+fd(Math.max.apply(null,ts))):'كامل الفترة';
 }
-function baseTotal(){return DS?(DS.sales||[]).length+(DS.rets||[]).length+(DS.disc||[]).length+(DS.cogs||[]).length+(DS.rev||[]).length+(DS.exp||[]).length:0}
+function baseTotal(){return DS?DS.sales.length+DS.rets.length+DS.disc.length+DS.cogs.length+DS.rev.length+DS.exp.length:0}
 
 /* ===== العرض ===== */
 function renderKPIs(x){
-  var D=[['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' سجل'],['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' سجل'],['الحسم الممنوح',x.disc,'#C98A3C',x.d.length+' سجل'],['صافي المبيعات',x.net,'var(--green)','بعد الطرح'],['تكلفة المبيعات',x.cogs,'#B84C3A','مدين − دائن'],['مجمل الدخل',x.gross,'var(--accent2)','صافي − تكلفة'],['صافي الدخل',x.final,'var(--accent)','النتيجة النهائية']];
-  $('#kpis').innerHTML=D.map(function(d){return '<div class="kpi" style="--ac:'+d[2]+'"><div class="kl">'+d[0]+'</div><div class="kv num" data-v="0">0<small>'+CUR+'</small></div><div class="ks">'+d[3]+'</div></div>'}).join('');
-  document.querySelectorAll('#kpis .kv').forEach(function(el,i){countUp(el,D[i][1])});
+  const D=[['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' سجل'],['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' سجل'],['الحسم الممنوح',x.disc,'#C98A3C',x.d.length+' سجل'],['صافي المبيعات',x.net,'var(--green)','بعد الطرح'],['تكلفة المبيعات',x.cogs,'#B84C3A','مدين − دائن'],['مجمل الدخل',x.gross,'var(--accent2)','صافي − تكلفة'],['صافي الدخل',x.final,'var(--accent)','النتيجة النهائية']];
+  $('#kpis').innerHTML=D.map(d=>'<div class="kpi" style="--ac:'+d[2]+'"><div class="kl">'+d[0]+'</div><div class="kv num" data-v="0">0<small>'+CUR+'</small></div><div class="ks">'+d[3]+'</div></div>').join('');
+  document.querySelectorAll('#kpis .kv').forEach((el,i)=>countUp(el,D[i][1]));
 }
 function srow(o){
   return '<div class="srow '+(o.cls||'')+'" '+(o.g?'data-g="'+o.g+'"':'')+'>'
@@ -529,19 +473,12 @@ function srow(o){
     +(o.g?'<span class="arr">‹</span>':'')
     +'</div>';
 }
-/* قائمة أصناف المصاريف: الـ22 + أي أصناف إضافية من اسم الحساب */
-function expCatList(x){
-  var totals={};
-  (x.e||[]).forEach(function(r){var c=r&&r.cat?r.cat:'مصاريف مختلفة';totals[c]=(totals[c]||0)+recAmt(r)});
-  var extras=Object.keys(totals).filter(function(c){return CATS.indexOf(c)<0})
-    .sort(function(a,b){return totals[b]-totals[a]});
-  return CATS.concat(extras);
-}
+function matchCat(rc,cat){const a=normA(rc),b=normA(cat);return a===b||(a.length>3&&b.includes(a))||(b.length>3&&a.includes(b))}
 function renderStatement(x){
-  var h='';
-  var per=x.s.length+x.r.length+x.d.length+x.c.length+x.v.length+x.e.length;
+  let h='';
+  const per=x.s.length+x.r.length+x.d.length+x.c.length+x.v.length+x.e.length;
   if(per===0&&baseTotal()>0)h+='<div class="notice">⚠ لا توجد حركات ضمن الفترة المحددة — اختر «كل الفترة» أو عدّل التواريخ.</div>';
-  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'مفصّلة حسب التاريخ · المبلغ من مدين',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
+  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'مفصّلة حسب التاريخ',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
   h+=srow({ic:'minus',it:'−',lbl:'مردودات المبيعات',note:'تُطرح من الإجمالي',cnt:x.r.length,amt:x.rets,ac:'red',sign:'− ',g:'ret'});
   h+=srow({ic:'minus',it:'−',lbl:'الحسم الممنوح',note:'خصومات الفترة',cnt:x.d.length,amt:x.disc,ac:'red',sign:'− ',g:'disc'});
   h+=srow({ic:'eq',it:'＝',lbl:'صافي المبيعات',note:'الإجمالي − المردودات − الحسم',cnt:'',amt:x.net,ac:'accent',cls:'res'});
@@ -549,51 +486,50 @@ function renderStatement(x){
   h+=srow({ic:'eq',it:'＝',lbl:'مجمل الدخل',note:'صافي المبيعات − التكلفة',cnt:'',amt:x.gross,ac:'accent',cls:'res'});
   h+=srow({ic:'plus',it:'＋',lbl:'إيرادات مختلفة',note:x.v.length?'إيرادات الفترة':'لا توجد — صفر',cnt:x.v.length,amt:x.rev,ac:'green',sign:'+ ',g:'rev'});
   h+=srow({ic:'eq',it:'＝',lbl:'إجمالي صافي الدخل بعد الإيرادات',note:'المجمل + الإيرادات',cnt:'',amt:x.after,ac:'accent',cls:'res'});
-  var allCats=expCatList(x);
-  h+='<div class="exp '+(UI.exp?'open':'')+'"><div class="srow exph" data-act="texp"><span class="mark sum">∑</span><span class="tx"><b>المصاريف</b><small>مصنّفة من «اسم الحساب» · اضغط للتوسيع</small></span><span class="cnt num">'+x.e.length+'</span><span class="amt num red">− '+fmt(x.exp)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin"><div class="catlist">';
-  allCats.forEach(function(c){
-    var items=x.e.filter(function(r){return r&&(r.cat||'مصاريف مختلفة')===c});
-    var tot=items.reduce(function(a,b){return a+recAmt(b)},0);
-    var open=UI.cats.has(c);
+  h+='<div class="exp '+(UI.exp?'open':'')+'"><div class="srow exph" data-act="texp"><span class="mark sum">∑</span><span class="tx"><b>المصاريف</b><small>22 صنفاً · اضغط للتوسيع</small></span><span class="cnt num">'+x.e.length+'</span><span class="amt num red">− '+fmt(x.exp)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin"><div class="catlist">';
+  CATS.forEach(c=>{
+    const items=x.e.filter(r=>matchCat(r.cat,c));
+    const tot=items.reduce((a,b)=>a+(+b.amt||0),0);
+    const open=UI.cats.has(c);
     h+='<div class="cat '+(open?'open':'')+'"><div class="crow" data-act="tcat" data-c="'+c.replace(/"/g,'&quot;')+'"><span class="cdot"></span><span class="cname">'+c+'</span><span class="cnt num">'+items.length+'</span><span class="amt num" style="opacity:'+(tot?1:.45)+'">'+fmt(tot)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin">';
-    if(items.length){items.forEach(function(r){h+='<div class="irow"><span class="idate num">'+fd(r.t)+'</span><span class="idesc">'+(r.desc||'—')+'</span><span class="amt num">'+fmt(r.amt)+'</span></div>'})}
+    if(items.length){items.forEach(r=>{h+='<div class="irow"><span class="idate num">'+fd(r.t)+'</span><span class="idesc">'+(r.desc||'—')+'</span><span class="amt num">'+fmt(r.amt)+'</span></div>'})}
     else h+='<div class="iempty">لا توجد مصاريف خلال الفترة</div>';
     h+='</div></div></div>';
   });
   h+='</div></div></div></div>';
-  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يساوي مجموع الأصناف أعلاه · يُطرح من إجمالي صافي الدخل',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
+  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يُطرح من إجمالي صافي الدخل',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
   h+='<div class="final '+(x.final<0?'neg':'')+'"><div class="fl"><small>النتيجة النهائية</small><b>صافي الدخل</b></div><div class="fa num">'+fmt(x.final)+'<small> '+CUR+'</small></div></div>';
   if(x.sales>0){
-    var S=[['مردودات',x.rets,'#B84C3A'],['حسم',x.disc,'#C98A3C'],['التكلفة',x.cogs,'#8a6836'],['المصاريف',x.exp,'#6b2a20'],['صافي',Math.max(0,x.final),'#B8935A']];
-    h+='<div class="sbar">'+S.map(function(s){return '<i style="width:'+Math.max(0,s[1]/x.sales*100)+'%;background:'+s[2]+'"></i>'}).join('')+'</div>';
-    h+='<div class="sleg">'+S.map(function(s){return '<span><i style="background:'+s[2]+'"></i>'+s[0]+' '+Math.round(Math.max(0,s[1]/x.sales*100))+'٪</span>'}).join('')+'</div>';
+    const S=[['مردودات',x.rets,'#B84C3A'],['حسم',x.disc,'#C98A3C'],['التكلفة',x.cogs,'#8a6836'],['المصاريف',x.exp,'#6b2a20'],['صافي',Math.max(0,x.final),'#B8935A']];
+    h+='<div class="sbar">'+S.map(s=>'<i style="width:'+Math.max(0,s[1]/x.sales*100)+'%;background:'+s[2]+'"></i>').join('')+'</div>';
+    h+='<div class="sleg">'+S.map(s=>'<span><i style="background:'+s[2]+'"></i>'+s[0]+' '+Math.round(Math.max(0,s[1]/x.sales*100))+'٪</span>').join('')+'</div>';
   }
   $('#stmt').innerHTML=h;
   $('#stmtTag').textContent=periodLabel();
 }
 function renderDetail(x){
-  var g=UI.detail,body=$('#dBody');
+  const g=UI.detail,body=$('#dBody');
   if(!g||!DS){
     body.innerHTML='<div class="dempty"><div class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div><h3>اضغط على أي بند</h3><p>انقر على أي صف في قائمة الدخل لعرض سجلاته.</p></div>';
     $('#dTitle').innerHTML='تفاصيل <em>البند</em>';$('#dCount').textContent='';
     return;
   }
-  var T={sales:'المبيعات',ret:'مردودات المبيعات',disc:'الحسم الممنوح',cogs:'تكلفة البضاعة المباعة',rev:'الإيرادات المختلفة',exp:'المصاريف'};
+  const T={sales:'المبيعات',ret:'مردودات المبيعات',disc:'الحسم الممنوح',cogs:'تكلفة البضاعة المباعة',rev:'الإيرادات المختلفة',exp:'المصاريف'};
   $('#dTitle').innerHTML='تفاصيل <em>'+T[g]+'</em>';
-  var rows=[],head='',tot=0;
+  let rows=[],head='',tot=0;
   if(g==='cogs'){
     head='<tr><th>التاريخ</th><th>البيان</th><th style="text-align:left">مدين</th><th style="text-align:left">دائن</th><th style="text-align:left">الصافي</th></tr>';
-    rows=x.c.map(function(r){return '<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.deb)+'</td><td class="n">'+fmt(r.cred)+'</td><td class="n '+(r.amt<0?'neg':'')+'">'+fmt(r.amt)+'</td></tr>'});
+    rows=x.c.map(r=>'<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.deb)+'</td><td class="n">'+fmt(r.cred)+'</td><td class="n '+(r.amt<0?'neg':'')+'">'+fmt(r.amt)+'</td></tr>');
     tot=x.cogs;
   }else if(g==='exp'){
     head='<tr><th>التاريخ</th><th>الصنف</th><th>البيان</th><th style="text-align:left">المبلغ</th></tr>';
-    rows=x.e.map(function(r){return '<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.cat||'—')+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.amt)+'</td></tr>'});
+    rows=x.e.map(r=>'<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.cat||'—')+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.amt)+'</td></tr>');
     tot=x.exp;
   }else{
     head='<tr><th>التاريخ</th><th>البيان</th><th style="text-align:left">المبلغ</th></tr>';
-    var arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g]||[];
-    rows=arr.map(function(r){return '<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.amt)+'</td></tr>'});
-    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g]||0;
+    const arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g];
+    rows=arr.map(r=>'<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.amt)+'</td></tr>');
+    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g];
   }
   $('#dCount').textContent=rows.length+' سجل';
   body.innerHTML=rows.length
@@ -602,41 +538,39 @@ function renderDetail(x){
 }
 function renderAll(){
   if(!DS)return;
-  try{var x=sums();renderKPIs(x);renderStatement(x);renderDetail(x);$('#fmeta').innerHTML='<b>'+periodLabel()+'</b>';dbg('')}
+  try{const x=sums();renderKPIs(x);renderStatement(x);renderDetail(x);$('#fmeta').innerHTML='<b>'+periodLabel()+'</b>';dbg('')}
   catch(e){console.error(e);dbg('RENDER ERROR: '+e.message);toast('⚠ خطأ في العرض: '+e.message,'err')}
 }
 
-/* الأحداث */
+/* ===== الأحداث ===== */
 function syncSeg(){
-  document.querySelectorAll('#seg button').forEach(function(b){b.classList.toggle('on',b.dataset.m===F.mode)});
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===F.mode));
   $('#dInp').hidden=F.mode!=='day';
-  var rg=F.mode==='range';
+  const rg=F.mode==='range';
   $('#fInp').hidden=!rg;$('#tInp').hidden=!rg;$('#fSep').hidden=!rg;
 }
-$('#seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;F.mode=b.dataset.m;syncSeg();renderAll()});
-function dval(v){return v?parseDate(v):null}
-$('#dInp').addEventListener('change',function(e){F.day=dval(e.target.value);renderAll()});
-$('#fInp').addEventListener('change',function(e){F.from=dval(e.target.value);renderAll()});
-$('#tInp').addEventListener('change',function(e){F.to=dval(e.target.value);renderAll()});
-document.addEventListener('click',function(e){
-  var p=e.target.closest('.fp');
-  if(p){
-    SEL=+p.dataset.i;saveSel(SEL);renderPills();updateBtn();
-    PENDING=null;showSaveBtn(false);
-    openCache(SEL).then(function(ok){
-      if(!ok)setPill('','اخترت '+cleanN(REPO_FILES[SEL].name)+' — اضغط زر التحميل لجلبه');
-    });
-    return;
-  }
-  var t=e.target.closest('[data-act],[data-g]');if(!t)return;
+$('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;F.mode=b.dataset.m;syncSeg();renderAll()});
+const dval=v=>v?parseDate(v):null;
+$('#dInp').addEventListener('change',e=>{F.day=dval(e.target.value);renderAll()});
+$('#fInp').addEventListener('change',e=>{F.from=dval(e.target.value);renderAll()});
+$('#tInp').addEventListener('change',e=>{F.to=dval(e.target.value);renderAll()});
+document.addEventListener('click',e=>{
+  const p=e.target.closest('.fp');
+  if(p){SEL=+p.dataset.i;renderPills();loadSelected();return}
+  const t=e.target.closest('[data-act],[data-g]');if(!t)return;
   if(t.matches('[data-g]:not([data-act])')){UI.detail=t.dataset.g;renderDetail(sums());if(innerWidth<980)document.querySelector('.dcard').scrollIntoView({behavior:'smooth',block:'nearest'})}
   else if(t.dataset.act==='texp'){UI.exp=!UI.exp;renderStatement(sums())}
-  else if(t.dataset.act==='tcat'){var c=t.dataset.c;if(UI.cats.has(c))UI.cats.delete(c);else UI.cats.add(c);renderStatement(sums())}
+  else if(t.dataset.act==='tcat'){const c=t.dataset.c;UI.cats.has(c)?UI.cats.delete(c):UI.cats.add(c);renderStatement(sums())}
 });
-$('#refreshBtn').addEventListener('click',loadFromNet);
-$('#saveBtn').addEventListener('click',saveLocal);
-$('#printBtn').addEventListener('click',function(){if(DS)window.print();else toast('⚠ حمّل البيانات أولاً','err')});
-window.addEventListener('load',function(){setTimeout(boot,300)});
+$('#refreshBtn').addEventListener('click',refreshAll);
+$('#printBtn').addEventListener('click',()=>{if(DS)window.print();else toast('⚠ حدّث البيانات أولاً','err')});
+
+/* ===== التشغيل ===== */
+window.addEventListener('load',async ()=>{
+  const savedVer=await loadVer();
+  if(savedVer)updateVerLbl(savedVer,false);
+  setTimeout(refreshAll,400);
+});
 </script>
 </body>
 </html>
