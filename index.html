@@ -59,6 +59,11 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .pos{color:#059669}.neg{color:#e11d48}
 .total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
 #chartCard,#chartCard *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+/* ✅ شريط الأيام التفاعلي */
+.day-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 2px 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.day-strip::-webkit-scrollbar{display:none}
+.day-chip{flex:0 0 auto;min-width:40px;text-align:center;border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:800;color:#475569;cursor:pointer;font-family:'Cairo';transition:.15s}
+.day-chip.on{background:#f59e0b;border-color:#b45309;color:#fff;box-shadow:0 4px 10px rgba(245,158,11,.35)}
 .acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
 .acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
 .acc-head:hover{background:#f8fafc}
@@ -76,7 +81,6 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .acc-inner th{background:#efedfb;color:#5a5878;font-weight:800;padding:7px 10px;text-align:right;position:sticky;top:0}
 .acc-inner td{padding:7px 10px;border-top:1px solid #eceafb;font-weight:700;color:#555a75}
 .acc-inner td.amt{color:#e11d48;font-weight:900;text-align:left}
-/* ✅ صف الإجماليات أسفل كل فئة: مدين − دائن = صافي */
 .acc-inner tfoot td{background:#efedfb;color:#3f3d56;font-weight:900;border-top:2px solid #e2e0f5;font-size:10.5px}
 #overlay{position:fixed;inset:0;background:rgba(233,237,248,.95);backdrop-filter:blur(6px);z-index:100;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
 .spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
@@ -151,8 +155,9 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
     </section>
     <section class="card hidden" id="chartCard" oncontextmenu="return false">
       <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
-      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم ليتلوّن بالذهبي وتظهر تفاصيله — انقر مجدداً للإلغاء</p>
-      <div style="height:280px;margin-top:10px"><canvas id="chart"></canvas></div>
+      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> حدد اليوم براحتك من شريط الأرقام أو بالضغط بأي مكان على عمود اليوم — انقر مجدداً للإلغاء</p>
+      <div class="day-strip" id="dayStrip"></div>
+      <div style="height:270px;margin-top:4px"><canvas id="chart"></canvas></div>
     </section>
   </div>
 
@@ -262,25 +267,40 @@ function renderAll(){
   });
 }
 
-/* ---------- الرسم البياني ---------- */
+/* ---------- الرسم البياني + شريط الأيام ---------- */
 function renderChart(selKey){
   const daily=computeDaily(chartFrom,chartTo);
   const days=Object.keys(daily).sort();
   const labels=days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];});
   const barColors=days.map(d=>d===selKey?'#f59e0b':'#4f46e5');
+
+  /* شريط الأيام */
+  const strip=$('#dayStrip');strip.innerHTML='';
+  days.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='day-chip'+(d===selKey?' on':'');
+    b.textContent=+d.split('-')[2];
+    b.onclick=()=>toggleDay(d);
+    strip.appendChild(b);
+  });
+  if(selKey){const on=strip.querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}
+
   if(CHART)CHART.destroy();
   CHART=new Chart($('#chart'),{data:{labels:labels,datasets:[
-    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:3,barPercentage:.95,categoryPercentage:.85},
-    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:1.5,pointRadius:2,tension:.3}]},
+    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:3,barPercentage:.9,categoryPercentage:1,yAxisID:'y'},
+    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:1.5,pointRadius:2,tension:.3,yAxisID:'y1'}]},
     options:{responsive:true,maintainAspectRatio:false,
       animation:false,
-      onClick:(evt,els)=>{if(els.length&&els[0].datasetIndex===0){toggleDay(days[els[0].index]);}},
-      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=(els.length&&els[0].datasetIndex===0)?'pointer':'default';},
+      layout:{padding:0},
+      interaction:{mode:'index',intersect:false},
+      onClick:(evt,els)=>{if(els.length){toggleDay(days[els[0].index]);}},
+      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=els.length?'pointer':'default';},
       plugins:{legend:{labels:{font:{family:'Cairo',weight:700,size:10},boxWidth:12,boxHeight:12}},
         tooltip:{titleFont:{family:'Cairo'},bodyFont:{family:'Cairo'},callbacks:{title:items=>'اليوم: '+days[items[0].dataIndex],label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}},
       scales:{
-        x:{grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
-        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}}
+        x:{offset:false,grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
+        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}},
+        y1:{display:false,grid:{drawOnChartArea:false}}
       }}});
 }
 function toggleDay(key){
