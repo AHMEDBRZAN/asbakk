@@ -59,7 +59,6 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .pos{color:#059669}.neg{color:#e11d48}
 .total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
 #chartCard,#chartCard *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-/* ✅ تفاصيل المصاريف: خلفية مختلفة قليلاً لتبدو كفرع من الفئة */
 .acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
 .acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
 .acc-head:hover{background:#f8fafc}
@@ -77,6 +76,8 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .acc-inner th{background:#efedfb;color:#5a5878;font-weight:800;padding:7px 10px;text-align:right;position:sticky;top:0}
 .acc-inner td{padding:7px 10px;border-top:1px solid #eceafb;font-weight:700;color:#555a75}
 .acc-inner td.amt{color:#e11d48;font-weight:900;text-align:left}
+/* ✅ صف الإجماليات أسفل كل فئة: مدين − دائن = صافي */
+.acc-inner tfoot td{background:#efedfb;color:#3f3d56;font-weight:900;border-top:2px solid #e2e0f5;font-size:10.5px}
 #overlay{position:fixed;inset:0;background:rgba(233,237,248,.95);backdrop-filter:blur(6px);z-index:100;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
 .spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -248,17 +249,20 @@ function renderAll(){
 
   const box=$('#expList');box.innerHTML='';
   CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
+    const sumD=c.rows.reduce((s,r)=>s+r.debit,0);
+    const sumC=c.rows.reduce((s,r)=>s+r.credit,0);
     const el=document.createElement('div');el.className='acc-item';
     el.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+c.icon+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
     '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
     c.rows.map(r=>'<tr><td>'+iso(r.date)+'</td><td>'+r.voucher+'</td><td>'+r.stmt+'</td><td class="amt">'+fmt(r.debit-r.credit)+'</td></tr>').join('')+
-    '</tbody></table></div></div></div>';
+    '</tbody><tfoot><tr><td colspan="3">مجموع مدين: '+fmt(sumD)+' − مجموع دائن: '+fmt(sumC)+'</td><td class="amt">'+fmt(c.amt)+'</td></tr></tfoot>'+
+    '</table></div></div></div>';
     el.querySelector('.acc-head').onclick=()=>el.classList.toggle('open');
     box.appendChild(el);
   });
 }
 
-/* ---------- الرسم البياني: متناسق، خطوط صغيرة، تفاعل بسيط ---------- */
+/* ---------- الرسم البياني ---------- */
 function renderChart(selKey){
   const daily=computeDaily(chartFrom,chartTo);
   const days=Object.keys(daily).sort();
