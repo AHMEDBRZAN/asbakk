@@ -12,7 +12,8 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:linear-gradient(180deg,#e9edf8,#dfe4f2);min-height:100vh;color:#0f172a;padding-bottom:60px}
 .hidden{display:none!important}
-.topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(15,23,42,.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+/* ✅ الهيدر غير مثبّت — يختفي عند التمرير */
+.topbar{background:rgba(255,255,255,.92);box-shadow:0 4px 20px rgba(15,23,42,.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .brand{display:flex;gap:10px;align-items:center}
 .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:grid;place-items:center;font-size:18px}
 .brand h1{font-size:16px;font-weight:900}
@@ -27,6 +28,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .card{background:#f8f9fd;border-radius:22px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px}
 .card-head h2{font-size:14.5px;font-weight:900;display:flex;gap:8px;align-items:center;color:#1e293b}
 .card-head h2 i{color:#4f46e5}
+.hint{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:4px}
 .file-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .file-item{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;transition:.2s}
 .file-item:hover{border-color:#c7d2fe;box-shadow:0 6px 16px rgba(79,70,229,.12)}
@@ -43,6 +45,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .f-group label{font-size:11px;font-weight:800;color:#64748b;display:block;margin-bottom:4px}
 .f-group input{border:1.5px solid #e2e8f0;background:#fff;border-radius:12px;padding:9px 12px;font-family:'Cairo';font-size:13px;font-weight:700}
 .chip{background:#eef2ff;color:#4f46e5;border-radius:999px;padding:9px 14px;font-size:11px;font-weight:800}
+.chip.day{background:#fffbeb;color:#d97706}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
 .kpi{background:#f8f9fd;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:14px;position:relative;overflow:hidden}
 .kpi::after{content:'';position:absolute;inset-inline-end:0;top:12px;bottom:12px;width:4px;border-radius:4px;background:var(--c)}
@@ -56,6 +59,8 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .stmt .row b{font-weight:900}
 .pos{color:#059669}.neg{color:#e11d48}
 .total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
+/* ✅ منع النسخ/التحديد على الرسم البياني */
+#chartCard,#chartCard *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 .acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
 .acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
 .acc-head:hover{background:#f8fafc}
@@ -96,30 +101,27 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 </header>
 
 <main>
-  <!-- قائمة الملفات المحفوظة محلياً (الأساسية) -->
   <section class="card">
     <div class="card-head"><h2><i class="fa-solid fa-folder-open"></i> قائمة الملفات المحفوظة محلياً (الأساسية)</h2></div>
-    <div id="localList" class="file-list"><div class="empty">لا توجد ملفات محفوظة بعد — افتح ملفاً من المستودع ثم اضغط "حفظ الملف"</div></div>
+    <div id="localList" class="file-list"><div class="empty">لا توجد ملفات محفوظة بعد — اضغط "تحديث من المستودع" ثم افتح ملفاً واحفظه</div></div>
   </section>
 
-  <!-- ملفات المستودع -->
   <section class="card hidden" id="repoCard">
     <div class="card-head"><h2><i class="fa-brands fa-github"></i> ملفات المستودع (اضغط فتح ثم حفظ)</h2></div>
     <div id="repoList" class="file-list"></div>
   </section>
 
-  <!-- الفلاتر -->
   <section class="card hidden" id="filterCard">
     <div class="filters">
       <div class="f-group"><label>من تاريخ</label><input type="date" id="dFrom"></div>
       <div class="f-group"><label>إلى تاريخ</label><input type="date" id="dTo"></div>
       <button class="btn btn-indigo" id="btnApply"><i class="fa-solid fa-filter"></i> تطبيق</button>
+      <button class="btn btn-ghost" id="btnFull"><i class="fa-solid fa-calendar-days"></i> الشهر كامل</button>
       <span class="chip" id="rangeChip"></span>
       <span class="chip" id="fileChip" style="background:#ecfdf5;color:#059669"></span>
     </div>
   </section>
 
-  <!-- المؤشرات -->
   <section class="kpis hidden" id="kpis">
     <div class="kpi" style="--c:#4f46e5"><div class="t"><span class="ic"><i class="fa-solid fa-bag-shopping"></i></span>إجمالي المبيعات</div><div class="v" id="kSales">0</div><div class="s" id="kSalesS"></div></div>
     <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-rotate-left"></i></span>مردودات المبيعات</div><div class="v neg" id="kRet">0</div><div class="s" id="kRetS"></div></div>
@@ -132,7 +134,6 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
   </section>
 
   <div class="grid2">
-    <!-- قائمة الدخل -->
     <section class="card hidden" id="stmtCard">
       <div class="card-head"><h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2></div>
       <div class="stmt" style="margin-top:10px">
@@ -148,14 +149,13 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
         <div class="total-btn"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
       </div>
     </section>
-    <!-- الحركة اليومية -->
-    <section class="card hidden" id="chartCard">
+    <section class="card hidden" id="chartCard" oncontextmenu="return false">
       <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
+      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم لتحديده (يتغيّر لونه للذهبي) وعرض تفاصيله — انقر مجدداً لإلغاء التحديد</p>
       <div style="height:300px;margin-top:10px"><canvas id="chart"></canvas></div>
     </section>
   </div>
 
-  <!-- المصاريف -->
   <section class="card hidden" id="expCard">
     <div class="card-head"><h2><i class="fa-solid fa-layer-group"></i> تفاصيل المصاريف حسب الفئة (انقر للفتح)</h2></div>
     <div id="expList"></div>
@@ -175,6 +175,7 @@ const CATS=[["ايجار بناية","fa-building"],["كهرباء","fa-bolt"],[
 const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوصيلبضاعة':'اجور توصيل البضاعة'};
 
 let RAW=null, CURRENT=null, CHART=null;
+let chartFrom=null, chartTo=null, selectedDay=null;
 
 /* ---------- IndexedDB ---------- */
 function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
@@ -206,20 +207,28 @@ function computeStats(from,to){
   const gross=netSales-cogs;
   const lookup={};CATS.forEach(c=>lookup[norm(c[0])]=c[0]);
   const catMap={};CATS.forEach(c=>catMap[c[0]]={name:c[0],icon:c[1],amt:0,rows:[]});
-  E.forEach(r=>{let key=norm(r.acc);key=ALIAS[key]||lookup[key];if(key&&catMap[key]){const v=r.debit-r.credit;catMap[key].amt+=v;catMap[key].rows.push(r);}});
+  E.forEach(r=>{let key=ALIAS[norm(r.acc)]||lookup[norm(r.acc)];if(key&&catMap[key]){catMap[key].amt+=r.debit-r.credit;catMap[key].rows.push(r);}});
   const expenses=CATS.reduce((s,c)=>s+catMap[c[0]].amt,0);
-  const net=gross-expenses;
+  return{sales,ret,disc,netSales,cogs,gross,expenses,net:gross-expenses,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length}};
+}
+function computeDaily(from,to){
   const daily={};
-  S.forEach(r=>{const k=iso(r.date);daily[k]=daily[k]||{s:0,e:0};daily[k].s+=r.credit;});
-  E.forEach(r=>{const k=iso(r.date);daily[k]=daily[k]||{s:0,e:0};daily[k].e+=r.debit;});
-  return{sales,ret,disc,netSales,cogs,gross,expenses,net,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length},daily};
+  RAW.sales.forEach(r=>{if(r.date>=from&&r.date<=to){const k=iso(r.date);(daily[k]=daily[k]||{s:0,e:0}).s+=r.credit;}});
+  RAW.expenses.forEach(r=>{if(r.date>=from&&r.date<=to){const k=iso(r.date);(daily[k]=daily[k]||{s:0,e:0}).e+=r.debit;}});
+  return daily;
 }
 function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
 
 /* ---------- العرض ---------- */
 function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
-function renderDashboard(st){
+
+function renderAll(){
+  if(!RAW||!chartFrom)return;
   ['filterCard','kpis','stmtCard','chartCard','expCard'].forEach(id=>$('#'+id).classList.remove('hidden'));
+  const selKey=selectedDay?iso(selectedDay):null;
+  const df=selectedDay||chartFrom, dt=selectedDay||chartTo;
+  const st=computeStats(df,dt);
+
   anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
   anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
   anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
@@ -229,14 +238,16 @@ function renderDashboard(st){
   $('#s1').textContent=fmt(st.sales);$('#s2').textContent=fmt(st.ret);$('#s3').textContent=fmt(st.disc);
   $('#s4').textContent=fmt(st.netSales);$('#s5').textContent=fmt(st.cogs);$('#s6').textContent=fmt(st.gross);
   $('#s7').textContent='0';$('#s8').textContent=fmt(st.gross);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
-  const days=Object.keys(st.daily).sort();
-  if(CHART)CHART.destroy();
-  CHART=new Chart($('#chart'),{data:{labels:days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];}),datasets:[
-    {type:'bar',label:'المبيعات',data:days.map(d=>st.daily[d].s),backgroundColor:'#4f46e5',borderRadius:4},
-    {type:'line',label:'المصاريف',data:days.map(d=>st.daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:2,pointRadius:2,tension:.3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Cairo',weight:700}}}},scales:{x:{ticks:{font:{family:'Cairo'},maxTicksLimit:15}},y:{ticks:{font:{family:'Cairo'},callback:v=>fmt(v)}}}}});
+
+  const rc=$('#rangeChip');
+  if(selKey){rc.textContent='📅 يوم محدد: '+selKey;rc.classList.add('day');}
+  else{rc.textContent='الفترة: '+iso(chartFrom)+' ← '+iso(chartTo);rc.classList.remove('day');}
+  $('#fileChip').textContent='الملف: '+CURRENT.name;
+
+  renderChart(selKey);
+
   const box=$('#expList');box.innerHTML='';
-  CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach((c,i)=>{
+  CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
     const el=document.createElement('div');el.className='acc-item';
     el.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+c.icon+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
     '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
@@ -246,14 +257,44 @@ function renderDashboard(st){
     box.appendChild(el);
   });
 }
+
+/* ---------- الرسم البياني التفاعلي ---------- */
+function renderChart(selKey){
+  const daily=computeDaily(chartFrom,chartTo);
+  const days=Object.keys(daily).sort();
+  const labels=days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];});
+  const barColors=days.map(d=>d===selKey?'#f59e0b':'#4f46e5');
+  const barBorders=days.map(d=>d===selKey?'#b45309':'#4f46e5');
+  if(CHART)CHART.destroy();
+  CHART=new Chart($('#chart'),{data:{labels:labels,datasets:[
+    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderColor:barBorders,borderWidth:1,borderRadius:4},
+    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:2,pointRadius:2,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      onClick:(evt,els)=>{if(els.length&&els[0].datasetIndex===0){toggleDay(days[els[0].index]);}},
+      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=(els.length&&els[0].datasetIndex===0)?'pointer':'default';},
+      plugins:{legend:{labels:{font:{family:'Cairo',weight:700}}},tooltip:{callbacks:{title:items=>'اليوم: '+days[items[0].dataIndex]}}},
+      scales:{x:{ticks:{font:{family:'Cairo'},maxTicksLimit:15}},y:{ticks:{font:{family:'Cairo'},callback:v=>fmt(v)}}}}});
+}
+function toggleDay(key){
+  if(selectedDay&&iso(selectedDay)===key){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');}
+  else{selectedDay=new Date(key+'T00:00:00');$('#dFrom').value=key;$('#dTo').value=key;toast('تم تحديد يوم: '+key);}
+  renderAll();
+}
 function apply(){
   if(!RAW)return;
   let f=new Date($('#dFrom').value+'T00:00:00'),t=new Date($('#dTo').value+'T23:59:59');
+  if(isNaN(f)||isNaN(t))return;
   if(f>t)[f,t]=[t,f];
-  $('#rangeChip').textContent='الفترة: '+iso(f)+' ← '+iso(t);
-  renderDashboard(computeStats(f,t));
+  chartFrom=f;chartTo=t;selectedDay=null;
+  renderAll();
 }
-function setDefaultRange(){const[mn,mx]=fullRange();if(!mn)return;$('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);$('#fileChip').textContent='الملف: '+CURRENT.name;apply();}
+function resetRange(){
+  const[mn,mx]=fullRange();if(!mn)return;
+  chartFrom=mn;chartTo=mx;selectedDay=null;
+  $('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);
+  renderAll();
+}
+function setDefaultRange(){resetRange();}
 
 /* ---------- إدارة الملفات ---------- */
 async function renderLocal(){
@@ -284,12 +325,11 @@ async function refreshRepo(){
     box.innerHTML='';
     items.forEach(f=>{
       const el=document.createElement('div');el.className='file-item';
-      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size/1048576).toFixed(2)+' MB</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-rf="'+encodeURIComponent(f.download_url)+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
+      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size/1048576).toFixed(2)+' MB</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
       box.appendChild(el);
     });
-    box.querySelectorAll('[data-rf]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(decodeURIComponent(b.dataset.rf),b.dataset.n);});
-    ovHide();
-    toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
+    box.querySelectorAll('[data-url]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(b.dataset.url,b.dataset.n);});
+    ovHide();toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
     return items;
   }catch(e){ovHide();toast('تعذّر الاتصال بالمستودع — تحقق من الإنترنت');return[];}
 }
@@ -305,6 +345,7 @@ async function openURL(url,name){
 }
 $('#btnRepo').onclick=refreshRepo;
 $('#btnApply').onclick=apply;
+$('#btnFull').onclick=resetRange;
 $('#btnSave').onclick=async()=>{
   if(!RAW||!CURRENT){toast('لا يوجد ملف مفتوح للحفظ');return;}
   const[mn,mx]=fullRange();const st=computeStats(mn,mx);
@@ -314,7 +355,7 @@ $('#btnSave').onclick=async()=>{
   catch(e){toast('تعذّر الحفظ (مساحة التخزين ممتلئة)');}
 };
 
-/* ---------- الإقلاع: الملفات المحلية أساسية ---------- */
+/* ---------- الإقلاع ---------- */
 (async function init(){
   try{
     const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
