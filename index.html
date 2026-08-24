@@ -25,6 +25,7 @@ body{background:linear-gradient(180deg,#e9edf8,#dfe4f2);min-height:100vh;color:#
 .btn-danger{background:#fee2e2;color:#dc2626}
 main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px}
 .card{background:#f8f9fd;border-radius:22px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .card-head h2{font-size:14.5px;font-weight:900;display:flex;gap:8px;align-items:center;color:#1e293b}
 .card-head h2 i{color:#4f46e5}
 .hint{font-size:10px;color:#94a3b8;font-weight:700;margin-top:4px}
@@ -76,13 +77,30 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .acc-inner th{background:#efedfb;color:#5a5878;font-weight:800;padding:7px 10px;text-align:right;position:sticky;top:0}
 .acc-inner td{padding:7px 10px;border-top:1px solid #eceafb;font-weight:700;color:#555a75}
 .acc-inner td.amt{color:#e11d48;font-weight:900;text-align:left}
-/* ✅ صف الإجماليات أسفل كل فئة: مدين − دائن = صافي */
 .acc-inner tfoot td{background:#efedfb;color:#3f3d56;font-weight:900;border-top:2px solid #e2e0f5;font-size:10.5px}
 #overlay{position:fixed;inset:0;background:rgba(233,237,248,.95);backdrop-filter:blur(6px);z-index:100;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
 .spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 #ovText{font-size:13px;font-weight:800;color:#4f46e5}
 .toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+
+/* ✅ زر اختيار اليوم + القائمة المنسدلة الأنيقة */
+.day-picker{position:relative;display:inline-block}
+.day-btn{width:34px;height:34px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;display:grid;place-items:center;cursor:pointer;transition:.2s;font-size:13px;position:relative}
+.day-btn:hover{border-color:#c7d2fe;color:#4f46e5;background:#f5f8ff}
+.day-btn.on{border-color:#f59e0b;background:#fffbeb;color:#d97706;box-shadow:0 4px 12px rgba(245,158,11,.25)}
+.day-btn.on::after{content:'';position:absolute;top:-2px;inset-inline-end:-2px;width:8px;height:8px;background:#f59e0b;border-radius:50%;border:2px solid #fff}
+.day-pop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 40px rgba(15,23,42,.18);padding:12px;z-index:50;width:260px;opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transition:all .25s cubic-bezier(.4,0,.2,1)}
+.day-pop.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.day-pop-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px dashed #e2e8f0;margin-bottom:8px}
+.day-pop-head span{font-size:11px;font-weight:800;color:#4f46e5}
+.day-pop-head button{border:none;background:#f1f5f9;color:#64748b;font-family:'Cairo';font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;cursor:pointer;transition:.2s}
+.day-pop-head button:hover{background:#fee2e2;color:#dc2626}
+.day-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:180px;overflow:auto}
+.day-cell{border:none;background:#f1f5f9;border-radius:9px;padding:7px 0;font-family:'Cairo';font-size:11px;font-weight:800;color:#334155;cursor:pointer;transition:.15s}
+.day-cell:hover{background:#e2e8f0}
+.day-cell.on{background:#f59e0b;color:#fff;box-shadow:0 3px 8px rgba(245,158,11,.4)}
+.day-pop-empty{grid-column:1/-1;text-align:center;font-size:11px;color:#94a3b8;padding:12px 0}
 </style>
 </head>
 <body>
@@ -150,8 +168,21 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
       </div>
     </section>
     <section class="card hidden" id="chartCard" oncontextmenu="return false">
-      <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
-      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم ليتلوّن بالذهبي وتظهر تفاصيله — انقر مجدداً للإلغاء</p>
+      <div class="card-head">
+        <h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2>
+        <!-- ✅ زر اختيار اليوم الأنيق -->
+        <div class="day-picker">
+          <button class="day-btn" id="dayBtn" title="اختر يوم"><i class="fa-regular fa-calendar"></i></button>
+          <div class="day-pop" id="dayPop">
+            <div class="day-pop-head">
+              <span>اختر يوماً محدداً</span>
+              <button id="dayClear">إلغاء</button>
+            </div>
+            <div class="day-grid" id="dayGrid"></div>
+          </div>
+        </div>
+      </div>
+      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم بالرسم أو اختر من الأيقونة 📅</p>
       <div style="height:280px;margin-top:10px"><canvas id="chart"></canvas></div>
     </section>
   </div>
@@ -177,6 +208,7 @@ const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوص�
 
 let RAW=null, CURRENT=null, CHART=null;
 let chartFrom=null, chartTo=null, selectedDay=null;
+let popCloseTimer=null; // مؤقت الإغلاق التلقائي
 
 /* ---------- IndexedDB ---------- */
 function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
@@ -246,6 +278,7 @@ function renderAll(){
   $('#fileChip').textContent='الملف: '+CURRENT.name;
 
   renderChart(selKey);
+  renderDayButtonState(selKey);
 
   const box=$('#expList');box.innerHTML='';
   CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
@@ -302,6 +335,53 @@ function resetRange(){
   $('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);
   renderAll();
 }
+
+/* ---------- زر اختيار اليوم (قائمة منسدلة مع إغلاق تلقائي بعد 3 ثوانٍ) ---------- */
+function renderDayButtonState(selKey){
+  const btn=$('#dayBtn');
+  if(selKey){btn.classList.add('on');btn.title='اليوم المحدد: '+selKey;}
+  else{btn.classList.remove('on');btn.title='اختر يوم';}
+}
+function openDayPop(){
+  if(!chartFrom||!chartTo)return;
+  const daily=computeDaily(chartFrom,chartTo);
+  const days=Object.keys(daily).sort();
+  const selKey=selectedDay?iso(selectedDay):null;
+  const grid=$('#dayGrid');grid.innerHTML='';
+  if(!days.length){grid.innerHTML='<div class="day-pop-empty">لا توجد أيام في الفترة الحالية</div>';}
+  else{
+    days.forEach(d=>{
+      const b=document.createElement('button');
+      b.className='day-cell'+(d===selKey?' on':'');
+      b.textContent=+d.split('-')[2];
+      b.onclick=(e)=>{e.stopPropagation();toggleDay(d);closeDayPop();};
+      grid.appendChild(b);
+    });
+  }
+  $('#dayPop').classList.add('open');
+  // ✅ إغلاق تلقائي بعد 3 ثوانٍ إن لم يختر المستخدم شيئاً
+  clearTimeout(popCloseTimer);
+  popCloseTimer=setTimeout(closeDayPop,3000);
+}
+function closeDayPop(){
+  $('#dayPop').classList.remove('open');
+  clearTimeout(popCloseTimer);
+}
+$('#dayBtn').onclick=(e)=>{e.stopPropagation();const pop=$('#dayPop');if(pop.classList.contains('open'))closeDayPop();else openDayPop();};
+$('#dayClear').onclick=(e)=>{e.stopPropagation();if(selectedDay){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');renderAll();}closeDayPop();};
+// إغلاق القائمة عند النقر خارجها
+document.addEventListener('click',(e)=>{
+  const pop=$('#dayPop');const btn=$('#dayBtn');
+  if(pop&&pop.classList.contains('open')&&!pop.contains(e.target)&&!btn.contains(e.target))closeDayPop();
+});
+// إعادة ضبط المؤقت عند مرور الماوس على القائمة (لا تُغلق أثناء الاستعراض)
+document.addEventListener('mouseover',(e)=>{
+  const pop=$('#dayPop');
+  if(pop&&pop.classList.contains('open')&&pop.contains(e.target)){
+    clearTimeout(popCloseTimer);
+    popCloseTimer=setTimeout(closeDayPop,3000);
+  }
+});
 
 /* ---------- إدارة الملفات ---------- */
 async function renderLocal(){
