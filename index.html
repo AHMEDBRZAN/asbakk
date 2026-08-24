@@ -2,274 +2,333 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام الحسابات — جلب تلقائي من المستودع</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام الحسابات المتكامل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg:#f2f4fb; --card:#ffffff; --ink:#101a33; --muted:#6b7590;
-  --indigo:#4f46e5; --sky:#0ea5e9; --teal:#0d9488; --emerald:#059669;
-  --rose:#e11d48; --amber:#d97706; --orange:#ea580c; --violet:#7c3aed;
-  --r:22px; --sh:0 10px 30px rgba(16,26,51,.08);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;
-  background:radial-gradient(600px 300px at 90% -50px,rgba(79,70,229,.14),transparent),
-             radial-gradient(500px 260px at 10% 0,rgba(14,165,233,.12),transparent);}
-.wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px;position:relative}
-
-/* ===== الهيدر ===== */
-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);
-  border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-bottom:16px}
-.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:20px;
-  background:linear-gradient(135deg,var(--indigo),var(--sky));box-shadow:0 6px 16px rgba(79,70,229,.35)}
-header h1{font-size:19px;font-weight:900}
-header small{display:block;color:var(--muted);font-size:11px;font-weight:600}
-.repo-pill{margin-inline-start:auto;display:flex;align-items:center;gap:8px;background:#eef2ff;
-  color:var(--indigo);border:1px solid #dbe3ff;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800}
-.repo-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 4px rgba(5,150,105,.15)}
-.icon-btn{width:42px;height:42px;border:none;border-radius:12px;cursor:pointer;font-size:16px;
-  background:#f1f4fb;color:var(--indigo);transition:.25s}
-.icon-btn:hover{background:var(--indigo);color:#fff;transform:rotate(90deg)}
-
-/* ===== الفلتر ===== */
-.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--card);
-  border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;margin-bottom:16px}
-.f-group{display:flex;flex-direction:column;gap:5px}
-.f-group label{font-size:11px;font-weight:800;color:var(--muted)}
-.f-group input{border:1.5px solid #e3e8f4;border-radius:12px;padding:9px 12px;font-family:'Cairo';
-  font-size:13px;font-weight:700;color:var(--ink);background:#f8faff;outline:none;transition:.2s}
-.f-group input:focus{border-color:var(--indigo)}
-.btn{border:none;border-radius:12px;padding:10px 22px;font-family:'Cairo';font-size:13px;font-weight:900;
-  cursor:pointer;transition:.25s;display:inline-flex;align-items:center;gap:8px}
-.btn-main{background:linear-gradient(135deg,var(--indigo),var(--sky));color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
-.btn-main:hover{transform:translateY(-2px)}
-.btn-ghost{background:#f1f4fb;color:var(--muted)}
-.btn-ghost:hover{background:#e5eaf6;color:var(--ink)}
-.chip{border:1.5px solid #e3e8f4;background:#fff;border-radius:999px;padding:8px 16px;font-size:12px;
-  font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
-.chip:hover,.chip.on{border-color:var(--indigo);color:var(--indigo);background:#eef2ff}
-
-/* ===== البطاقات ===== */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-bottom:16px}
-.kpi{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;inset-inline-start:0;top:16px;bottom:16px;width:4px;border-radius:4px;background:var(--c)}
-.kpi-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.kpi-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:15px;
-  color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff)}
-.kpi-label{font-size:12px;font-weight:800;color:var(--muted)}
-.kpi-val{font-size:22px;font-weight:900;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-.kpi-sub{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
-
-.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:16px}
-@media(max-width:960px){.grid2{grid-template-columns:1fr}}
-.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px}
-.panel h2{font-size:15px;font-weight:900;display:flex;align-items:center;gap:9px;margin-bottom:14px}
-.panel h2 i{color:var(--indigo)}
-
-/* قائمة الدخل */
-.stmt{display:flex;flex-direction:column}
-.s-row{display:flex;justify-content:space-between;align-items:center;padding:11px 4px;border-bottom:1.5px dashed #edf0f8;font-size:13px;font-weight:700}
-.s-row b{font-variant-numeric:tabular-nums;font-weight:900}
-.s-row .neg{color:var(--rose)} .s-row .pos{color:var(--emerald)}
-.s-total{margin-top:12px;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;
-  background:linear-gradient(135deg,var(--emerald),var(--teal));color:#fff;box-shadow:0 8px 20px rgba(5,150,105,.3)}
-.s-total span{font-size:14px;font-weight:900}
-.s-total b{font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
-
-/* المصاريف أكورديون */
-.acc-item{border:1.5px solid #edf0f8;border-radius:16px;margin-bottom:10px;overflow:hidden;background:#fff;transition:.25s}
-.acc-item.open{border-color:#c7d2fe;box-shadow:0 8px 20px rgba(79,70,229,.1)}
-.acc-head{width:100%;border:none;background:#fbfcff;display:flex;align-items:center;gap:10px;
-  padding:13px 16px;cursor:pointer;font-family:'Cairo'}
-.acc-head:hover{background:#f4f7ff}
-.acc-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:13px;color:var(--indigo);background:#eef2ff;flex-shrink:0}
-.acc-name{font-size:13px;font-weight:900;color:var(--ink)}
-.acc-count{font-size:10px;font-weight:800;color:var(--muted);background:#eef1f8;border-radius:999px;padding:3px 9px}
-.acc-total{margin-inline-start:auto;font-size:13px;font-weight:900;color:var(--rose);font-variant-numeric:tabular-nums}
-.acc-chev{color:var(--muted);font-size:12px;transition:.3s}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{background:linear-gradient(180deg,#e9edf8,#dfe4f2);min-height:100vh;color:#0f172a;padding-bottom:60px}
+.hidden{display:none!important}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(15,23,42,.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:grid;place-items:center;font-size:18px}
+.brand h1{font-size:16px;font-weight:900}
+.brand small{color:#64748b;font-size:10.5px}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-family:'Cairo';font-weight:800;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.2s}
+.btn-green{background:#059669;color:#fff}.btn-green:hover{background:#047857}
+.btn-indigo{background:#4f46e5;color:#fff}.btn-indigo:hover{background:#4338ca}
+.btn-sm{padding:7px 12px;font-size:11.5px;border-radius:10px}
+.btn-ghost{background:#eef2ff;color:#4f46e5}
+.btn-danger{background:#fee2e2;color:#dc2626}
+main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.card{background:#f8f9fd;border-radius:22px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px}
+.card-head h2{font-size:14.5px;font-weight:900;display:flex;gap:8px;align-items:center;color:#1e293b}
+.card-head h2 i{color:#4f46e5}
+.file-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.file-item{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;transition:.2s}
+.file-item:hover{border-color:#c7d2fe;box-shadow:0 6px 16px rgba(79,70,229,.12)}
+.fi-icon{width:42px;height:42px;border-radius:12px;background:#ecfdf5;color:#059669;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.fi-icon.repo{background:#eef2ff;color:#4f46e5}
+.fi-info{flex:1;min-width:0}
+.fi-info b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-info span{font-size:10.5px;color:#64748b}
+.fi-mini{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:#475569;margin-top:4px}
+.fi-mini em{font-style:normal}.fi-mini b{display:inline;color:#059669}
+.fi-actions{display:flex;gap:6px;flex-shrink:0}
+.empty{color:#94a3b8;font-size:12px;text-align:center;padding:14px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.f-group label{font-size:11px;font-weight:800;color:#64748b;display:block;margin-bottom:4px}
+.f-group input{border:1.5px solid #e2e8f0;background:#fff;border-radius:12px;padding:9px 12px;font-family:'Cairo';font-size:13px;font-weight:700}
+.chip{background:#eef2ff;color:#4f46e5;border-radius:999px;padding:9px 14px;font-size:11px;font-weight:800}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+.kpi{background:#f8f9fd;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:14px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;inset-inline-end:0;top:12px;bottom:12px;width:4px;border-radius:4px;background:var(--c)}
+.kpi .t{display:flex;gap:8px;align-items:center;font-size:11px;font-weight:800;color:#64748b}
+.kpi .ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.7);color:var(--c);display:grid;place-items:center;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--c)}
+.kpi .v{font-size:18px;font-weight:900;margin-top:8px}
+.kpi .s{font-size:9.5px;color:#94a3b8;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:950px){.grid2{grid-template-columns:1fr 1fr}}
+.stmt .row{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1.5px dashed #e2e8f0;font-size:12.5px;font-weight:700}
+.stmt .row b{font-weight:900}
+.pos{color:#059669}.neg{color:#e11d48}
+.total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
+.acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
+.acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
+.acc-head:hover{background:#f8fafc}
+.acc-ic{width:34px;height:34px;border-radius:10px;background:#fef2f2;color:#e11d48;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+.acc-name{flex:1;text-align:right;font-size:12.5px;font-weight:800}
+.acc-count{font-size:10px;font-weight:800;color:#64748b;background:#f1f5f9;border-radius:999px;padding:3px 9px}
+.acc-total{font-size:12.5px;font-weight:900;color:#e11d48}
+.acc-chev{color:#94a3b8;font-size:11px;transition:.3s}
 .acc-item.open .acc-chev{transform:rotate(180deg)}
-.acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+.acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
 .acc-item.open .acc-body{grid-template-rows:1fr}
 .acc-inner{overflow:hidden}
-.acc-inner table{width:100%;border-collapse:collapse;font-size:11.5px}
-.acc-inner th{background:#f6f8fd;color:var(--muted);font-weight:800;padding:8px 10px;text-align:right}
-.acc-inner td{padding:8px 10px;border-top:1px solid #f1f4fb;font-weight:700;color:var(--ink)}
-.acc-inner td.amt{color:var(--rose);font-weight:900;text-align:left;font-variant-numeric:tabular-nums}
-.acc-inner .tbl-wrap{max-height:280px;overflow:auto}
-
-/* شاشة التحميل */
-#loader{position:fixed;inset:0;background:rgba(242,244,251,.96);backdrop-filter:blur(6px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99}
-.spin{width:56px;height:56px;border-radius:50%;border:5px solid #e3e8f4;border-top-color:var(--indigo);animation:sp 1s linear infinite}
+.tbl-wrap{max-height:260px;overflow:auto;border-top:1px solid #f1f5f9}
+.acc-inner table{width:100%;border-collapse:collapse;font-size:11px}
+.acc-inner th{background:#f8fafc;color:#64748b;font-weight:800;padding:7px 10px;text-align:right;position:sticky;top:0}
+.acc-inner td{padding:7px 10px;border-top:1px solid #f8fafc;font-weight:700;color:#334155}
+.acc-inner td.amt{color:#e11d48;font-weight:900;text-align:left}
+#overlay{position:fixed;inset:0;background:rgba(233,237,248,.95);backdrop-filter:blur(6px);z-index:100;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
+.spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-#loadTxt{font-size:14px;font-weight:800;color:var(--indigo)}
-#loadErr{display:none;text-align:center}
-#loadErr p{color:var(--rose);font-weight:800;margin-bottom:12px}
-.hidden{display:none!important}
-footer{text-align:center;color:var(--muted);font-size:11px;font-weight:700;margin-top:24px}
+#ovText{font-size:13px;font-weight:800;color:#4f46e5}
+.toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 </style>
 </head>
 <body>
-<div id="loader">
-  <div class="spin" id="spin"></div>
-  <p id="loadTxt">جارٍ الاتصال بمستودع GitHub…</p>
-  <div id="loadErr">
-    <p><i class="fa-solid fa-triangle-exclamation"></i> تعذّر جلب الملف من المستودع</p>
-    <button class="btn btn-main" onclick="init()"><i class="fa-solid fa-rotate-right"></i> إعادة المحاولة</button>
-  </div>
-</div>
 
-<div class="wrap">
-<header>
-  <div class="logo"><i class="fa-solid fa-chart-line"></i></div>
-  <div><h1>نظام الحسابات المتكامل</h1><small>قائمة الدخل الشهرية — جلب تلقائي من المستودع</small></div>
-  <div class="repo-pill"><span class="dot"></span><span id="repoInfo">AHMEDBRZAN/asbakk</span></div>
-  <button class="icon-btn" title="تحديث من المستودع" onclick="init()"><i class="fa-solid fa-rotate-right"></i></button>
+<div id="overlay"><div class="spin"></div><p id="ovText">جارٍ التحميل…</p></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo"><i class="fa-solid fa-chart-line"></i></div>
+    <div><h1>نظام الحسابات المتكامل</h1><small>المستودع: AHMEDBRZAN/asbakk</small></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button id="btnRepo" class="btn btn-indigo"><i class="fa-solid fa-rotate"></i> تحديث من المستودع</button>
+    <button id="btnSave" class="btn btn-green"><i class="fa-solid fa-floppy-disk"></i> حفظ الملف</button>
+  </div>
 </header>
 
-<div class="filters">
-  <div class="f-group"><label>من تاريخ</label><input type="date" id="dFrom"></div>
-  <div class="f-group"><label>إلى تاريخ</label><input type="date" id="dTo"></div>
-  <button class="btn btn-main" onclick="apply()"><i class="fa-solid fa-filter"></i> تطبيق</button>
-  <button class="btn btn-ghost" onclick="resetRange()"><i class="fa-solid fa-calendar-days"></i> الشهر كامل</button>
-  <span class="chip" id="rangeInfo"></span>
-</div>
+<main>
+  <!-- قائمة الملفات المحفوظة محلياً (الأساسية) -->
+  <section class="card">
+    <div class="card-head"><h2><i class="fa-solid fa-folder-open"></i> قائمة الملفات المحفوظة محلياً (الأساسية)</h2></div>
+    <div id="localList" class="file-list"><div class="empty">لا توجد ملفات محفوظة بعد — افتح ملفاً من المستودع ثم اضغط "حفظ الملف"</div></div>
+  </section>
 
-<div class="kpis">
-  <div class="kpi" style="--c:var(--indigo)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-bag-shopping"></i></span><span class="kpi-label">إجمالي المبيعات</span></div><div class="kpi-val" id="kSales">0</div><div class="kpi-sub" id="kSalesS"></div></div>
-  <div class="kpi" style="--c:var(--rose)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-rotate-left"></i></span><span class="kpi-label">مردودات المبيعات</span></div><div class="kpi-val" id="kRet">0</div><div class="kpi-sub" id="kRetS"></div></div>
-  <div class="kpi" style="--c:var(--amber)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-tags"></i></span><span class="kpi-label">الحسم الممنوح</span></div><div class="kpi-val" id="kDisc">0</div><div class="kpi-sub" id="kDiscS"></div></div>
-  <div class="kpi" style="--c:var(--teal)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-wallet"></i></span><span class="kpi-label">صافي المبيعات</span></div><div class="kpi-val" id="kNet">0</div><div class="kpi-sub">المبيعات − المردودات − الحسم</div></div>
-  <div class="kpi" style="--c:var(--orange)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-boxes-stacked"></i></span><span class="kpi-label">تكلفة البضاعة المباعة</span></div><div class="kpi-val" id="kCogs">0</div><div class="kpi-sub" id="kCogsS">مدين − دائن</div></div>
-  <div class="kpi" style="--c:var(--violet)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-chart-simple"></i></span><span class="kpi-label">مجمل الدخل</span></div><div class="kpi-val" id="kGross">0</div><div class="kpi-sub">صافي المبيعات − التكلفة</div></div>
-  <div class="kpi" style="--c:var(--rose)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-receipt"></i></span><span class="kpi-label">إجمالي المصاريف</span></div><div class="kpi-val" id="kExp">0</div><div class="kpi-sub" id="kExpS"></div></div>
-  <div class="kpi" style="--c:var(--emerald)"><div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-sack-dollar"></i></span><span class="kpi-label">صافي الدخل</span></div><div class="kpi-val" id="kIncome">0</div><div class="kpi-sub">مجمل الدخل − المصاريف</div></div>
-</div>
+  <!-- ملفات المستودع -->
+  <section class="card hidden" id="repoCard">
+    <div class="card-head"><h2><i class="fa-brands fa-github"></i> ملفات المستودع (اضغط فتح ثم حفظ)</h2></div>
+    <div id="repoList" class="file-list"></div>
+  </section>
 
-<div class="grid2">
-  <div class="panel">
-    <h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2>
-    <div class="stmt">
-      <div class="s-row"><span>(+) إجمالي المبيعات</span><b class="pos" id="s1">0</b></div>
-      <div class="s-row"><span>(−) مردودات المبيعات</span><b class="neg" id="s2">0</b></div>
-      <div class="s-row"><span>(−) الحسم الممنوح</span><b class="neg" id="s3">0</b></div>
-      <div class="s-row"><span>(=) صافي المبيعات</span><b id="s4">0</b></div>
-      <div class="s-row"><span>(−) تكلفة البضاعة المباعة (مدين − دائن)</span><b class="neg" id="s5">0</b></div>
-      <div class="s-row"><span>(=) مجمل الدخل</span><b id="s6">0</b></div>
-      <div class="s-row"><span>(+) إيرادات مختلفة</span><b class="pos" id="s7">0</b></div>
-      <div class="s-row"><span>(=) إجمالي صافي الدخل بعد الإيرادات</span><b id="s8">0</b></div>
-      <div class="s-row"><span>(−) إجمالي المصاريف</span><b class="neg" id="s9">0</b></div>
-      <div class="s-total"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
+  <!-- الفلاتر -->
+  <section class="card hidden" id="filterCard">
+    <div class="filters">
+      <div class="f-group"><label>من تاريخ</label><input type="date" id="dFrom"></div>
+      <div class="f-group"><label>إلى تاريخ</label><input type="date" id="dTo"></div>
+      <button class="btn btn-indigo" id="btnApply"><i class="fa-solid fa-filter"></i> تطبيق</button>
+      <span class="chip" id="rangeChip"></span>
+      <span class="chip" id="fileChip" style="background:#ecfdf5;color:#059669"></span>
     </div>
-  </div>
-  <div class="panel">
-    <h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2>
-    <div style="height:340px"><canvas id="chart"></canvas></div>
-  </div>
-</div>
+  </section>
 
-<div class="panel">
-  <h2><i class="fa-solid fa-layer-group"></i> تفاصيل المصاريف حسب الفئة <span style="font-size:11px;color:var(--muted);font-weight:700">(انقر على الفئة لعرض تفاصيلها)</span></h2>
-  <div id="acc"></div>
-</div>
+  <!-- المؤشرات -->
+  <section class="kpis hidden" id="kpis">
+    <div class="kpi" style="--c:#4f46e5"><div class="t"><span class="ic"><i class="fa-solid fa-bag-shopping"></i></span>إجمالي المبيعات</div><div class="v" id="kSales">0</div><div class="s" id="kSalesS"></div></div>
+    <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-rotate-left"></i></span>مردودات المبيعات</div><div class="v neg" id="kRet">0</div><div class="s" id="kRetS"></div></div>
+    <div class="kpi" style="--c:#d97706"><div class="t"><span class="ic"><i class="fa-solid fa-tags"></i></span>الحسم الممنوح</div><div class="v neg" id="kDisc">0</div><div class="s" id="kDiscS"></div></div>
+    <div class="kpi" style="--c:#0d9488"><div class="t"><span class="ic"><i class="fa-solid fa-wallet"></i></span>صافي المبيعات</div><div class="v" id="kNet">0</div><div class="s">الإجمالي − المردودات − الحسم</div></div>
+    <div class="kpi" style="--c:#ea580c"><div class="t"><span class="ic"><i class="fa-solid fa-boxes-stacked"></i></span>تكلفة البضاعة المباعة</div><div class="v" id="kCogs">0</div><div class="s">مدين − دائن</div></div>
+    <div class="kpi" style="--c:#7c3aed"><div class="t"><span class="ic"><i class="fa-solid fa-chart-simple"></i></span>مجمل الدخل</div><div class="v" id="kGross">0</div><div class="s">صافي المبيعات − التكلفة</div></div>
+    <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-receipt"></i></span>إجمالي المصاريف</div><div class="v neg" id="kExp">0</div><div class="s" id="kExpS"></div></div>
+    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-sack-dollar"></i></span>صافي الدخل</div><div class="v pos" id="kNetInc">0</div><div class="s">مجمل الدخل − المصاريف</div></div>
+  </section>
 
-<footer>النظام يجلب البيانات تلقائياً من: github.com/AHMEDBRZAN/asbakk — العملة: دينار عراقي</footer>
-</div>
+  <div class="grid2">
+    <!-- قائمة الدخل -->
+    <section class="card hidden" id="stmtCard">
+      <div class="card-head"><h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2></div>
+      <div class="stmt" style="margin-top:10px">
+        <div class="row"><span>(+) إجمالي المبيعات</span><b class="pos" id="s1">0</b></div>
+        <div class="row"><span>(−) مردودات المبيعات</span><b class="neg" id="s2">0</b></div>
+        <div class="row"><span>(−) الحسم الممنوح</span><b class="neg" id="s3">0</b></div>
+        <div class="row"><span>(=) صافي المبيعات</span><b id="s4">0</b></div>
+        <div class="row"><span>(−) تكلفة البضاعة المباعة (مدين − دائن)</span><b class="neg" id="s5">0</b></div>
+        <div class="row"><span>(=) مجمل الدخل</span><b id="s6">0</b></div>
+        <div class="row"><span>(+) إيرادات مختلفة</span><b class="pos" id="s7">0</b></div>
+        <div class="row"><span>(=) إجمالي صافي الدخل بعد الإيرادات</span><b id="s8">0</b></div>
+        <div class="row"><span>(−) إجمالي المصاريف</span><b class="neg" id="s9">0</b></div>
+        <div class="total-btn"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
+      </div>
+    </section>
+    <!-- الحركة اليومية -->
+    <section class="card hidden" id="chartCard">
+      <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
+      <div style="height:300px;margin-top:10px"><canvas id="chart"></canvas></div>
+    </section>
+  </div>
+
+  <!-- المصاريف -->
+  <section class="card hidden" id="expCard">
+    <div class="card-head"><h2><i class="fa-solid fa-layer-group"></i> تفاصيل المصاريف حسب الفئة (انقر للفتح)</h2></div>
+    <div id="expList"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
 
 <script>
-const REPO='AHMEDBRZAN/asbakk', FALLBACK='الشهر 6 فقط.xlsx';
+const REPO='AHMEDBRZAN/asbakk';
 const $=s=>document.querySelector(s);
-const fmt=(n,d=0)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n||0);
-const EXP_CATS=["ايجار بناية","كهرباء","اشتراك مولد","مصاريف مختلفة","شراء ماء للمحل","شراء قرطاسية متنوعة","شراء منظفات","شراء علاليك","مشتريات المحل","مكافئات تشجيعية","اجور نقل","مشروبات ساخنة","صيانة","اعانة محتاجين","عمولة حوالات الشركات","زيادة ونقص صندوق","اجور الموظفين","طعام الموظفين","مصاريف تسويق وتطوير","ايجار المخزن الخارجي","اجور توصيل البضاعة","اعلام ونشر الشركة"];
-const ICONS={"ايجار بناية":"fa-building","كهرباء":"fa-bolt","اشتراك مولد":"fa-plug-circle-bolt","مصاريف مختلفة":"fa-shapes","شراء ماء للمحل":"fa-droplet","شراء قرطاسية متنوعة":"fa-pen-ruler","شراء منظفات":"fa-soap","شراء علاليك":"fa-box-archive","مشتريات المحل":"fa-cart-shopping","مكافئات تشجيعية":"fa-gift","اجور نقل":"fa-truck-fast","مشروبات ساخنة":"fa-mug-hot","صيانة":"fa-screwdriver-wrench","اعانة محتاجين":"fa-hand-holding-heart","عمولة حوالات الشركات":"fa-money-bill-transfer","زيادة ونقص صندوق":"fa-scale-unbalanced","اجور الموظفين":"fa-users","طعام الموظفين":"fa-utensils","مصاريف تسويق وتطوير":"fa-bullhorn","ايجار المخزن الخارجي":"fa-warehouse","اجور توصيل البضاعة":"fa-truck","اعلام ونشر الشركة":"fa-rectangle-ad"};
-const norm=s=>(s||'').replace(/\s+/g,'');
-let RAW={},CHART=null,FULL_RANGE=null;
-
-function toNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[,،\s]/g,''));return isNaN(n)?0:n}
-function toDate(v){if(v instanceof Date)return v;if(typeof v==='number')return new Date(Math.round((v-25569)*864e5));const m=String(v).match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);const d=new Date(v);return isNaN(d)?null:d}
-function parseWS(ws){return XLSX.utils.sheet_to_json(ws,{defval:null}).map(r=>({date:toDate(r['التاريخ']),voucher:r['رقم السند'],debit:toNum(r['مدين']),credit:toNum(r['دائن']),statement:r['البيان']||'',account:(r['اسم الحساب']||'').trim()})).filter(r=>r.date)}
-function getSheet(wb,key){const n=norm(key);const name=wb.SheetNames.find(s=>norm(s)===n)||wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null}
-
-async function init(){
-  $('#loader').classList.remove('hidden');$('#loadErr').style.display='none';$('#spin').style.display='block';$('#loadTxt').style.display='block';
-  try{
-    $('#loadTxt').textContent='جارٍ الاتصال بمستودع GitHub…';
-    let url=null;
-    try{
-      const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
-      if(r.ok){const items=await r.json();if(Array.isArray(items)){const f=items.find(i=>i.name.endsWith('.xlsx'));if(f){url=f.download_url;$('#repoInfo').textContent=REPO+' • '+f.name+' • '+(f.size/1048576).toFixed(1)+' MB'}}}
-    }catch(e){}
-    if(!url)url='https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURI(FALLBACK);
-    $('#loadTxt').textContent='جارٍ تنزيل ملف Excel…';
-    const res=await fetch(url);
-    if(!res.ok)throw new Error(res.status);
-    const wb=XLSX.read(await res.arrayBuffer(),{type:'array',cellDates:true});
-    RAW={sales:parseWS(getSheet(wb,'المبيعات')),ret:parseWS(getSheet(wb,'المردودات')),disc:parseWS(getSheet(wb,'الحسم')),cogs:parseWS(getSheet(wb,'تكلفة البضاعة')),exp:parseWS(getSheet(wb,'المصاريف'))};
-    const all=[...RAW.sales,...RAW.exp].filter(r=>r.date);
-    if(!all.length)throw new Error('empty');
-    const mn=new Date(Math.min(...all.map(r=>r.date))),mx=new Date(Math.max(...all.map(r=>r.date)));
-    FULL_RANGE=[mn,mx];
-    $('#loader').classList.add('hidden');
-    resetRange();
-  }catch(e){$('#spin').style.display='none';$('#loadTxt').style.display='none';$('#loadErr').style.display='block'}
-}
+const fmt=(n,d=0)=>(isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-function resetRange(){if(!FULL_RANGE)return;$('#dFrom').value=iso(FULL_RANGE[0]);$('#dTo').value=iso(FULL_RANGE[1]);apply()}
-function apply(){
-  const f=new Date($('#dFrom').value+'T00:00:00'),t=new Date($('#dTo').value+'T23:59:59');
-  const inR=r=>r.date>=f&&r.date<=t;
-  const S=RAW.sales.filter(inR),R=RAW.ret.filter(inR),D=RAW.disc.filter(inR),C=RAW.cogs.filter(inR),E=RAW.exp.filter(inR);
+const norm=s=>(s||'').replace(/\s+/g,'');
+
+const CATS=[["ايجار بناية","fa-building"],["كهرباء","fa-bolt"],["اشتراك مولد","fa-plug-circle-bolt"],["مصاريف مختلفة","fa-shapes"],["شراء ماء للمحل","fa-droplet"],["شراء قرطاسية متنوعة","fa-pen-ruler"],["شراء منظفات","fa-soap"],["شراء علاليك","fa-box-archive"],["مشتريات المحل","fa-cart-shopping"],["مكافئات تشجيعية","fa-gift"],["اجور نقل","fa-truck-fast"],["مشروبات ساخنة","fa-mug-hot"],["صيانة","fa-screwdriver-wrench"],["اعانة محتاجين","fa-hand-holding-heart"],["عمولة حوالات الشركات","fa-money-bill-transfer"],["زيادة ونقص صندوق","fa-scale-unbalanced"],["اجور الموظفين","fa-users"],["طعام الموظفين","fa-utensils"],["مصاريف تسويق وتطوير","fa-bullhorn"],["ايجار المخزن الخارجي","fa-warehouse"],["اجور توصيل البضاعة","fa-truck"],["اعلام ونشر الشركة","fa-rectangle-ad"]];
+const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوصيلبضاعة':'اجور توصيل البضاعة'};
+
+let RAW=null, CURRENT=null, CHART=null;
+
+/* ---------- IndexedDB ---------- */
+function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
+async function idbGet(id){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbPut(item){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(item);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+async function idbDel(id){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+
+/* ---------- أدوات ---------- */
+function ov(t){$('#ovText').textContent=t;$('#overlay').classList.remove('hidden');}
+function ovHide(){$('#overlay').classList.add('hidden');}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add('hidden'),2600);}
+function toNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[,،\s]/g,''));return isFinite(n)?n:0;}
+function toDate(v){if(v instanceof Date)return v;if(typeof v==='number')return new Date(Math.round((v-25569)*864e5));const m=String(v).match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);const d=new Date(v);return isNaN(d)?null:d;}
+function rowsFrom(ws){if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{defval:null}).map(r=>({date:toDate(r['التاريخ']),voucher:r['رقم السند'],type:r['النوع'],debit:toNum(r['مدين']),credit:toNum(r['دائن']),stmt:r['البيان']||'',acc:(r['اسم الحساب']||'').trim()})).filter(r=>r.date);}
+function wbToRAW(wb){const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
+return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),cogs:rowsFrom(find('تكلفة')),expenses:rowsFrom(find('المصاريف'))};}
+function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
+function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
+
+/* ---------- الحسابات ---------- */
+function computeStats(from,to){
+  const inR=r=>r.date>=from&&r.date<=to;
+  const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR);
   const sum=(a,k)=>a.reduce((s,r)=>s+r[k],0);
   const sales=sum(S,'credit'),ret=sum(R,'debit'),disc=sum(D,'debit')-sum(D,'credit');
-  const net=sales-ret-disc,cogs=sum(C,'debit')-sum(C,'credit'),gross=net-cogs,other=0;
-  const catMap={};EXP_CATS.forEach(c=>catMap[norm(c)]={name:c,amt:0,rows:[]});
-  E.forEach(r=>{const c=catMap[norm(r.account)];if(c){const v=r.debit-r.credit;c.amt+=v;c.rows.push(r)}});
-  const expTotal=EXP_CATS.reduce((s,c)=>s+catMap[norm(c)].amt,0);
-  const income=gross+other-expTotal;
-  $('#rangeInfo').textContent='الفترة: '+$('#dFrom').value+' ← '+$('#dTo').value;
-  anim($('#kSales'),sales);$('#kSalesS').textContent=S.length+' عملية بيع';
-  anim($('#kRet'),ret);$('#kRetS').textContent=R.length+' مرتجع';
-  anim($('#kDisc'),disc);$('#kDiscS').textContent=D.length+' سند حسم';
-  anim($('#kNet'),net);
-  anim($('#kCogs'),cogs);$('#kCogsS').textContent=C.length+' قيد (مدين − دائن)';
-  anim($('#kGross'),gross);anim($('#kExp'),expTotal);$('#kExpS').textContent=E.length+' سند مصاريف';
-  anim($('#kIncome'),income);
-  $('#s1').textContent=fmt(sales);$('#s2').textContent=fmt(ret);$('#s3').textContent=fmt(disc);
-  $('#s4').textContent=fmt(net);$('#s5').textContent=fmt(cogs);$('#s6').textContent=fmt(gross);
-  $('#s7').textContent=fmt(other);$('#s8').textContent=fmt(gross+other);$('#s9').textContent=fmt(expTotal);$('#s10').textContent=fmt(income);
-  buildChart(S,E,catMap,f,t);buildAcc(catMap);
+  const netSales=sales-ret-disc;
+  const cogs=sum(C,'debit')-sum(C,'credit');
+  const gross=netSales-cogs;
+  const lookup={};CATS.forEach(c=>lookup[norm(c[0])]=c[0]);
+  const catMap={};CATS.forEach(c=>catMap[c[0]]={name:c[0],icon:c[1],amt:0,rows:[]});
+  E.forEach(r=>{let key=norm(r.acc);key=ALIAS[key]||lookup[key];if(key&&catMap[key]){const v=r.debit-r.credit;catMap[key].amt+=v;catMap[key].rows.push(r);}});
+  const expenses=CATS.reduce((s,c)=>s+catMap[c[0]].amt,0);
+  const net=gross-expenses;
+  const daily={};
+  S.forEach(r=>{const k=iso(r.date);daily[k]=daily[k]||{s:0,e:0};daily[k].s+=r.credit;});
+  E.forEach(r=>{const k=iso(r.date);daily[k]=daily[k]||{s:0,e:0};daily[k].e+=r.debit;});
+  return{sales,ret,disc,netSales,cogs,gross,expenses,net,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length},daily};
 }
-function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st)})(t0)}
-function buildChart(S,E,catMap,f,t){
-  const days=[];for(let d=new Date(f);d<=t;d.setDate(d.getDate()+1))days.push(new Date(d));
-  const lab=days.map(d=>d.getDate()+'/'+(d.getMonth()+1));
-  const sMap={},eMap={};
-  S.forEach(r=>{const k=iso(r.date);sMap[k]=(sMap[k]||0)+r.credit});
-  E.forEach(r=>{if(catMap[norm(r.account)]){const k=iso(r.date);eMap[k]=(eMap[k]||0)+(r.debit-r.credit)}});
+function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
+
+/* ---------- العرض ---------- */
+function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
+function renderDashboard(st){
+  ['filterCard','kpis','stmtCard','chartCard','expCard'].forEach(id=>$('#'+id).classList.remove('hidden'));
+  anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
+  anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
+  anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
+  anim($('#kNet'),st.netSales);anim($('#kCogs'),st.cogs);anim($('#kGross'),st.gross);
+  anim($('#kExp'),st.expenses);$('#kExpS').textContent=st.counts.e+' سند';
+  anim($('#kNetInc'),st.net);
+  $('#s1').textContent=fmt(st.sales);$('#s2').textContent=fmt(st.ret);$('#s3').textContent=fmt(st.disc);
+  $('#s4').textContent=fmt(st.netSales);$('#s5').textContent=fmt(st.cogs);$('#s6').textContent=fmt(st.gross);
+  $('#s7').textContent='0';$('#s8').textContent=fmt(st.gross);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
+  const days=Object.keys(st.daily).sort();
   if(CHART)CHART.destroy();
-  CHART=new Chart($('#chart'),{data:{labels:lab,datasets:[
-    {type:'bar',label:'المبيعات',data:days.map(d=>sMap[iso(d)]||0),backgroundColor:'#4f46e5',borderRadius:5},
-    {type:'line',label:'المصاريف',data:days.map(d=>eMap[iso(d)]||0),borderColor:'#e11d48',backgroundColor:'#e11d48',tension:.35,borderWidth:2,pointRadius:2}]},
+  CHART=new Chart($('#chart'),{data:{labels:days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];}),datasets:[
+    {type:'bar',label:'المبيعات',data:days.map(d=>st.daily[d].s),backgroundColor:'#4f46e5',borderRadius:4},
+    {type:'line',label:'المصاريف',data:days.map(d=>st.daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:2,pointRadius:2,tension:.3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Cairo',weight:700}}}},scales:{x:{ticks:{font:{family:'Cairo'},maxTicksLimit:15}},y:{ticks:{font:{family:'Cairo'},callback:v=>fmt(v)}}}}});
-}
-function buildAcc(catMap){
-  const box=$('#acc');box.innerHTML='';
-  EXP_CATS.map(c=>catMap[norm(c)]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
-    const item=document.createElement('div');item.className='acc-item';
-    item.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+(ICONS[c.name]||'fa-receipt')+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
-    '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>رقم السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
-    c.rows.map(r=>'<tr><td>'+iso(r.date)+'</td><td>'+r.voucher+'</td><td>'+r.statement+'</td><td class="amt">'+fmt(r.debit-r.credit,2)+'</td></tr>').join('')+
+  const box=$('#expList');box.innerHTML='';
+  CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach((c,i)=>{
+    const el=document.createElement('div');el.className='acc-item';
+    el.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+c.icon+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
+    '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
+    c.rows.map(r=>'<tr><td>'+iso(r.date)+'</td><td>'+r.voucher+'</td><td>'+r.stmt+'</td><td class="amt">'+fmt(r.debit-r.credit,2)+'</td></tr>').join('')+
     '</tbody></table></div></div></div>';
-    item.querySelector('.acc-head').onclick=()=>item.classList.toggle('open');
-    box.appendChild(item);
+    el.querySelector('.acc-head').onclick=()=>el.classList.toggle('open');
+    box.appendChild(el);
   });
 }
-init();
+function apply(){
+  if(!RAW)return;
+  let f=new Date($('#dFrom').value+'T00:00:00'),t=new Date($('#dTo').value+'T23:59:59');
+  if(f>t)[f,t]=[t,f];
+  $('#rangeChip').textContent='الفترة: '+iso(f)+' ← '+iso(t);
+  renderDashboard(computeStats(f,t));
+}
+function setDefaultRange(){const[mn,mx]=fullRange();if(!mn)return;$('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);$('#fileChip').textContent='الملف: '+CURRENT.name;apply();}
+
+/* ---------- إدارة الملفات ---------- */
+async function renderLocal(){
+  const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+  const box=$('#localList');
+  if(!items.length){box.innerHTML='<div class="empty">لا توجد ملفات محفوظة بعد — اضغط "تحديث من المستودع" ثم افتح ملفاً واحفظه</div>';return;}
+  box.innerHTML='';
+  items.forEach(it=>{
+    const m=it.meta||{};
+    const el=document.createElement('div');el.className='file-item';
+    el.innerHTML='<div class="fi-icon"><i class="fa-solid fa-file-excel"></i></div>'+
+    '<div class="fi-info"><b>'+it.name+'</b><span>حُفظ: '+new Date(it.savedAt).toLocaleString('ar-IQ')+'</span>'+
+    '<div class="fi-mini"><em>سجلات: <b>'+((m.counts&&(m.counts.s+m.counts.r+m.counts.d+m.counts.c+m.counts.e))||0)+'</b></em><em>مبيعات: <b>'+fmt(m.sales)+'</b></em><em>تكلفة: <b>'+fmt(m.cogs)+'</b></em><em>صافي: <b>'+fmt(m.net)+'</b></em></div></div>'+
+    '<div class="fi-actions"><button class="btn btn-sm btn-ghost" data-open="'+it.id+'"><i class="fa-solid fa-folder-open"></i> فتح</button><button class="btn btn-sm btn-danger" data-del="'+it.id+'"><i class="fa-solid fa-trash"></i></button></div>';
+    box.appendChild(el);
+  });
+  box.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{ov('جارٍ فتح الملف…');const it=await idbGet(b.dataset.open);RAW=deserializeRAW(it.data);CURRENT={name:it.name};ovHide();setDefaultRange();toast('تم فتح: '+it.name);window.scrollTo({top:0,behavior:'smooth'});});
+  box.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذا الملف من القائمة المحلية؟'))return;await idbDel(b.dataset.del);renderLocal();toast('تم الحذف');});
+}
+async function refreshRepo(){
+  ov('جارٍ الاتصال بالمستودع…');
+  try{
+    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
+    if(!r.ok)throw 0;
+    const items=(await r.json()).filter(i=>i.name.endsWith('.xlsx'));
+    const box=$('#repoList');$('#repoCard').classList.remove('hidden');
+    if(!items.length){box.innerHTML='<div class="empty">لا توجد ملفات Excel في المستودع</div>';ovHide();return;}
+    box.innerHTML='';
+    items.forEach(f=>{
+      const el=document.createElement('div');el.className='file-item';
+      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size/1048576).toFixed(2)+' MB</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-rf="'+encodeURIComponent(f.download_url)+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
+      box.appendChild(el);
+    });
+    box.querySelectorAll('[data-rf]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(decodeURIComponent(b.dataset.rf),b.dataset.n);});
+    ovHide();
+    toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
+    return items;
+  }catch(e){ovHide();toast('تعذّر الاتصال بالمستودع — تحقق من الإنترنت');return[];}
+}
+async function openURL(url,name){
+  try{
+    const r=await fetch(url);if(!r.ok)throw 0;
+    const wb=XLSX.read(await r.arrayBuffer(),{type:'array'});
+    RAW=wbToRAW(wb);CURRENT={name:name};
+    ovHide();setDefaultRange();
+    toast('تم فتح الملف — اضغط "حفظ الملف" للاحتفاظ به محلياً');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ovHide();toast('فشل فتح الملف');}
+}
+$('#btnRepo').onclick=refreshRepo;
+$('#btnApply').onclick=apply;
+$('#btnSave').onclick=async()=>{
+  if(!RAW||!CURRENT){toast('لا يوجد ملف مفتوح للحفظ');return;}
+  const[mn,mx]=fullRange();const st=computeStats(mn,mx);
+  const item={id:CURRENT.name,name:CURRENT.name,savedAt:new Date().toISOString(),data:serializeRAW(),
+    meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,expenses:st.expenses,net:st.net,counts:st.counts}};
+  try{await idbPut(item);await renderLocal();toast('✔ تم حفظ "'+CURRENT.name+'" في قائمة الملفات');}
+  catch(e){toast('تعذّر الحفظ (مساحة التخزين ممتلئة)');}
+};
+
+/* ---------- الإقلاع: الملفات المحلية أساسية ---------- */
+(async function init(){
+  try{
+    const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+    await renderLocal();
+    if(items.length){
+      RAW=deserializeRAW(items[0].data);CURRENT={name:items[0].name};
+      setDefaultRange();
+    }else{
+      const files=await refreshRepo();
+      if(files&&files.length)await openURL(files[0].download_url,files[0].name);
+    }
+  }catch(e){}
+  ovHide();
+})();
 </script>
 </body>
 </html>
