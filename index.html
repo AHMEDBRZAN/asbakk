@@ -51,9 +51,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);font
 .fp.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border-color:transparent;box-shadow:0 8px 20px rgba(44,74,62,.25)}
 .fp .fn{font-weight:700}.fp .fm{font-size:10.5px;color:var(--ink3);font-family:'Fraunces',serif}
 .fp.on .fm{color:rgba(251,248,242,.7)}
-.rbtn{display:inline-flex;align-items:center;gap:11px;padding:14px 34px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(44,74,62,.28);transition:.25s}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rbtn{display:inline-flex;align-items:center;gap:11px;padding:14px 30px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#FBF8F2;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(44,74,62,.28);transition:.25s}
 .rbtn:hover{transform:translateY(-2px)}.rbtn:active{transform:scale(.98)}
 .rbtn[hidden]{display:none}
+.rbtn.save{background:linear-gradient(135deg,var(--gold),#9c7433);box-shadow:0 10px 26px rgba(184,147,90,.35)}
 .rbtn .sp{width:18px;height:18px;border:2px solid rgba(251,248,242,.3);border-top-color:#FBF8F2;border-radius:50%;animation:sp .8s linear infinite;display:none}
 .rbtn.loading .sp{display:block}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -177,7 +179,7 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
     <div class="logo"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 21h12"/><path d="M12 5l-6 2m6-2l6 2"/><path d="M6 7l-3 6a3 3 0 0 0 6 0L6 7zm12 0l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></div>
     <div class="brand-txt">
       <h1>الميزان <span class="ver" id="verLbl">—</span></h1>
-      <small>قائمة الدخل · نسخة محلية تلقائية</small>
+      <small>قائمة الدخل · نسخة محلية عند الطلب</small>
     </div>
   </div>
   <span class="pill" id="statPill"><span class="dot"></span><span id="statTxt">في انتظار الفحص</span></span>
@@ -187,18 +189,21 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
   <div class="rcard">
     <div class="rico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg></div>
     <h2>مركز <em>التحميل</em></h2>
-    <p>اختر ملف الشهر ثم اضغط زر التحميل. تُحفظ نسخة محلية تلقائياً <b>فقط عند اكتمال الأوراق الأساسية</b>، وتُفتح مباشرة في المرات القادمة.</p>
+    <p>اختر ملف الشهر ثم اضغط <b>تحميل</b> لعرضه. عند اكتمال الأوراق الأساسية يظهر زر <b>حفظ نسخة محلية</b> — الحفظ يتم بطلبك فقط.</p>
     <div class="rchip">🗂 المستودع: <b id="repoLbl">—</b></div>
     <div class="fpw" id="fpw">
       <div class="stit">ملفات الإكسل المكتشفة — اختر ملفاً</div>
       <div id="fpills"></div>
       <div class="hint" id="discNote"></div>
     </div>
-    <button class="rbtn" id="refreshBtn" hidden><span class="sp"></span>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-      <span id="btnLbl">تحميل البيانات</span>
-    </button>
-    <div class="rmeta" id="rmeta">اختر ملفاً ثم اضغط تحميل — الحفظ مشروط باكتمال الأوراق الأساسية</div>
+    <div class="btn-row">
+      <button class="rbtn" id="refreshBtn" hidden><span class="sp"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+        <span id="btnLbl">تحميل البيانات</span>
+      </button>
+      <button class="rbtn save" id="saveBtn" hidden><span class="sp"></span>💾 حفظ نسخة محلية</button>
+    </div>
+    <div class="rmeta" id="rmeta">اختر ملفاً ثم اضغط تحميل — الحفظ بزر مستقل يظهر بعد نجاح التحميل</div>
     <div class="dbg" id="dbg"></div>
     <div class="swrap" id="swrap">
       <div class="stit">الأوراق المكتشفة داخل الملف</div>
@@ -233,20 +238,17 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
     </div>
   </div>
 </section>
-<footer>الميزان — قائمة الدخل · نسخة محلية تُحفظ تلقائياً في متصفحك</footer>
+<footer>الميزان — قائمة الدخل · تُحفظ نسخة محلية بطلبك فقط</footer>
 </div>
 <div class="toasts" id="toasts"></div>
 
 <script>
-/* ===== الإعدادات ===== */
 var MANUAL_FILES=['./الشهر 6 فقط.xlsx','./الشهر 7 .xlsx'];
 var CUR='د.ع';
 var CATS=['ايجار بناية','كهرباء','اشتراك مولد','مصاريف مختلفة','شراء ماء للمحل','شراء قرطاسية متنوعة','شراء منظفات','شراء علاليك','مشتريات المحل','مكافئات تشجيعية','اجور نقل','مشروبات ساخنة','صيانة','اعانة محتاجين','عمولة حوالات الشركات','زيادة ونقص صندوق','اجور الموظفين','طعام الموظفين','مصاريف تسويق وتطوير','ايجار المخزن الخارجي','اجور توصيل البضاعة','اعلام ونشر الشركة'];
 var ROLES=[{key:'sales',label:'المبيعات',req:1},{key:'ret',label:'مردودات المبيعات',req:1},{key:'disc',label:'الحسم الممنوح',req:1},{key:'cogs',label:'تكلفة البضاعة المباعة',req:1},{key:'rev',label:'إيرادات مختلفة'},{key:'exp',label:'المصاريف'}];
-
-/* ===== الأساسيات ===== */
 var $=function(s){return document.querySelector(s)};
-var DS=null,REPO_FILES=[],SEL=null,uid=1,busy=false;
+var DS=null,REPO_FILES=[],SEL=null,uid=1,busy=false,PENDING=null;
 var F={mode:'all',day:null,from:null,to:null};
 var UI={detail:null,exp:true,cats:new Set()};
 
@@ -273,8 +275,11 @@ function toast(m,t){var e=document.createElement('div');e.className='toast '+(t|
 function countUp(el,to){var from=+(el.dataset.v||0);el.dataset.v=to;var t0=performance.now();function st(t){var p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(st)}requestAnimationFrame(st)}
 function setPill(c,t){$('#statPill').className='pill '+c;$('#statTxt').textContent=t}
 function dbg(m){var e=$('#dbg');if(m){e.textContent=m;e.classList.add('on')}else e.classList.remove('on')}
+function showSaveBtn(v){$('#saveBtn').hidden=!v}
+function recT(r){return r?r.t:null}
+function recAmt(r){return r?(+r.amt||0):0}
 
-/* ===== رقم النسخة V ===== */
+/* رقم النسخة V */
 function makeVer(ts,name){
   var d=new Date(ts),p=function(n){return String(n).padStart(2,'0')};
   var code=(d.getFullYear()%100)+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
@@ -287,17 +292,22 @@ function loadVer(){try{return localStorage.getItem('mizan_ver')}catch(e){return 
 function saveSel(i){try{localStorage.setItem('mizan_sel',String(i))}catch(e){}}
 function loadSel(){try{var v=parseInt(localStorage.getItem('mizan_sel'),10);return isNaN(v)?null:v}catch(e){return null}}
 
-/* ===== التخزين المحلي IndexedDB ===== */
-function idb(){return new Promise(function(res,rej){var r=indexedDB.open('mizan_cache_v3',1);r.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=function(e){res(e.target.result)};r.onerror=function(e){rej(e.target.error)}})}
+/* IndexedDB */
+function idb(){return new Promise(function(res,rej){var r=indexedDB.open('mizan_cache_v4',1);r.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=function(e){res(e.target.result)};r.onerror=function(e){rej(e.target.error)}})}
 function cachePut(k,v){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction('files','readwrite');tx.objectStore('files').put(v,k);tx.oncomplete=res;tx.onerror=rej})}).catch(function(e){console.warn('cache put fail',e)})}
 function cacheGet(k){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction('files').objectStore('files').get(k);q.onsuccess=function(){res(q.result||null)};q.onerror=rej})}).catch(function(){return null})}
-function fetchT(url,ms){var c=new AbortController();var t=setTimeout(function(){c.abort()},ms);return fetch(url,{cache:'no-store',signal:c.signal}).finally(function(){clearTimeout(t)})}
-
+function fetchT(url,ms){
+  if(typeof AbortController!=='undefined'){
+    var c=new AbortController();var t=setTimeout(function(){c.abort()},ms);
+    return fetch(url,{cache:'no-store',signal:c.signal}).then(function(r){clearTimeout(t);return r},function(e){clearTimeout(t);throw e});
+  }
+  return fetch(url,{cache:'no-store'});
+}
 function ghInfo(){var m=location.hostname.match(/^([^.]+)\.github\.io$/);if(!m)return null;var seg=location.pathname.split('/').filter(Boolean);return{user:m[1],repo:seg[0]||m[1]+'.github.io'}}
 
 function listFiles(){
   var g=ghInfo();
-  if(!g)return Promise.resolve(fallbackList());
+  if(!g)return fallbackList();
   return fetchT('https://api.github.com/repos/'+g.user+'/'+g.repo+'/contents/',20000)
     .then(function(r){if(!r.ok)throw r.status;return r.json()})
     .then(function(a){
@@ -320,38 +330,39 @@ function defaultSel(){var best=0,bn=-1;REPO_FILES.forEach(function(f,i){var m=St
 function renderPills(){$('#fpills').innerHTML=REPO_FILES.map(function(f,i){return '<button class="fp '+(SEL===i?'on':'')+'" data-i="'+i+'"><span>📄</span><span class="fn">'+cleanN(f.name)+'</span>'+(f.size?'<span class="fm">'+Math.max(1,Math.round(f.size/1024))+' KB</span>':'')+'</button>'}).join('')}
 function updateBtn(){var b=$('#refreshBtn');if(REPO_FILES.length&&SEL!=null){b.hidden=false;$('#btnLbl').textContent='تحميل البيانات: '+cleanN(REPO_FILES[SEL].name)}else{b.hidden=true}}
 
-/* ===== قراءة الأوراق ===== */
+/* قراءة الأوراق */
 function detectRole(n){n=normA(n);if(/مردود/.test(n))return'ret';if(/حسم|خصم/.test(n))return'disc';if(/تكلف|بضاع/.test(n))return'cogs';if(/ايراد/.test(n))return'rev';if(/مصاريف|مصروف|نفقات/.test(n))return'exp';if(/مبيعات/.test(n))return'sales';return null}
 function guessCols(H,rows){
   var hs=H.map(function(h){return normA(h)});
-  var find=function(re){return hs.findIndex(function(h){return re.test(h)})};
+  var find=function(re){var i=-1;hs.some(function(h,idx){if(re.test(h)){i=idx;return true}return false});return i};
   var smp=rows.slice(0,50);
-  var isNum=function(i){var n=0;smp.forEach(function(r){if(parseNum(r[i]))n++});return smp.length?n/smp.length>.5:false};
+  var isNum=function(i){var n=0;smp.forEach(function(r){if(r&&parseNum(r[i]))n++});return smp.length?n/smp.length>.5:false};
   var date=find(/تاريخ|اليوم|التوقيت/);
-  if(date<0)for(var i=0;i<hs.length;i++){(function(ci){var n=0;smp.forEach(function(r){if(parseDate(r[ci]))n++});if(n>=Math.max(1,smp.length*.4)&&date<0)date=ci})(i)}
+  if(date<0){for(var i=0;i<hs.length;i++){var n=0;smp.forEach(function(r){if(r&&parseDate(r[i]))n++});if(n>=Math.max(1,smp.length*.4)){date=i;break}}}
   var deb=find(/مدين/),cred=find(/دائن/);
   var amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|مبيعات|مردود|حسم|خصم|سعر/);
-  if(amt<0||amt===date||amt===deb||amt===cred)for(var j=0;j<hs.length;j++){if(j!==date&&j!==deb&&j!==cred&&isNum(j)){amt=j;break}}
+  if(amt<0||amt===date||amt===deb||amt===cred){for(var j=0;j<hs.length;j++){if(j!==date&&j!==deb&&j!==cred&&isNum(j)){amt=j;break}}}
   var desc=find(/بيان|وصف|تفاصيل|ملاحظ|الماده|المنتج|الصنف|اسم|الفقره/);
   var cat=find(/نوع|فئه|بند|التصنيف|المصروف/);
   return{date:date,amt:amt,deb:deb,cred:cred,desc:desc,cat:cat};
 }
 function readSheet(wb,name,key){
   var aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
-  var hr=aoa.findIndex(function(r){return r.filter(function(c){return c!=null&&c!==''}).length>=2});
+  var hr=-1;aoa.some(function(r,idx){if(r&&r.filter(function(c){return c!=null&&c!==''}).length>=2){hr=idx;return true}return false});
   if(hr<0)hr=0;
   var H=aoa[hr]||[];
-  var rows=aoa.slice(hr+1).filter(function(r){return r.some(function(c){return c!=null&&c!==''})});
+  var rows=aoa.slice(hr+1).filter(function(r){return r&&r.some(function(c){return c!=null&&c!==''})});
   var g=guessCols(H,rows),out=[];
   rows.forEach(function(r){
-    var t=parseDate(r[g.date]);if(t==null)return;
+    if(!r)return;
+    var t=parseDate(g.date>=0?r[g.date]:null);if(t==null)return;
     var desc=g.desc>=0?String(r[g.desc]==null?'':r[g.desc]).trim():'';
     if(key==='cogs'){
-      var deb=parseNum(r[g.deb]),cred=parseNum(r[g.cred]);
+      var deb=parseNum(g.deb>=0?r[g.deb]:null),cred=parseNum(g.cred>=0?r[g.cred]:null);
       if(!deb&&!cred)return;
       out.push({_id:uid++,t:t,desc:desc,deb:deb,cred:cred,amt:deb-cred});
     }else{
-      var amt=parseNum(r[g.amt]);if(!amt)return;
+      var amt=parseNum(g.amt>=0?r[g.amt]:null);if(!amt)return;
       var rec={_id:uid++,t:t,desc:desc,amt:amt};
       if(key==='exp')rec.cat=g.cat>=0?String(r[g.cat]==null?'':r[g.cat]).trim():'';
       out.push(rec);
@@ -361,14 +372,14 @@ function readSheet(wb,name,key){
 }
 function parseWorkbook(wb){
   var data={sales:[],ret:[],disc:[],cogs:[],rev:[],exp:[]},found={};
-  wb.SheetNames.forEach(function(sn){var role=detectRole(sn);if(role&&!found[role]){found[role]=1;data[role]=readSheet(wb,sn,role)}});
+  (wb.SheetNames||[]).forEach(function(sn){var role=detectRole(sn);if(role&&!found[role]){found[role]=1;data[role]=readSheet(wb,sn,role)}});
   var miss=false,total=0,fc=0;
-  ROLES.forEach(function(r){var has=!!found[r.key];if(has){fc++;total+=data[r.key].length}if(r.req&&!has)miss=true});
+  ROLES.forEach(function(r){var has=!!found[r.key];if(has){fc++;total+=(data[r.key]||[]).length}if(r.req&&!has)miss=true});
   return{data:data,found:found,total:total,fc:fc,miss:miss};
 }
 function sheetsHtml(P){
   return ROLES.map(function(r){
-    var has=!!P.found[r.key],recs=P.data[r.key];
+    var has=!!P.found[r.key],recs=P.data[r.key]||[];
     var cls=has?(recs.length?'found':'miss'):(r.req?'fail':'miss');
     return '<div class="sch '+cls+'"><div class="sn"><i></i>'+r.label+'</div><div class="sv num">'+(has?recs.length:'—')+' <small>'+(has?(recs.length?'سجل':'فارغة'):(r.req?'مطلوبة':'اختيارية'))+'</small></div></div>';
   }).join('');
@@ -378,25 +389,25 @@ function applyParsed(P,label,fromCache,savedAt){
   $('#swrap').classList.add('on');
   if(P.miss||!P.total){
     setPill('err','ملف غير مكتمل');
-    $('#rmeta').innerHTML='⚠ الأوراق الأساسية غير مكتملة داخل <b>'+label+'</b> — لم يتم الحفظ';
-    toast('⚠ لم يُحفظ: الأوراق الأساسية غير مكتملة','err');
+    $('#rmeta').innerHTML='⚠ الأوراق الأساسية غير مكتملة داخل <b>'+label+'</b> — لا يمكن الحفظ';
+    toast('⚠ الأوراق الأساسية غير مكتملة','err');
     return false;
   }
   DS=P.data;UI.detail='sales';UI.exp=true;UI.cats.clear();F.mode='all';syncSeg();
-  var ts=[].concat(DS.sales,DS.rets,DS.disc,DS.cogs,DS.rev,DS.exp).map(function(r){return r.t}).filter(Boolean);
+  var ts=[].concat(DS.sales||[],DS.rets||[],DS.disc||[],DS.cogs||[],DS.rev||[],DS.exp||[]).map(recT).filter(Boolean);
   if(ts.length){var mn=Math.min.apply(null,ts),mx=Math.max.apply(null,ts);$('#fInp').value=fd(mn);$('#tInp').value=fd(mx);F.from=mn;F.to=mx;$('#dInp').value=fd(mx);F.day=mx}
   $('#results').classList.add('on');
   setPill('ok',label+' · '+P.total+' سجل'+(fromCache?' · 📦 نسخة محلية':''));
   $('#rmeta').innerHTML=fromCache
     ?'📦 فُتحت <b>النسخة المحلية المحفوظة</b>'+(savedAt?' بتاريخ <b>'+fd(savedAt)+'</b>':'')+' · '+P.fc+' ورقة · '+P.total+' سجل'
-    :'آخر تحديث: <b>'+safeNow()+'</b> · الملف: <b>'+label+'</b> · <b>'+P.fc+'</b> ورقة · <b>'+P.total+'</b> سجل · 💾 حُفظت نسخة محلية';
+    :'تم التحميل: <b>'+safeNow()+'</b> · الملف: <b>'+label+'</b> · <b>'+P.fc+'</b> ورقة · <b>'+P.total+'</b> سجل · اضغط 💾 حفظ لتخزين نسخة محلية';
   dbg('');renderAll();
-  toast((fromCache?'📦 فُتحت النسخة المحلية':'✔ تم التحديث والحفظ محلياً')+' — '+P.total+' سجل',fromCache?'':'ok');
+  toast((fromCache?'📦 فُتحت النسخة المحلية':'✔ تم تحميل الملف — الحفظ بزر مستقل')+' · '+P.total+' سجل',fromCache?'':'ok');
   setTimeout(function(){$('#results').scrollIntoView({behavior:'smooth'})},150);
   return true;
 }
 
-/* ===== فتح النسخة المحلية (فوري، بدون شبكة) ===== */
+/* فتح المحلي فوراً */
 function openCache(i){
   var f=REPO_FILES[i];if(!f)return Promise.resolve(false);
   return cacheGet('file:'+cleanN(f.name)).then(function(c){
@@ -408,13 +419,14 @@ function openCache(i){
   });
 }
 
-/* ===== التحميل من الشبكة (يدوي فقط) ===== */
+/* التحميل من الشبكة (عرض فقط) */
 function loadFromNet(){
   if(busy){toast('⏳ جارٍ التحميل حالياً');return}
   var f=REPO_FILES[SEL];if(!f)return;
   busy=true;
   var b=$('#refreshBtn');b.classList.add('loading');
   setPill('loading','جارٍ تحميل '+cleanN(f.name)+'...');
+  PENDING=null;showSaveBtn(false);
   var url=f.download_url||('./'+encodeURI(f.name));
   url+=(url.indexOf('?')>=0?'&':'?')+'t='+Date.now();
   fetchT(url,25000)
@@ -422,18 +434,10 @@ function loadFromNet(){
     .then(function(buf){
       var wb=XLSX.read(buf,{type:'array',cellDates:true});
       var P=parseWorkbook(wb);
-      if(P.miss||!P.total){
-        $('#sgrid').innerHTML=sheetsHtml(P);$('#swrap').classList.add('on');
-        setPill('err','ملف غير مكتمل');
-        $('#rmeta').innerHTML='⚠ الأوراق الأساسية غير مكتملة داخل <b>'+cleanN(f.name)+'</b> — لم يتم الحفظ';
-        toast('⚠ لم يُحفظ: الأوراق الأساسية غير مكتملة','err');
-        return;
-      }
-      return cachePut('file:'+cleanN(f.name),{buf:Array.from(new Uint8Array(buf)),at:Date.now()}).then(function(){
-        var nv=makeVer(Date.now(),f.name);
-        saveVer(nv);updateVerLbl(nv,true);
-        applyParsed(P,cleanN(f.name),false,Date.now());
-      });
+      if(P.miss||!P.total){applyParsed(P,cleanN(f.name),false,null);return}
+      PENDING={name:cleanN(f.name),bytes:Array.from(new Uint8Array(buf)),at:Date.now()};
+      applyParsed(P,cleanN(f.name),false,null);
+      showSaveBtn(true);
     })
     .catch(function(e){
       console.warn('net fail, try cache:',e);
@@ -447,10 +451,26 @@ function loadFromNet(){
         }
       });
     })
-    .finally(function(){b.classList.remove('loading');busy=false});
+    .then(function(){b.classList.remove('loading');busy=false});
 }
 
-/* ===== الإقلاع: قائمة الملفات + فتح المحلي فوراً (بدون تحميل شبكي) ===== */
+/* الحفظ المحلي (بزر مستقل) */
+function saveLocal(){
+  if(!PENDING){toast('⚠ لا توجد بيانات جديدة للحفظ — حمّل الملف أولاً','err');return}
+  var b=$('#saveBtn');b.classList.add('loading');
+  cachePut('file:'+PENDING.name,{buf:PENDING.bytes,at:PENDING.at}).then(function(){
+    var nv=makeVer(PENDING.at,PENDING.name);
+    saveVer(nv);updateVerLbl(nv,true);
+    b.classList.remove('loading');
+    showSaveBtn(false);
+    setPill('ok',PENDING.name+' · محفوظ محلياً');
+    $('#rmeta').innerHTML='💾 حُفظت نسخة محلية من <b>'+PENDING.name+'</b> بتاريخ <b>'+safeNow()+'</b> — ستُفتح مباشرة المرة القادمة';
+    toast('💾 تم الحفظ محلياً بنجاح','ok');
+    PENDING=null;
+  });
+}
+
+/* الإقلاع */
 function boot(){
   var v=loadVer();if(v)updateVerLbl(v,false);
   var g=ghInfo();$('#repoLbl').textContent=g?(g.user+'/'+g.repo):'غير معروف';
@@ -464,18 +484,16 @@ function boot(){
     renderPills();updateBtn();
     setPill('','جاهز — اختر ملفاً واضغط تحميل');
     openCache(SEL);
-  }).catch(function(e){
-    setPill('err','خطأ بالفحص');dbg('BOOT ERROR: '+(e&&e.message||e));
-  });
+  }).catch(function(e){setPill('err','خطأ بالفحص');dbg('BOOT ERROR: '+(e&&e.message?e.message:e))});
 }
 
-/* ===== الاحتساب ===== */
+/* الاحتساب */
 function inP(t){if(!DS)return false;if(F.mode==='day')return F.day!=null&&t===F.day;if(F.mode==='range'){var a=F.from==null?0:F.from,b=F.to==null?864e15:F.to;return t>=a&&t<=b}return true}
-function flt(a){return a.filter(function(r){return inP(r.t)})}
+function flt(a){return (a||[]).filter(function(r){return r!=null&&inP(r.t)})}
 function sums(){
   var s=flt(DS.sales),r=flt(DS.rets),d=flt(DS.disc),c=flt(DS.cogs),v=flt(DS.rev),e=flt(DS.exp);
-  var sum=function(a){return a.reduce(function(x,y){return x+(+y.amt||0)},0)};
-  var deb=c.reduce(function(x,y){return x+(+y.deb||0)},0),cred=c.reduce(function(x,y){return x+(+y.cred||0)},0);
+  var sum=function(a){return a.reduce(function(x,y){return x+recAmt(y)},0)};
+  var deb=c.reduce(function(x,y){return x+(y?(+y.deb||0):0)},0),cred=c.reduce(function(x,y){return x+(y?(+y.cred||0):0)},0);
   var sales=sum(s),rets=sum(r),disc=sum(d),cogs=deb-cred,rev=sum(v),exp=sum(e);
   var net=sales-rets-disc,gross=net-cogs,after=gross+rev,fin=after-exp;
   return{s:s,r:r,d:d,c:c,v:v,e:e,deb:deb,cred:cred,sales:sales,rets:rets,disc:disc,cogs:cogs,rev:rev,exp:exp,net:net,gross:gross,after:after,final:fin};
@@ -484,12 +502,12 @@ function periodLabel(){
   if(!DS)return'';
   if(F.mode==='day'&&F.day!=null)return'اليوم · '+fd(F.day);
   if(F.mode==='range')return fd(F.from==null?0:F.from)+' ← '+fd(F.to==null?Date.now():F.to);
-  var ts=[].concat(DS.sales,DS.rets,DS.disc,DS.cogs,DS.rev,DS.exp).map(function(r){return r.t}).filter(Boolean);
+  var ts=[].concat(DS.sales||[],DS.rets||[],DS.disc||[],DS.cogs||[],DS.rev||[],DS.exp||[]).map(recT).filter(Boolean);
   return ts.length?(fd(Math.min.apply(null,ts))+' ← '+fd(Math.max.apply(null,ts))):'كامل الفترة';
 }
-function baseTotal(){return DS?DS.sales.length+DS.rets.length+DS.disc.length+DS.cogs.length+DS.rev.length+DS.exp.length:0}
+function baseTotal(){return DS?(DS.sales||[]).length+(DS.rets||[]).length+(DS.disc||[]).length+(DS.cogs||[]).length+(DS.rev||[]).length+(DS.exp||[]).length:0}
 
-/* ===== العرض ===== */
+/* العرض */
 function renderKPIs(x){
   var D=[['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' سجل'],['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' سجل'],['الحسم الممنوح',x.disc,'#C98A3C',x.d.length+' سجل'],['صافي المبيعات',x.net,'var(--green)','بعد الطرح'],['تكلفة المبيعات',x.cogs,'#B84C3A','مدين − دائن'],['مجمل الدخل',x.gross,'var(--accent2)','صافي − تكلفة'],['صافي الدخل',x.final,'var(--accent)','النتيجة النهائية']];
   $('#kpis').innerHTML=D.map(function(d){return '<div class="kpi" style="--ac:'+d[2]+'"><div class="kl">'+d[0]+'</div><div class="kv num" data-v="0">0<small>'+CUR+'</small></div><div class="ks">'+d[3]+'</div></div>'}).join('');
@@ -519,8 +537,8 @@ function renderStatement(x){
   h+=srow({ic:'eq',it:'＝',lbl:'إجمالي صافي الدخل بعد الإيرادات',note:'المجمل + الإيرادات',cnt:'',amt:x.after,ac:'accent',cls:'res'});
   h+='<div class="exp '+(UI.exp?'open':'')+'"><div class="srow exph" data-act="texp"><span class="mark sum">∑</span><span class="tx"><b>المصاريف</b><small>22 صنفاً · اضغط للتوسيع</small></span><span class="cnt num">'+x.e.length+'</span><span class="amt num red">− '+fmt(x.exp)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin"><div class="catlist">';
   CATS.forEach(function(c){
-    var items=x.e.filter(function(r){return matchCat(r.cat,c)});
-    var tot=items.reduce(function(a,b){return a+(+b.amt||0)},0);
+    var items=x.e.filter(function(r){return r&&matchCat(r.cat,c)});
+    var tot=items.reduce(function(a,b){return a+recAmt(b)},0);
     var open=UI.cats.has(c);
     h+='<div class="cat '+(open?'open':'')+'"><div class="crow" data-act="tcat" data-c="'+c.replace(/"/g,'&quot;')+'"><span class="cdot"></span><span class="cname">'+c+'</span><span class="cnt num">'+items.length+'</span><span class="amt num" style="opacity:'+(tot?1:.45)+'">'+fmt(tot)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin">';
     if(items.length){items.forEach(function(r){h+='<div class="irow"><span class="idate num">'+fd(r.t)+'</span><span class="idesc">'+(r.desc||'—')+'</span><span class="amt num">'+fmt(r.amt)+'</span></div>'})}
@@ -558,9 +576,9 @@ function renderDetail(x){
     tot=x.exp;
   }else{
     head='<tr><th>التاريخ</th><th>البيان</th><th style="text-align:left">المبلغ</th></tr>';
-    var arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g];
+    var arr={sales:x.s,ret:x.r,disc:x.d,rev:x.v}[g]||[];
     rows=arr.map(function(r){return '<tr><td class="d">'+fd(r.t)+'</td><td class="ds">'+(r.desc||'—')+'</td><td class="n">'+fmt(r.amt)+'</td></tr>'});
-    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g];
+    tot={sales:x.sales,ret:x.rets,disc:x.disc,rev:x.rev}[g]||0;
   }
   $('#dCount').textContent=rows.length+' سجل';
   body.innerHTML=rows.length
@@ -573,7 +591,7 @@ function renderAll(){
   catch(e){console.error(e);dbg('RENDER ERROR: '+e.message);toast('⚠ خطأ في العرض: '+e.message,'err')}
 }
 
-/* ===== الأحداث ===== */
+/* الأحداث */
 function syncSeg(){
   document.querySelectorAll('#seg button').forEach(function(b){b.classList.toggle('on',b.dataset.m===F.mode)});
   $('#dInp').hidden=F.mode!=='day';
@@ -589,6 +607,7 @@ document.addEventListener('click',function(e){
   var p=e.target.closest('.fp');
   if(p){
     SEL=+p.dataset.i;saveSel(SEL);renderPills();updateBtn();
+    PENDING=null;showSaveBtn(false);
     openCache(SEL).then(function(ok){
       if(!ok)setPill('','اخترت '+cleanN(REPO_FILES[SEL].name)+' — اضغط زر التحميل لجلبه');
     });
@@ -597,12 +616,11 @@ document.addEventListener('click',function(e){
   var t=e.target.closest('[data-act],[data-g]');if(!t)return;
   if(t.matches('[data-g]:not([data-act])')){UI.detail=t.dataset.g;renderDetail(sums());if(innerWidth<980)document.querySelector('.dcard').scrollIntoView({behavior:'smooth',block:'nearest'})}
   else if(t.dataset.act==='texp'){UI.exp=!UI.exp;renderStatement(sums())}
-  else if(t.dataset.act==='tcat'){var c=t.dataset.c;UI.cats.has(c)?UI.cats.delete(c):UI.cats.add(c);renderStatement(sums())}
+  else if(t.dataset.act==='tcat'){var c=t.dataset.c;if(UI.cats.has(c))UI.cats.delete(c);else UI.cats.add(c);renderStatement(sums())}
 });
 $('#refreshBtn').addEventListener('click',loadFromNet);
+$('#saveBtn').addEventListener('click',saveLocal);
 $('#printBtn').addEventListener('click',function(){if(DS)window.print();else toast('⚠ حمّل البيانات أولاً','err')});
-
-/* ===== تشغيل ===== */
 window.addEventListener('load',function(){setTimeout(boot,300)});
 </script>
 </body>
