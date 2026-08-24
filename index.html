@@ -179,7 +179,7 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
     <div class="logo"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 21h12"/><path d="M12 5l-6 2m6-2l6 2"/><path d="M6 7l-3 6a3 3 0 0 0 6 0L6 7zm12 0l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></div>
     <div class="brand-txt">
       <h1>الميزان <span class="ver" id="verLbl">—</span></h1>
-      <small>قائمة الدخل · نسخة محلية عند الطلب</small>
+      <small>قائمة الدخل · المبالغ من مدين/دائن · التصنيف من اسم الحساب</small>
     </div>
   </div>
   <span class="pill" id="statPill"><span class="dot"></span><span id="statTxt">في انتظار الفحص</span></span>
@@ -189,7 +189,7 @@ footer{margin-top:56px;padding:22px 0;border-top:1px solid var(--line);text-alig
   <div class="rcard">
     <div class="rico"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg></div>
     <h2>مركز <em>التحميل</em></h2>
-    <p>اختر ملف الشهر ثم اضغط <b>تحميل</b> لعرضه. عند اكتمال الأوراق الأساسية يظهر زر <b>حفظ نسخة محلية</b> — الحفظ يتم بطلبك فقط.</p>
+    <p>اختر ملف الشهر ثم اضغط <b>تحميل</b>. المبالغ تُقرأ من عمود <b>مدين</b>، والتكلفة <b>مدين − دائن</b>، والمصاريف تُصنّف من <b>اسم الحساب</b>. الحفظ بزر مستقل.</p>
     <div class="rchip">🗂 المستودع: <b id="repoLbl">—</b></div>
     <div class="fpw" id="fpw">
       <div class="stit">ملفات الإكسل المكتشفة — اختر ملفاً</div>
@@ -255,6 +255,7 @@ var UI={detail:null,exp:true,cats:new Set()};
 function fmt(n){n=Math.round((+n||0)*100)/100;return Number.isInteger(n)?n.toLocaleString('en-US'):n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function money(n){return fmt(n)+' '+CUR}
 function normA(s){return String(s==null?'':s).replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim()}
+function norm2(s){return normA(s).replace(/ال/g,'')}
 function cleanN(s){return String(s).replace(/\.xlsx?$/i,'').trim()}
 var AR='٠١٢٣٤٥٦٧٨٩',FA='۰۱۲۳۴۵۶۷۸۹';
 function toEn(s){return String(s).replace(/[٠-٩]/g,function(d){return AR.indexOf(d)}).replace(/[۰-۹]/g,function(d){return FA.indexOf(d)})}
@@ -279,6 +280,17 @@ function showSaveBtn(v){$('#saveBtn').hidden=!v}
 function recT(r){return r?r.t:null}
 function recAmt(r){return r?(+r.amt||0):0}
 
+/* مطابقة صنف المصروف مع قائمة الأصناف (باسم الحساب) */
+function assignCat(acc){
+  var a=norm2(acc);
+  if(!a)return 'مصاريف مختلفة';
+  for(var i=0;i<CATS.length;i++){
+    var b=norm2(CATS[i]);
+    if(a===b||(a.length>3&&b.indexOf(a)>=0)||(b.length>3&&a.indexOf(b)>=0))return CATS[i];
+  }
+  return String(acc).trim();
+}
+
 /* رقم النسخة V */
 function makeVer(ts,name){
   var d=new Date(ts),p=function(n){return String(n).padStart(2,'0')};
@@ -293,7 +305,7 @@ function saveSel(i){try{localStorage.setItem('mizan_sel',String(i))}catch(e){}}
 function loadSel(){try{var v=parseInt(localStorage.getItem('mizan_sel'),10);return isNaN(v)?null:v}catch(e){return null}}
 
 /* IndexedDB */
-function idb(){return new Promise(function(res,rej){var r=indexedDB.open('mizan_cache_v4',1);r.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=function(e){res(e.target.result)};r.onerror=function(e){rej(e.target.error)}})}
+function idb(){return new Promise(function(res,rej){var r=indexedDB.open('mizan_cache_v5',1);r.onupgradeneeded=function(e){var db=e.target.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files')};r.onsuccess=function(e){res(e.target.result)};r.onerror=function(e){rej(e.target.error)}})}
 function cachePut(k,v){return idb().then(function(db){return new Promise(function(res,rej){var tx=db.transaction('files','readwrite');tx.objectStore('files').put(v,k);tx.oncomplete=res;tx.onerror=rej})}).catch(function(e){console.warn('cache put fail',e)})}
 function cacheGet(k){return idb().then(function(db){return new Promise(function(res,rej){var q=db.transaction('files').objectStore('files').get(k);q.onsuccess=function(){res(q.result||null)};q.onerror=rej})}).catch(function(){return null})}
 function fetchT(url,ms){
@@ -330,21 +342,17 @@ function defaultSel(){var best=0,bn=-1;REPO_FILES.forEach(function(f,i){var m=St
 function renderPills(){$('#fpills').innerHTML=REPO_FILES.map(function(f,i){return '<button class="fp '+(SEL===i?'on':'')+'" data-i="'+i+'"><span>📄</span><span class="fn">'+cleanN(f.name)+'</span>'+(f.size?'<span class="fm">'+Math.max(1,Math.round(f.size/1024))+' KB</span>':'')+'</button>'}).join('')}
 function updateBtn(){var b=$('#refreshBtn');if(REPO_FILES.length&&SEL!=null){b.hidden=false;$('#btnLbl').textContent='تحميل البيانات: '+cleanN(REPO_FILES[SEL].name)}else{b.hidden=true}}
 
-/* قراءة الأوراق */
+/* ===== قراءة الأوراق: مدين/دائن/التاريخ/البيان/اسم الحساب ===== */
 function detectRole(n){n=normA(n);if(/مردود/.test(n))return'ret';if(/حسم|خصم/.test(n))return'disc';if(/تكلف|بضاع/.test(n))return'cogs';if(/ايراد/.test(n))return'rev';if(/مصاريف|مصروف|نفقات/.test(n))return'exp';if(/مبيعات/.test(n))return'sales';return null}
 function guessCols(H,rows){
   var hs=H.map(function(h){return normA(h)});
   var find=function(re){var i=-1;hs.some(function(h,idx){if(re.test(h)){i=idx;return true}return false});return i};
-  var smp=rows.slice(0,50);
-  var isNum=function(i){var n=0;smp.forEach(function(r){if(r&&parseNum(r[i]))n++});return smp.length?n/smp.length>.5:false};
   var date=find(/تاريخ|اليوم|التوقيت/);
-  if(date<0){for(var i=0;i<hs.length;i++){var n=0;smp.forEach(function(r){if(r&&parseDate(r[i]))n++});if(n>=Math.max(1,smp.length*.4)){date=i;break}}}
   var deb=find(/مدين/),cred=find(/دائن/);
-  var amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|مبيعات|مردود|حسم|خصم|سعر/);
-  if(amt<0||amt===date||amt===deb||amt===cred){for(var j=0;j<hs.length;j++){if(j!==date&&j!==deb&&j!==cred&&isNum(j)){amt=j;break}}}
-  var desc=find(/بيان|وصف|تفاصيل|ملاحظ|الماده|المنتج|الصنف|اسم|الفقره/);
-  var cat=find(/نوع|فئه|بند|التصنيف|المصروف/);
-  return{date:date,amt:amt,deb:deb,cred:cred,desc:desc,cat:cat};
+  var desc=find(/بيان|وصف|تفاصيل/);
+  var acc=find(/اسم الحساب|الحساب/);
+  var amt=find(/مبلغ|قيمه|اجمالي|مجموع|صافي|سعر/);
+  return{date:date,amt:amt,deb:deb,cred:cred,desc:desc,acc:acc};
 }
 function readSheet(wb,name,key){
   var aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
@@ -357,14 +365,21 @@ function readSheet(wb,name,key){
     if(!r)return;
     var t=parseDate(g.date>=0?r[g.date]:null);if(t==null)return;
     var desc=g.desc>=0?String(r[g.desc]==null?'':r[g.desc]).trim():'';
+    var deb=g.deb>=0?parseNum(r[g.deb]):0;
+    var cred=g.cred>=0?parseNum(r[g.cred]):0;
     if(key==='cogs'){
-      var deb=parseNum(g.deb>=0?r[g.deb]:null),cred=parseNum(g.cred>=0?r[g.cred]:null);
       if(!deb&&!cred)return;
       out.push({_id:uid++,t:t,desc:desc,deb:deb,cred:cred,amt:deb-cred});
     }else{
-      var amt=parseNum(g.amt>=0?r[g.amt]:null);if(!amt)return;
+      /* المبلغ من مدين، فإن لم يوجد فمن دائن، وإلا فمن عمود مبلغ إن وُجد */
+      var amt=deb>0?deb:(cred>0?cred:(g.amt>=0?parseNum(r[g.amt]):0));
+      if(!amt)return;
       var rec={_id:uid++,t:t,desc:desc,amt:amt};
-      if(key==='exp')rec.cat=g.cat>=0?String(r[g.cat]==null?'':r[g.cat]).trim():'';
+      if(key==='exp'){
+        var accRaw=g.acc>=0?String(r[g.acc]==null?'':r[g.acc]).trim():'';
+        rec.cat=assignCat(accRaw);
+        rec.acc=accRaw;
+      }
       out.push(rec);
     }
   });
@@ -406,8 +421,6 @@ function applyParsed(P,label,fromCache,savedAt){
   setTimeout(function(){$('#results').scrollIntoView({behavior:'smooth'})},150);
   return true;
 }
-
-/* فتح المحلي فوراً */
 function openCache(i){
   var f=REPO_FILES[i];if(!f)return Promise.resolve(false);
   return cacheGet('file:'+cleanN(f.name)).then(function(c){
@@ -418,8 +431,6 @@ function openCache(i){
     }catch(e){console.error('cache read fail',e);return false}
   });
 }
-
-/* التحميل من الشبكة (عرض فقط) */
 function loadFromNet(){
   if(busy){toast('⏳ جارٍ التحميل حالياً');return}
   var f=REPO_FILES[SEL];if(!f)return;
@@ -453,8 +464,6 @@ function loadFromNet(){
     })
     .then(function(){b.classList.remove('loading');busy=false});
 }
-
-/* الحفظ المحلي (بزر مستقل) */
 function saveLocal(){
   if(!PENDING){toast('⚠ لا توجد بيانات جديدة للحفظ — حمّل الملف أولاً','err');return}
   var b=$('#saveBtn');b.classList.add('loading');
@@ -469,8 +478,6 @@ function saveLocal(){
     PENDING=null;
   });
 }
-
-/* الإقلاع */
 function boot(){
   var v=loadVer();if(v)updateVerLbl(v,false);
   var g=ghInfo();$('#repoLbl').textContent=g?(g.user+'/'+g.repo):'غير معروف';
@@ -487,7 +494,7 @@ function boot(){
   }).catch(function(e){setPill('err','خطأ بالفحص');dbg('BOOT ERROR: '+(e&&e.message?e.message:e))});
 }
 
-/* الاحتساب */
+/* ===== الاحتساب ===== */
 function inP(t){if(!DS)return false;if(F.mode==='day')return F.day!=null&&t===F.day;if(F.mode==='range'){var a=F.from==null?0:F.from,b=F.to==null?864e15:F.to;return t>=a&&t<=b}return true}
 function flt(a){return (a||[]).filter(function(r){return r!=null&&inP(r.t)})}
 function sums(){
@@ -507,7 +514,7 @@ function periodLabel(){
 }
 function baseTotal(){return DS?(DS.sales||[]).length+(DS.rets||[]).length+(DS.disc||[]).length+(DS.cogs||[]).length+(DS.rev||[]).length+(DS.exp||[]).length:0}
 
-/* العرض */
+/* ===== العرض ===== */
 function renderKPIs(x){
   var D=[['إجمالي المبيعات',x.sales,'var(--gold)',x.s.length+' سجل'],['مردودات المبيعات',x.rets,'var(--red)',x.r.length+' سجل'],['الحسم الممنوح',x.disc,'#C98A3C',x.d.length+' سجل'],['صافي المبيعات',x.net,'var(--green)','بعد الطرح'],['تكلفة المبيعات',x.cogs,'#B84C3A','مدين − دائن'],['مجمل الدخل',x.gross,'var(--accent2)','صافي − تكلفة'],['صافي الدخل',x.final,'var(--accent)','النتيجة النهائية']];
   $('#kpis').innerHTML=D.map(function(d){return '<div class="kpi" style="--ac:'+d[2]+'"><div class="kl">'+d[0]+'</div><div class="kv num" data-v="0">0<small>'+CUR+'</small></div><div class="ks">'+d[3]+'</div></div>'}).join('');
@@ -522,12 +529,19 @@ function srow(o){
     +(o.g?'<span class="arr">‹</span>':'')
     +'</div>';
 }
-function matchCat(rc,cat){var a=normA(rc),b=normA(cat);return a===b||(a.length>3&&b.indexOf(a)>=0)||(b.length>3&&a.indexOf(b)>=0)}
+/* قائمة أصناف المصاريف: الـ22 + أي أصناف إضافية من اسم الحساب */
+function expCatList(x){
+  var totals={};
+  (x.e||[]).forEach(function(r){var c=r&&r.cat?r.cat:'مصاريف مختلفة';totals[c]=(totals[c]||0)+recAmt(r)});
+  var extras=Object.keys(totals).filter(function(c){return CATS.indexOf(c)<0})
+    .sort(function(a,b){return totals[b]-totals[a]});
+  return CATS.concat(extras);
+}
 function renderStatement(x){
   var h='';
   var per=x.s.length+x.r.length+x.d.length+x.c.length+x.v.length+x.e.length;
   if(per===0&&baseTotal()>0)h+='<div class="notice">⚠ لا توجد حركات ضمن الفترة المحددة — اختر «كل الفترة» أو عدّل التواريخ.</div>';
-  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'مفصّلة حسب التاريخ',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
+  h+=srow({ic:'plus',it:'＋',lbl:'إجمالي المبيعات',note:'مفصّلة حسب التاريخ · المبلغ من مدين',cnt:x.s.length,amt:x.sales,ac:'gold',g:'sales'});
   h+=srow({ic:'minus',it:'−',lbl:'مردودات المبيعات',note:'تُطرح من الإجمالي',cnt:x.r.length,amt:x.rets,ac:'red',sign:'− ',g:'ret'});
   h+=srow({ic:'minus',it:'−',lbl:'الحسم الممنوح',note:'خصومات الفترة',cnt:x.d.length,amt:x.disc,ac:'red',sign:'− ',g:'disc'});
   h+=srow({ic:'eq',it:'＝',lbl:'صافي المبيعات',note:'الإجمالي − المردودات − الحسم',cnt:'',amt:x.net,ac:'accent',cls:'res'});
@@ -535,9 +549,10 @@ function renderStatement(x){
   h+=srow({ic:'eq',it:'＝',lbl:'مجمل الدخل',note:'صافي المبيعات − التكلفة',cnt:'',amt:x.gross,ac:'accent',cls:'res'});
   h+=srow({ic:'plus',it:'＋',lbl:'إيرادات مختلفة',note:x.v.length?'إيرادات الفترة':'لا توجد — صفر',cnt:x.v.length,amt:x.rev,ac:'green',sign:'+ ',g:'rev'});
   h+=srow({ic:'eq',it:'＝',lbl:'إجمالي صافي الدخل بعد الإيرادات',note:'المجمل + الإيرادات',cnt:'',amt:x.after,ac:'accent',cls:'res'});
-  h+='<div class="exp '+(UI.exp?'open':'')+'"><div class="srow exph" data-act="texp"><span class="mark sum">∑</span><span class="tx"><b>المصاريف</b><small>22 صنفاً · اضغط للتوسيع</small></span><span class="cnt num">'+x.e.length+'</span><span class="amt num red">− '+fmt(x.exp)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin"><div class="catlist">';
-  CATS.forEach(function(c){
-    var items=x.e.filter(function(r){return r&&matchCat(r.cat,c)});
+  var allCats=expCatList(x);
+  h+='<div class="exp '+(UI.exp?'open':'')+'"><div class="srow exph" data-act="texp"><span class="mark sum">∑</span><span class="tx"><b>المصاريف</b><small>مصنّفة من «اسم الحساب» · اضغط للتوسيع</small></span><span class="cnt num">'+x.e.length+'</span><span class="amt num red">− '+fmt(x.exp)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin"><div class="catlist">';
+  allCats.forEach(function(c){
+    var items=x.e.filter(function(r){return r&&(r.cat||'مصاريف مختلفة')===c});
     var tot=items.reduce(function(a,b){return a+recAmt(b)},0);
     var open=UI.cats.has(c);
     h+='<div class="cat '+(open?'open':'')+'"><div class="crow" data-act="tcat" data-c="'+c.replace(/"/g,'&quot;')+'"><span class="cdot"></span><span class="cname">'+c+'</span><span class="cnt num">'+items.length+'</span><span class="amt num" style="opacity:'+(tot?1:.45)+'">'+fmt(tot)+'</span><span class="chev">▾</span></div><div class="acc"><div class="accin">';
@@ -546,7 +561,7 @@ function renderStatement(x){
     h+='</div></div></div>';
   });
   h+='</div></div></div></div>';
-  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يُطرح من إجمالي صافي الدخل',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
+  h+=srow({ic:'minus',it:'∑',lbl:'مجموع المصاريف',note:'يساوي مجموع الأصناف أعلاه · يُطرح من إجمالي صافي الدخل',cnt:x.e.length,amt:x.exp,ac:'red',sign:'− ',g:'exp'});
   h+='<div class="final '+(x.final<0?'neg':'')+'"><div class="fl"><small>النتيجة النهائية</small><b>صافي الدخل</b></div><div class="fa num">'+fmt(x.final)+'<small> '+CUR+'</small></div></div>';
   if(x.sales>0){
     var S=[['مردودات',x.rets,'#B84C3A'],['حسم',x.disc,'#C98A3C'],['التكلفة',x.cogs,'#8a6836'],['المصاريف',x.exp,'#6b2a20'],['صافي',Math.max(0,x.final),'#B8935A']];
