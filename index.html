@@ -58,12 +58,12 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .stmt .row b{font-weight:900}
 .pos{color:#059669}.neg{color:#e11d48}
 .total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
+/* ✅ الرسم البياني: بعرض كامل، تمرير أفقي، ومنع النسخ */
 #chartCard,#chartCard *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-/* ✅ شريط الأيام التفاعلي */
-.day-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 2px 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.day-strip::-webkit-scrollbar{display:none}
-.day-chip{flex:0 0 auto;min-width:40px;text-align:center;border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:800;color:#475569;cursor:pointer;font-family:'Cairo';transition:.15s}
-.day-chip.on{background:#f59e0b;border-color:#b45309;color:#fff;box-shadow:0 4px 10px rgba(245,158,11,.35)}
+.chart-scroll{overflow-x:auto;overflow-y:hidden;padding-bottom:8px}
+.chart-scroll::-webkit-scrollbar{height:6px}
+.chart-scroll::-webkit-scrollbar-track{background:#eef1f8;border-radius:3px}
+.chart-scroll::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px}
 .acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
 .acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
 .acc-head:hover{background:#f8fafc}
@@ -137,29 +137,31 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
     <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-sack-dollar"></i></span>صافي الدخل</div><div class="v pos" id="kNetInc">0</div><div class="s">مجمل الدخل − المصاريف</div></div>
   </section>
 
-  <div class="grid2">
-    <section class="card hidden" id="stmtCard">
-      <div class="card-head"><h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2></div>
-      <div class="stmt" style="margin-top:10px">
-        <div class="row"><span>(+) إجمالي المبيعات</span><b class="pos" id="s1">0</b></div>
-        <div class="row"><span>(−) مردودات المبيعات</span><b class="neg" id="s2">0</b></div>
-        <div class="row"><span>(−) الحسم الممنوح</span><b class="neg" id="s3">0</b></div>
-        <div class="row"><span>(=) صافي المبيعات</span><b id="s4">0</b></div>
-        <div class="row"><span>(−) تكلفة البضاعة المباعة (مدين − دائن)</span><b class="neg" id="s5">0</b></div>
-        <div class="row"><span>(=) مجمل الدخل</span><b id="s6">0</b></div>
-        <div class="row"><span>(+) إيرادات مختلفة</span><b class="pos" id="s7">0</b></div>
-        <div class="row"><span>(=) إجمالي صافي الدخل بعد الإيرادات</span><b id="s8">0</b></div>
-        <div class="row"><span>(−) إجمالي المصاريف</span><b class="neg" id="s9">0</b></div>
-        <div class="total-btn"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
-      </div>
-    </section>
-    <section class="card hidden" id="chartCard" oncontextmenu="return false">
-      <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
-      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> حدد اليوم براحتك من شريط الأرقام أو بالضغط بأي مكان على عمود اليوم — انقر مجدداً للإلغاء</p>
-      <div class="day-strip" id="dayStrip"></div>
-      <div style="height:270px;margin-top:4px"><canvas id="chart"></canvas></div>
-    </section>
-  </div>
+  <!-- ✅ الرسم البياني: بعرض كامل (ليس في grid2) -->
+  <section class="card hidden" id="chartCard" oncontextmenu="return false">
+    <div class="card-head"><h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2></div>
+    <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم ليتلوّن بالذهبي وتظهر تفاصيله — انقر مجدداً للإلغاء &nbsp;|&nbsp; <i class="fa-solid fa-arrows-left-right"></i> مرّر أفقياً لرؤية كل الأيام</p>
+    <div class="chart-scroll" style="margin-top:10px">
+      <div id="chartWrap" style="height:320px;min-width:100%"><canvas id="chart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- قائمة الدخل بعرض كامل -->
+  <section class="card hidden" id="stmtCard">
+    <div class="card-head"><h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2></div>
+    <div class="stmt" style="margin-top:10px;max-width:700px">
+      <div class="row"><span>(+) إجمالي المبيعات</span><b class="pos" id="s1">0</b></div>
+      <div class="row"><span>(−) مردودات المبيعات</span><b class="neg" id="s2">0</b></div>
+      <div class="row"><span>(−) الحسم الممنوح</span><b class="neg" id="s3">0</b></div>
+      <div class="row"><span>(=) صافي المبيعات</span><b id="s4">0</b></div>
+      <div class="row"><span>(−) تكلفة البضاعة المباعة (مدين − دائن)</span><b class="neg" id="s5">0</b></div>
+      <div class="row"><span>(=) مجمل الدخل</span><b id="s6">0</b></div>
+      <div class="row"><span>(+) إيرادات مختلفة</span><b class="pos" id="s7">0</b></div>
+      <div class="row"><span>(=) إجمالي صافي الدخل بعد الإيرادات</span><b id="s8">0</b></div>
+      <div class="row"><span>(−) إجمالي المصاريف</span><b class="neg" id="s9">0</b></div>
+      <div class="total-btn"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
+    </div>
+  </section>
 
   <section class="card hidden" id="expCard">
     <div class="card-head"><h2><i class="fa-solid fa-layer-group"></i> تفاصيل المصاريف حسب الفئة (انقر للفتح)</h2></div>
@@ -173,24 +175,22 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 const REPO='AHMEDBRZAN/asbakk';
 const $=s=>document.querySelector(s);
 const fmt=(n,d=0)=>(isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtShort=v=>v>=1e6?(v/1e6).toLocaleString('en-US',{maximumFractionDigits:1})+'M':v>=1e3?(v/1e3).toLocaleString('en-US',{maximumFractionDigits:0})+'K':v;
+const fmtShort=v=>v>=1e6?(v/1e6).toLocaleString('en-US',{maximumFractionDigits:1})+'M':v>=1e3?(v/1e3).toLocaleString('en-US',{maximumFractionDigits:0})+'K':fmt(v);
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const norm=s=>(s||'').replace(/\s+/g,'');
 
 const CATS=[["ايجار بناية","fa-building"],["كهرباء","fa-bolt"],["اشتراك مولد","fa-plug-circle-bolt"],["مصاريف مختلفة","fa-shapes"],["شراء ماء للمحل","fa-droplet"],["شراء قرطاسية متنوعة","fa-pen-ruler"],["شراء منظفات","fa-soap"],["شراء علاليك","fa-box-archive"],["مشتريات المحل","fa-cart-shopping"],["مكافئات تشجيعية","fa-gift"],["اجور نقل","fa-truck-fast"],["مشروبات ساخنة","fa-mug-hot"],["صيانة","fa-screwdriver-wrench"],["اعانة محتاجين","fa-hand-holding-heart"],["عمولة حوالات الشركات","fa-money-bill-transfer"],["زيادة ونقص صندوق","fa-scale-unbalanced"],["اجور الموظفين","fa-users"],["طعام الموظفين","fa-utensils"],["مصاريف تسويق وتطوير","fa-bullhorn"],["ايجار المخزن الخارجي","fa-warehouse"],["اجور توصيل البضاعة","fa-truck"],["اعلام ونشر الشركة","fa-rectangle-ad"]];
 const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوصيلبضاعة':'اجور توصيل البضاعة'};
 
-let RAW=null, CURRENT=null, CHART=null;
-let chartFrom=null, chartTo=null, selectedDay=null;
+let RAW=null,CURRENT=null,CHART=null;
+let chartFrom=null,chartTo=null,selectedDay=null;
 
-/* ---------- IndexedDB ---------- */
 function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
 async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
 async function idbGet(id){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function idbPut(item){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(item);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
 async function idbDel(id){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
 
-/* ---------- أدوات ---------- */
 function ov(t){$('#ovText').textContent=t;$('#overlay').classList.remove('hidden');}
 function ovHide(){$('#overlay').classList.add('hidden');}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add('hidden'),2600);}
@@ -202,7 +202,6 @@ return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المر�
 function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
 function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
 
-/* ---------- الحسابات ---------- */
 function computeStats(from,to){
   const inR=r=>r.date>=from&&r.date<=to;
   const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR);
@@ -225,14 +224,13 @@ function computeDaily(from,to){
 }
 function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
 
-/* ---------- العرض ---------- */
 function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
 
 function renderAll(){
   if(!RAW||!chartFrom)return;
   ['filterCard','kpis','stmtCard','chartCard','expCard'].forEach(id=>$('#'+id).classList.remove('hidden'));
   const selKey=selectedDay?iso(selectedDay):null;
-  const df=selectedDay||chartFrom, dt=selectedDay||chartTo;
+  const df=selectedDay||chartFrom,dt=selectedDay||chartTo;
   const st=computeStats(df,dt);
 
   anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
@@ -267,45 +265,42 @@ function renderAll(){
   });
 }
 
-/* ---------- الرسم البياني + شريط الأيام ---------- */
+/* ✅ الرسم البياني: كل يوم بعرض 45px ثابت، تمرير أفقي، أعمدة واضحة */
 function renderChart(selKey){
   const daily=computeDaily(chartFrom,chartTo);
   const days=Object.keys(daily).sort();
+  const dayCount=days.length;
+  const PER_DAY=50;
+  const minW=Math.max(dayCount*PER_DAY, $('#chartCard').clientWidth-40);
+  const wrap=$('#chartWrap');
+  wrap.style.width=minW+'px';
+  wrap.style.minWidth=minW+'px';
+
   const labels=days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];});
   const barColors=days.map(d=>d===selKey?'#f59e0b':'#4f46e5');
 
-  /* شريط الأيام */
-  const strip=$('#dayStrip');strip.innerHTML='';
-  days.forEach(d=>{
-    const b=document.createElement('button');
-    b.className='day-chip'+(d===selKey?' on':'');
-    b.textContent=+d.split('-')[2];
-    b.onclick=()=>toggleDay(d);
-    strip.appendChild(b);
-  });
-  if(selKey){const on=strip.querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});}
-
   if(CHART)CHART.destroy();
   CHART=new Chart($('#chart'),{data:{labels:labels,datasets:[
-    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:3,barPercentage:.9,categoryPercentage:1,yAxisID:'y'},
-    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:1.5,pointRadius:2,tension:.3,yAxisID:'y1'}]},
+    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:4,barPercentage:.7,categoryPercentage:.8},
+    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:2,pointRadius:3,pointBackgroundColor:days.map(d=>d===selKey?'#f59e0b':'#e11d48'),tension:.3}]},
     options:{responsive:true,maintainAspectRatio:false,
       animation:false,
-      layout:{padding:0},
-      interaction:{mode:'index',intersect:false},
-      onClick:(evt,els)=>{if(els.length){toggleDay(days[els[0].index]);}},
-      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=els.length?'pointer':'default';},
-      plugins:{legend:{labels:{font:{family:'Cairo',weight:700,size:10},boxWidth:12,boxHeight:12}},
-        tooltip:{titleFont:{family:'Cairo'},bodyFont:{family:'Cairo'},callbacks:{title:items=>'اليوم: '+days[items[0].dataIndex],label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}},
+      onClick:(evt,els)=>{if(els.length&&els[0].datasetIndex===0){toggleDay(days[els[0].index]);}},
+      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=(els.length&&els[0].datasetIndex===0)?'pointer':'default';},
+      plugins:{
+        legend:{labels:{font:{family:'Cairo',weight:700,size:11},boxWidth:14,boxHeight:14,padding:16}},
+        tooltip:{rtl:true,titleFont:{family:'Cairo',size:12},bodyFont:{family:'Cairo',size:11},padding:10,
+          callbacks:{title:items=>'📅 '+days[items[0].dataIndex],label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}
+      },
       scales:{
-        x:{offset:false,grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
-        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}},
-        y1:{display:false,grid:{drawOnChartArea:false}}
+        x:{grid:{display:false},ticks:{font:{family:'Cairo',size:10,weight:700},maxRotation:0,padding:6}},
+        y:{grid:{color:'#eef1f8',lineWidth:1},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v),padding:8},
+          afterFit:s=>{s.width=60}}
       }}});
 }
 function toggleDay(key){
   if(selectedDay&&iso(selectedDay)===key){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');}
-  else{selectedDay=new Date(key+'T00:00:00');$('#dFrom').value=key;$('#dTo').value=key;toast('تم تحديد يوم: '+key);}
+  else{selectedDay=new Date(key+'T00:00:00');$('#dFrom').value=key;$('#dTo').value=key;toast('📅 تم تحديد يوم: '+key);}
   renderAll();
 }
 function apply(){
@@ -323,7 +318,6 @@ function resetRange(){
   renderAll();
 }
 
-/* ---------- إدارة الملفات ---------- */
 async function renderLocal(){
   const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
   const box=$('#localList');
@@ -379,10 +373,9 @@ $('#btnSave').onclick=async()=>{
   const item={id:CURRENT.name,name:CURRENT.name,savedAt:new Date().toISOString(),data:serializeRAW(),
     meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,expenses:st.expenses,net:st.net,counts:st.counts}};
   try{await idbPut(item);await renderLocal();toast('✔ تم حفظ "'+CURRENT.name+'" في قائمة الملفات');}
-  catch(e){toast('تعذّر الحفظ (مساحة التخزين ممتلئة)');}
+  catch(e){toast('تعذّر الحفظ');}
 };
 
-/* ---------- الإقلاع ---------- */
 (async function init(){
   try{
     const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
