@@ -3,1258 +3,680 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>نظام حسابات الجوهره — v4.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>حسابات الجوهرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --primary: #0a2540;
-  --primary-light: #1a3a5c;
-  --accent: #00d4aa;
-  --income: #00b894;
-  --expense: #e74c3c;
-  --withdraw: #f39c12;
-  --bg: #f8f9fa;
-  --card: #ffffff;
-  --border: #e9ecef;
-  --text: #212529;
-  --text-muted: #6c757d;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: 'Cairo', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  line-height: 1.6;
-}
-
-.header {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  padding: 16px 24px;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo {
-  width: 44px;
-  height: 44px;
-  background: var(--accent);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.brand h1 {
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.brand small {
-  font-size: 11px;
-  color: #b0c4de;
-  display: block;
-}
-
-.user-info {
-  font-size: 13px;
-  color: #b0c4de;
-  text-align: left;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: 16px;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.period-section {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow);
-  margin-bottom: 24px;
-}
-
-.period-title {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 24px;
-  color: var(--primary);
-  text-align: center;
-}
-
-.period-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.period-btn {
-  background: white;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-}
-
-.period-btn:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,212,170,0.15);
-}
-
-.period-btn.active {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-
-.period-btn .icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.date-picker {
-  display: none;
-  gap: 16px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.date-picker.show {
-  display: flex;
-}
-
-.date-field {
-  flex: 1;
-  min-width: 200px;
-}
-
-.date-field label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.date-field input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-.date-field input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.dashboard {
-  display: none;
-}
-
-.dashboard.show {
-  display: block;
-}
-
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.summary-card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: var(--shadow);
-  border-right: 4px solid var(--accent);
-}
-
-.summary-card.income { border-right-color: var(--income); }
-.summary-card.expense { border-right-color: var(--expense); }
-.summary-card.withdraw { border-right-color: var(--withdraw); }
-
-.summary-card h3 {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.summary-card .amount {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 4px;
-  direction: ltr;
-  text-align: right;
-}
-
-.summary-card.income .amount { color: var(--income); }
-.summary-card.expense .amount { color: var(--expense); }
-.summary-card.withdraw .amount { color: var(--withdraw); }
-
-.summary-card .sub {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.main-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.option-card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: all 0.3s;
-  text-align: center;
-  border: 3px solid transparent;
-}
-
-.option-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-.option-card.income { border-color: var(--income); }
-.option-card.expense { border-color: var(--expense); }
-
-.option-card .icon {
-  font-size: 56px;
-  margin-bottom: 16px;
-  display: block;
-}
-
-.option-card h2 {
-  font-size: 22px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.option-card.income h2 { color: var(--income); }
-.option-card.expense h2 { color: var(--expense); }
-
-.option-card .total {
-  font-size: 18px;
-  font-weight: 700;
-  direction: ltr;
-  margin-top: 12px;
-}
-
-.sub-categories {
-  display: none;
-  background: var(--card);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow);
-  margin-bottom: 24px;
-}
-
-.sub-categories.show {
-  display: block;
-}
-
-.sub-title {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.back-link {
-  font-size: 14px;
-  color: var(--primary);
-  cursor: pointer;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 8px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.back-link:hover {
-  background: var(--accent);
-  color: white;
-}
-
-.sub-category {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-right: 4px solid var(--accent);
-}
-
-.sub-category:hover {
-  background: #e9ecef;
-  transform: translateX(-4px);
-}
-
-.sub-category.income { border-right-color: var(--income); }
-.sub-category.expense { border-right-color: var(--expense); }
-.sub-category.withdraw { border-right-color: var(--withdraw); }
-
-.sub-category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.sub-category-header h3 {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.sub-category-total {
-  font-size: 16px;
-  font-weight: 800;
-  direction: ltr;
-}
-
-.sub-category.income .sub-category-total { color: var(--income); }
-.sub-category.expense .sub-category-total { color: var(--expense); }
-.sub-category.withdraw .sub-category-total { color: var(--withdraw); }
-
-.sub-category-count {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.transactions-section {
-  display: none;
-  background: var(--card);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow);
-}
-
-.transactions-section.show {
-  display: block;
-}
-
-.transactions-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--border);
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.transactions-header h2 {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.back-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.back-btn:hover {
-  background: var(--primary-light);
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-.transactions-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-}
-
-.transactions-table thead {
-  background: var(--primary);
-  color: white;
-}
-
-.transactions-table th {
-  padding: 12px;
-  text-align: right;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.transactions-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-
-.transactions-table tr {
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.transactions-table tr:hover {
-  background: #f8f9fa;
-}
-
-.transactions-table .amount {
-  font-weight: 700;
-  direction: ltr;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.transactions-table .date {
-  direction: ltr;
-  text-align: right;
-  color: var(--text-muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.transactions-table .details {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.transactions-total {
-  background: var(--primary);
-  color: white;
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: 800;
-  direction: ltr;
-}
-
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-overlay.show {
-  display: flex;
-}
-
-.modal {
-  background: white;
-  border-radius: 16px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-  background: var(--primary);
-  color: white;
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h2 {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.modal-close {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  gap: 16px;
-}
-
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.detail-value {
-  font-size: 14px;
-  font-weight: 700;
-  text-align: left;
-  word-break: break-word;
-}
-
-.detail-value.income { color: var(--income); font-size: 18px; }
-.detail-value.expense { color: var(--expense); font-size: 18px; }
-.detail-value.withdraw { color: var(--withdraw); font-size: 18px; }
-
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: var(--primary);
-  color: white;
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  z-index: 2000;
-  transition: transform 0.3s;
-  max-width: 90vw;
-  text-align: center;
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-}
-
-.toast.error {
-  background: var(--expense);
-}
-
-@media (max-width: 768px) {
-  .main-options {
-    grid-template-columns: 1fr;
-  }
-  
-  .summary-cards {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  .container {
-    padding: 16px;
-  }
-  
-  .period-section {
-    padding: 20px;
-  }
-  
-  .transactions-table {
-    font-size: 11px;
-  }
-  
-  .transactions-table th,
-  .transactions-table td {
-    padding: 8px 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .summary-cards {
-    grid-template-columns: 1fr;
-  }
-}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#f5f6fa;--card:#fff;--border:#e4e8f1;
+--dark:#1b2437;--text:#2c3a4f;--mut:#7e8da3;
+--grn:#0d9668;--grn-bg:#eafaf3;--grn-br:#a3e8cd;
+--red:#d63c3c;--red-bg:#fdf0f0;--red-br:#f5c2c2;
+--gold:#c88a17;--gold-bg:#fef9ec;--gold-br:#f5dfa5;
+--blue:#2b6de0;--blue-bg:#edf4fe;--blue-br:#b8d4f8;
+--purp:#7440d4;--purp-bg:#f4f0fd;--purp-br:#d5c6f5;
+--r:14px;--sh:0 2px 16px rgba(27,36,55,.05)
+}
+html{touch-action:manipulation}
+body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.loading{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:999;transition:opacity .4s,visibility .4s}
+.loading.done{opacity:0;visibility:hidden}
+.ld-box{text-align:center;max-width:360px;padding:20px}
+.ld-ring{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--grn);border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 16px}
+.ld-box p{font-size:13px;color:var(--mut);font-weight:500;margin-bottom:6px}
+.ld-status{font-size:11px;color:var(--grn);font-weight:600;animation:pulse 1.5s infinite}
+.ld-error{color:var(--red);font-weight:600;font-size:12px;margin-top:10px}
+
+.upload-panel{background:var(--card);border:2px dashed var(--border);border-radius:14px;padding:24px 20px;margin-top:16px;text-align:center;display:none}
+.upload-panel.vis{display:block;animation:fadeUp .3s}
+.upload-panel .ico{font-size:36px;margin-bottom:8px}
+.upload-panel p{font-size:12.5px;color:var(--mut);margin-bottom:14px}
+.upload-btn{display:inline-block;padding:11px 22px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.upload-btn:hover{background:#1d5bc4}
+.upload-btn:active{transform:scale(.97)}
+input[type=file]{display:none}
+.retry-btn{margin-top:10px;padding:9px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;font-family:'Changa';font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer}
+.retry-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+.hdr{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60;padding:0 16px;box-shadow:0 1px 6px rgba(0,0,0,.03)}
+.hdr-in{max-width:640px;margin:auto;height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hdr h1{font-family:'Changa';font-size:17px;font-weight:700;color:var(--dark);white-space:nowrap}
+.hdr-badge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);white-space:nowrap}
+.hdr-back{display:none;align-items:center;gap:4px;background:none;border:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--mut);cursor:pointer;padding:6px 10px;border-radius:8px}
+.hdr-back:hover{background:var(--bg);color:var(--dark)}
+.hdr-back.vis{display:flex}
+.hdr-refresh{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut);transition:.15s}
+.hdr-refresh:hover{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-br)}
+.hdr-refresh:active{transform:scale(.95)}
+.hdr-refresh.spin .r-ico{animation:spin .8s linear}
+
+.wrap{max-width:640px;margin:auto;padding:18px 16px 50px}
+.scr{display:none;animation:fadeUp .35s both}
+.scr.on{display:block}
+
+.p-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px 20px;box-shadow:var(--sh)}
+.p-card h2{font-family:'Changa';font-size:19px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.p-card .sub{font-size:12.5px;color:var(--mut);margin-bottom:20px}
+.p-opts{display:grid;gap:8px}
+.p-opt{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;transition:.15s;background:var(--card)}
+.p-opt:hover{border-color:var(--grn);background:var(--grn-bg)}
+.p-opt.sel{border-color:var(--grn);background:var(--grn-bg)}
+.p-opt .pi{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--bg);flex-shrink:0;transition:.15s}
+.p-opt.sel .pi{background:var(--grn);color:#fff}
+.p-opt .pt b{display:block;font-size:13.5px;font-weight:600}
+.p-opt .pt span{font-size:11px;color:var(--mut)}
+.extra{display:none;margin-top:12px;animation:fadeUp .25s}
+.extra.vis{display:block}
+.extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.extra label{display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:4px}
+.extra select,.extra input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font:inherit;font-size:13.5px;background:var(--bg)}
+.extra select:focus,.extra input:focus{outline:none;border-color:var(--grn);background:#fff}
+.btn-go{width:100%;margin-top:18px;padding:13px;background:var(--grn);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:15.5px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 3px 14px rgba(13,150,104,.2)}
+.btn-go:hover{background:#0b8158}
+.btn-go:active{transform:scale(.98)}
+.p-info{margin-top:12px;text-align:center;font-size:11.5px;color:var(--mut)}
+
+.sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
+.s-card .sl{font-size:10.5px;color:var(--mut);font-weight:600;margin-bottom:3px}
+.s-card .sv{font-family:'Changa';font-size:15px;font-weight:800;direction:ltr}
+.s-card.si .sv{color:var(--grn)}
+.s-card.so .sv{color:var(--red)}
+.s-card.sn .sv{color:var(--blue)}
+
+.sec-t{font-family:'Changa';font-size:15px;font-weight:700;color:var(--dark);margin:16px 0 10px;display:flex;align-items:center;gap:7px}
+.sec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cats{display:grid;gap:8px}
+.c-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;box-shadow:var(--sh)}
+.c-card:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(27,36,55,.09)}
+.c-card:active{transform:scale(.98)}
+.c-ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.c-info{flex:1;min-width:0}
+.c-info h3{font-size:13.5px;font-weight:700}
+.c-info span{font-size:11px;color:var(--mut)}
+.c-tot{font-family:'Changa';font-size:14px;font-weight:800;direction:ltr;white-space:nowrap}
+.c-card.ci .c-ico{background:var(--grn-bg)}.c-card.ci .c-tot{color:var(--grn)}
+.c-card.co .c-ico{background:var(--red-bg)}.c-card.co .c-tot{color:var(--red)}
+.c-card.cw .c-ico{background:var(--gold-bg)}.c-card.cw .c-tot{color:var(--gold)}
+.c-card.cs .c-ico{background:var(--purp-bg)}.c-card.cs .c-tot{color:var(--purp)}
+
+.tx-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.tx-top h2{font-family:'Changa';font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px}
+.tx-badge{font-size:10.5px;background:var(--bg);border:1px solid var(--border);padding:3px 9px;border-radius:99px;color:var(--mut);font-weight:600}
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--dark)}
+thead th{color:#fff;font-size:10.5px;font-weight:600;padding:10px 8px;text-align:center;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:nth-child(even){background:#fafbfe}
+tbody tr:hover{background:var(--blue-bg)}
+tbody tr:active{background:var(--grn-bg)}
+tbody td{padding:10px 8px;font-size:12px;text-align:center;vertical-align:middle}
+td.td-name{text-align:right;font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.td-det{text-align:right;color:var(--mut);font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-amt{font-family:'Changa';font-weight:700;font-size:12.5px;direction:ltr;white-space:nowrap}
+.td-amt.ai{color:var(--grn)}.td-amt.ao{color:var(--red)}.td-amt.aw{color:var(--gold)}.td-amt.as{color:var(--purp)}
+tfoot{background:var(--bg)}
+tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;border-top:2px solid var(--border)}
+.ft-amt{font-family:'Changa';font-size:14px;font-weight:800;direction:ltr}
+
+.m-ov{position:fixed;inset:0;background:rgba(27,36,55,.45);backdrop-filter:blur(3px);z-index:100;display:none;place-items:center;padding:16px}
+.m-ov.vis{display:grid}
+.m-box{background:var(--card);border-radius:18px;width:min(420px,100%);max-height:82vh;overflow:auto;animation:popIn .25s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.m-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:2}
+.m-hd h3{font-family:'Changa';font-size:15px;font-weight:700}
+.m-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:13px;color:var(--mut);transition:.15s}
+.m-x:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-br)}
+.m-bd{padding:18px}
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);gap:10px}
+.d-row:last-child{border-bottom:none}
+.d-row .dl{font-size:11.5px;color:var(--mut);font-weight:600;flex-shrink:0}
+.d-row .dv{font-size:13px;font-weight:600;text-align:left;word-break:break-word;line-height:1.6}
+.d-row .dv.ltr{direction:ltr;font-family:'Changa';font-weight:700}
+.d-amt-box{text-align:center;padding:18px 0 6px;margin-top:10px;border-top:2px dashed var(--border)}
+.d-amt-box .lbl{font-size:11.5px;color:var(--mut);margin-bottom:5px}
+.d-amt-box .big{font-family:'Changa';font-size:26px;font-weight:800;direction:ltr}
+
+.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,70px);background:var(--dark);color:#fff;padding:11px 18px;border-radius:11px;font-size:12.5px;font-weight:600;z-index:200;transition:.3s;opacity:0;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:90vw;text-align:center}
+.toast.vis{transform:translate(-50%,0);opacity:1}
+.toast.err{background:var(--red)}
+.toast.ok{background:var(--grn)}
+
+.empty{text-align:center;padding:40px 16px;color:var(--mut)}
+.empty p{font-size:13px;font-weight:500}
+
+@media(max-width:420px){.sum-row{grid-template-columns:1fr}.extra-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-content">
-    <div class="brand">
-      <div class="logo">💎</div>
-      <div>
-        <h1>نظام حسابات الجوهره</h1>
-        <small>الإصدار 4.0 — الدينار العراقي</small>
-      </div>
-    </div>
-    <div class="user-info">
-      <div id="fileStatus">جاري التحميل...</div>
-    </div>
-  </div>
-</header>
-
-<div class="container">
-  <div class="loading" id="loadingView">
-    <div class="spinner"></div>
-    <p style="font-size: 16px; font-weight: 600;">جاري تحميل البيانات...</p>
-  </div>
-
-  <section class="period-section" id="periodSection" style="display: none;">
-    <h1 class="period-title">🗓️ اختر الفترة الزمنية</h1>
-    
-    <div class="period-grid">
-      <button class="period-btn" data-period="all">
-        <span class="icon">📊</span>
-        كامل الفترة
-      </button>
-      <button class="period-btn" data-period="today">
-        <span class="icon">📅</span>
-        اليوم
-      </button>
-      <button class="period-btn" data-period="month">
-        <span class="icon">📆</span>
-        الشهر الحالي
-      </button>
-      <button class="period-btn" data-period="custom">
-        <span class="icon">🎯</span>
-        فترة مخصصة
-      </button>
-    </div>
-
-    <div class="date-picker" id="datePicker">
-      <div class="date-field">
-        <label>من تاريخ:</label>
-        <input type="date" id="dateFrom">
-      </div>
-      <div class="date-field">
-        <label>إلى تاريخ:</label>
-        <input type="date" id="dateTo">
-      </div>
-    </div>
-  </section>
-
-  <div class="dashboard" id="dashboard">
-    <div class="summary-cards">
-      <div class="summary-card income">
-        <h3>إجمالي الإيرادات</h3>
-        <div class="amount" id="totalIncome">0</div>
-        <div class="sub" id="incomeCount">0 حركة</div>
-      </div>
-      <div class="summary-card expense">
-        <h3>إجمالي الصرفيات</h3>
-        <div class="amount" id="totalExpense">0</div>
-        <div class="sub" id="expenseCount">0 حركة</div>
-      </div>
-      <div class="summary-card withdraw">
-        <h3>سحب المبالغ</h3>
-        <div class="amount" id="totalWithdraw">0</div>
-        <div class="sub" id="withdrawCount">0 حركة</div>
-      </div>
-      <div class="summary-card">
-        <h3>الصافي</h3>
-        <div class="amount" id="netAmount" style="color: var(--primary);">0</div>
-        <div class="sub" id="periodLabel">كامل الفترة</div>
-      </div>
-    </div>
-
-    <div class="main-options">
-      <div class="option-card income" id="incomeCard">
-        <span class="icon">💰</span>
-        <h2>الإيرادات</h2>
-        <div class="total" id="incomeTotal">0 د.ع.</div>
-      </div>
-      <div class="option-card expense" id="expenseCard">
-        <span class="icon">💸</span>
-        <h2>الصرفيات</h2>
-        <div class="total" id="expenseTotal">0 د.ع.</div>
-      </div>
-    </div>
-
-    <div class="sub-categories" id="subCategories">
-      <div class="sub-title">
-        <span id="subTitle"></span>
-        <span class="back-link" id="backToMain">← رجوع للرئيسية</span>
-      </div>
-      <div id="subCategoriesList"></div>
-    </div>
-
-    <div class="transactions-section" id="transactionsSection">
-      <div class="transactions-header">
-        <h2 id="transactionsTitle"></h2>
-        <button class="back-btn" id="backBtn">← رجوع للتصنيفات</button>
-      </div>
-      <div class="table-wrapper">
-        <table class="transactions-table">
-          <thead>
-            <tr>
-              <th>التاريخ</th>
-              <th>الاسم</th>
-              <th>التفاصيل</th>
-              <th>المبلغ</th>
-            </tr>
-          </thead>
-          <tbody id="transactionsBody"></tbody>
-        </table>
-      </div>
-      <div class="transactions-total" id="transactionsTotal">
-        المجموع: 0 د.ع.
-      </div>
-    </div>
-  </div>
+<div class="loading" id="ldScr">
+<div class="ld-box">
+<div class="ld-ring" id="ldRing"></div>
+<p id="ldText">جاري تحميل بيانات الحسابات…</p>
+<div class="ld-status" id="ldStatus">جاري الاتصال بالمستودع</div>
+<div class="ld-error" id="ldErr" style="display:none"></div>
+<div class="upload-panel" id="uploadPanel">
+<div class="ico">📂</div>
+<p>تعذر تحميل الملف تلقائياً<br>يمكنك رفع ملف Excel يدوياً</p>
+<label class="upload-btn" for="fileInput">اختر ملف Excel</label>
+<input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls">
+<button class="retry-btn" id="retryBtn">↻ إعادة المحاولة</button>
+</div>
+</div>
 </div>
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">تفاصيل الحركة</h2>
-      <button class="modal-close" id="modalClose">✕</button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
+<div class="hdr" id="hdr" style="display:none"><div class="hdr-in">
+<button class="hdr-back" id="backBtn">→ رجوع</button>
+<h1 id="hdrTitle">حسابات الجوهرة</h1>
+<div style="display:flex;align-items:center;gap:6px">
+<button class="hdr-refresh" id="refreshBtn" title="تحديث البيانات"><span class="r-ico">↻</span></button>
+<span class="hdr-badge" id="hdrBadge">2026</span>
 </div>
+</div></div>
+
+<div class="wrap" id="appWrap" style="display:none">
+
+<div class="scr on" id="scrPeriod">
+<div class="p-card">
+<h2>📊 تحديد الفترة</h2>
+<p class="sub">اختر الفترة الزمنية لعرض الحسابات</p>
+<div class="p-opts">
+<div class="p-opt sel" data-m="all"><div class="pi">📋</div><div class="pt"><b>كامل الفترة</b><span>جميع الحركات المسجلة</span></div></div>
+<div class="p-opt" data-m="month"><div class="pi">📅</div><div class="pt"><b>حسب الشهر</b><span>اختر شهراً محدداً</span></div></div>
+<div class="p-opt" data-m="custom"><div class="pi">🎯</div><div class="pt"><b>فترة مخصصة</b><span>من تاريخ — إلى تاريخ</span></div></div>
+</div>
+<div class="extra" id="exMonth"><div class="extra-grid">
+<div><label>الشهر</label><select id="selMonth"></select></div>
+<div><label>السنة</label><select id="selYear"></select></div>
+</div></div>
+<div class="extra" id="exCustom"><div class="extra-grid">
+<div><label>من تاريخ</label><input type="date" id="dtFrom"></div>
+<div><label>إلى تاريخ</label><input type="date" id="dtTo"></div>
+</div></div>
+<button class="btn-go" id="btnGo">عرض الحسابات ←</button>
+<div class="p-info" id="pInfo"></div>
+</div>
+</div>
+
+<div class="scr" id="scrDash">
+<div class="sum-row" id="sumRow"></div>
+<div class="sec-t"><span class="sec-dot" style="background:var(--grn)"></span>الإيرادات</div>
+<div class="cats" id="inCats"></div>
+<div class="sec-t"><span class="sec-dot" style="background:var(--red)"></span>الصرفيات</div>
+<div class="cats" id="outCats"></div>
+</div>
+
+<div class="scr" id="scrTx">
+<div class="tx-top"><h2 id="txTitle"></h2><span class="tx-badge" id="txBadge"></span></div>
+<div class="tbl-wrap"><table>
+<thead><tr><th style="width:68px">التاريخ</th><th>الاسم</th><th>التفاصيل</th><th style="width:95px">المبلغ</th></tr></thead>
+<tbody id="txBody"></tbody>
+<tfoot><tr><td colspan="3">المجموع الكلي</td><td><span class="ft-amt" id="txTotal"></span></td></tr></tfoot>
+</table></div>
+</div>
+
+</div>
+
+<div class="m-ov" id="detOv"><div class="m-box">
+<div class="m-hd"><h3 id="detT">تفاصيل الحركة</h3><button class="m-x" id="detX">✕</button></div>
+<div class="m-bd" id="detB"></div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const REPO = 'AHMEDBRZAN/asbakk';
-const FILE_NAME = 'تدقيق حسابات الجوهره.xlsx';
+(function(){
+"use strict";
 
-let allTransactions = [];
-let filteredTransactions = [];
-let currentPeriod = { start: null, end: null };
-let currentView = { type: null, category: null };
-let currentTransactionsList = [];
+var REPO="AHMEDBRZAN/asbakk";
+var TX=[],PER={mode:"all",from:null,to:null},CUR=null;
 
-function formatNumber(num) {
-  return Number(num || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+function $(s){return document.querySelector(s)}
+function $$(s){return[].slice.call(document.querySelectorAll(s))}
+function money(n){return(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0})}
+function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]+"-"+p[0]}
+function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var _tt=null;
+function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},2800)}
+
+var FILE_NAME="تدقيق حسابات الجوهره.xlsx";
+var LOAD_ATTEMPTS=0;
+var MAX_ATTEMPTS=3;
+
+function setStatus(msg,color){
+  var s=$("#ldStatus");
+  if(s){s.textContent=msg;s.style.color=color||"var(--grn)"}
+}
+function setError(msg){
+  var e=$("#ldErr");
+  if(e){e.textContent=msg;e.style.display="block"}
+}
+function showUpload(){
+  $("#uploadPanel").classList.add("vis");
+  $("#ldRing").style.display="none";
+  $("#ldStatus").style.display="none";
+  $("#ldText").textContent="تعذر التحميل التلقائي";
+  $("#ldText").style.color="var(--red)";
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const parts = iso.split('-');
-  return parts[2] + '-' + parts[1] + '-' + parts[0];
-}
-
-function parseDate(value) {
-  if (value instanceof Date && !isNaN(value)) {
-    const y = value.getFullYear();
-    const m = String(value.getMonth() + 1).padStart(2, '0');
-    const d = String(value.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + d;
-  }
-  if (typeof value === 'number' && value > 20000) {
-    const date = new Date(Math.round((value - 25569) * 86400000));
-    const y = date.getUTCFullYear();
-    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(date.getUTCDate()).padStart(2, '0');
-    return y + '-' + m + '-' + d;
-  }
-  const str = String(value || '').trim();
-  if (!str) return null;
-  
-  const converted = str.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
-  
-  let match = converted.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-  if (match) return match[1] + '-' + match[2].padStart(2, '0') + '-' + match[3].padStart(2, '0');
-  
-  match = converted.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
-  if (match) return match[3] + '-' + match[2].padStart(2, '0') + '-' + match[1].padStart(2, '0');
-  
-  const date = new Date(converted);
-  if (isNaN(date)) return null;
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + dd;
-}
-
-function parseAmount(value) {
-  if (typeof value === 'number') return value;
-  const str = String(value || '').replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[^\d.\-]/g, '');
-  const num = parseFloat(str);
-  return isNaN(num) ? NaN : num;
-}
-
-function showToast(message, isError) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.className = 'toast' + (isError ? ' error' : '');
-  setTimeout(function() { toast.classList.add('show'); }, 10);
-  setTimeout(function() { toast.classList.remove('show'); }, 3000);
-}
-
-async function loadData() {
-  try {
-    const url = 'https://raw.githubusercontent.com/' + REPO + '/main/' + encodeURIComponent(FILE_NAME);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('فشل تحميل الملف');
-    
-    const buffer = await response.arrayBuffer();
-    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
-    
-    const sheetName = workbook.SheetNames[0];
-    const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: true });
-    
-    parseData(rawData);
-    document.getElementById('loadingView').style.display = 'none';
-    document.getElementById('periodSection').style.display = 'block';
-    document.getElementById('fileStatus').textContent = '✓ تم تحميل ' + allTransactions.length + ' حركة';
-  } catch (error) {
-    console.error(error);
-    showToast('فشل تحميل البيانات - تأكد من وجود الملف في المستودع', true);
-    document.getElementById('fileStatus').textContent = '✗ خطأ في التحميل';
-  }
-}
-
-function parseData(rawData) {
-  let headerRow = -1;
-  let headers = [];
-  
-  for (let r = 0; r < Math.min(30, rawData.length); r++) {
-    const row = rawData[r] || [];
-    let score = 0;
-    row.forEach(function(cell) {
-      const str = String(cell || '').trim();
-      if (str.indexOf('الوصل') >= 0) score++;
-      if (str.indexOf('التاريخ') >= 0) score++;
-      if (str.indexOf('النوع') >= 0 || str.indexOf('الصنف') >= 0) score++;
-      if (str.indexOf('الاسم') >= 0) score++;
-      if (str.indexOf('المبلغ') >= 0) score++;
+function loadViaAPI(){
+  setStatus("جاري البحث عن الملف عبر API…","#2b6de0");
+  return fetch("https://api.github.com/repos/"+REPO+"/contents",{
+    headers:{"Accept":"application/vnd.github.v3+json"}
+  })
+  .then(function(r){
+    if(!r.ok)throw new Error("API: "+r.status);
+    return r.json();
+  })
+  .then(function(items){
+    var f=items.find(function(x){
+      return x.name && /\.xlsx?$/i.test(x.name) && /جوهره|الجوهره/i.test(x.name);
     });
-    if (score >= 3) {
-      headerRow = r;
-      headers = row.map(function(x) { return String(x || '').trim(); });
-      break;
+    if(!f){
+      f=items.find(function(x){return x.name && /\.xlsx?$/i.test(x.name)});
     }
-  }
-  
-  let colSeq = -1, colReceipt = -1, colDate = -1, colCat = -1, colName = -1, colDetails = -1, colExpense = -1, colIncome = -1;
-  
-  if (headerRow >= 0) {
-    headers.forEach(function(h, i) {
-      if (colSeq < 0 && /^ت$|تسلسل/.test(h)) colSeq = i;
-      if (colReceipt < 0 && /الوصل/.test(h)) colReceipt = i;
-      if (colDate < 0 && /التاريخ/.test(h)) colDate = i;
-      if (colCat < 0 && /النوع|الصنف/.test(h)) colCat = i;
-      if (colName < 0 && /الاسم/.test(h)) colName = i;
-      if (colDetails < 0 && /التفاصيل/.test(h)) colDetails = i;
-      if (colExpense < 0 && /المبلغ\s*الصرف|صرف/.test(h)) colExpense = i;
-      if (colIncome < 0 && /المبلغ\s*الايراد|ايراد/.test(h)) colIncome = i;
-    });
-  }
-  
-  for (let r = headerRow + 1; r < rawData.length; r++) {
-    const row = rawData[r] || [];
-    const cat = String(row[colCat] || '').trim();
-    const rawReceipt = String(row[colReceipt] || '').trim();
-    
-    if (!cat || cat.indexOf('النوع') >= 0 || cat.indexOf('الصنف') >= 0) continue;
-    if (rawReceipt.indexOf('الوصل') >= 0) continue;
-    
-    const name = String(row[colName] || '').trim();
-    if (/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(cat) || /اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(name)) continue;
-    
-    const expenseAmount = parseAmount(row[colExpense]);
-    const incomeAmount = parseAmount(row[colIncome]);
-    
-    let amount = NaN;
-    let type = '';
-    
-    if (!isNaN(incomeAmount) && incomeAmount > 0) {
-      amount = incomeAmount;
-      type = 'income';
-    } else if (!isNaN(expenseAmount) && expenseAmount > 0) {
-      amount = expenseAmount;
-      type = 'expense';
-    } else {
-      continue;
-    }
-    
-    const date = parseDate(row[colDate]);
-    if (!date) continue;
-    
-    const receiptMatch = rawReceipt.match(/\d{2,6}/);
-    const receipt = receiptMatch ? receiptMatch[0] : rawReceipt;
-    
-    let subCategory = '';
-    if (/سحب/.test(cat)) {
-      type = 'withdraw';
-      subCategory = 'سحب المبالغ';
-    } else if (/قبض/.test(cat)) {
-      subCategory = 'قبض المبالغ';
-    } else if (/تنازل/.test(cat)) {
-      subCategory = 'ايراد تنازل';
-    } else if (/دفعات\s*المستفيدين/.test(cat)) {
-      subCategory = 'دفعات المستفيدين';
-    } else if (/صرفيات\s*الشركة|شركة/.test(cat)) {
-      subCategory = 'صرفيات الشركة';
-    } else if (/صرفيات\s*الموقع|موقع/.test(cat)) {
-      subCategory = 'صرفيات الموقع';
-    } else if (/رواتب/.test(cat)) {
-      subCategory = 'رواتب الموظفين';
-    } else {
-      subCategory = cat;
-    }
-    
-    allTransactions.push({
-      seq: colSeq >= 0 ? String(row[colSeq] || '').trim() : String(r - headerRow),
-      receipt: receipt,
-      date: date,
-      category: subCategory,
-      type: type,
-      name: name || '—',
-      details: colDetails >= 0 ? String(row[colDetails] || '').trim() : '',
-      amount: amount
-    });
-  }
-  
-  allTransactions.sort(function(a, b) { return a.date.localeCompare(b.date); });
-}
-
-function filterTransactions() {
-  filteredTransactions = allTransactions.filter(function(tx) {
-    if (!currentPeriod.start || !currentPeriod.end) return true;
-    return tx.date >= currentPeriod.start && tx.date <= currentPeriod.end;
+    if(!f)throw new Error("لم يتم العثور على ملف Excel");
+    setStatus("تم العثور على: "+f.name+" — جاري التحميل…");
+    return fetch(f.download_url);
+  })
+  .then(function(r){
+    if(!r.ok)throw new Error("Download: "+r.status);
+    return r.arrayBuffer();
   });
 }
 
-function calculateTotals() {
-  const income = filteredTransactions.filter(function(t) { return t.type === 'income'; });
-  const expense = filteredTransactions.filter(function(t) { return t.type === 'expense'; });
-  const withdraw = filteredTransactions.filter(function(t) { return t.type === 'withdraw'; });
-  
-  return {
-    income: { amount: income.reduce(function(s, t) { return s + t.amount; }, 0), count: income.length },
-    expense: { amount: expense.reduce(function(s, t) { return s + t.amount; }, 0), count: expense.length },
-    withdraw: { amount: withdraw.reduce(function(s, t) { return s + t.amount; }, 0), count: withdraw.length }
-  };
-}
-
-function updateDashboard() {
-  const totals = calculateTotals();
-  
-  document.getElementById('totalIncome').textContent = formatNumber(totals.income.amount);
-  document.getElementById('totalExpense').textContent = formatNumber(totals.expense.amount);
-  document.getElementById('totalWithdraw').textContent = formatNumber(totals.withdraw.amount);
-  
-  const net = totals.income.amount - totals.expense.amount - totals.withdraw.amount;
-  const netEl = document.getElementById('netAmount');
-  netEl.textContent = formatNumber(net);
-  netEl.style.color = net >= 0 ? 'var(--income)' : 'var(--expense)';
-  
-  document.getElementById('incomeCount').textContent = totals.income.count + ' حركة';
-  document.getElementById('expenseCount').textContent = totals.expense.count + ' حركة';
-  document.getElementById('withdrawCount').textContent = totals.withdraw.count + ' حركة';
-  
-  document.getElementById('incomeTotal').textContent = formatNumber(totals.income.amount) + ' د.ع.';
-  document.getElementById('expenseTotal').textContent = formatNumber(totals.expense.amount + totals.withdraw.amount) + ' د.ع.';
-  
-  let periodLabel = 'كامل الفترة';
-  if (currentPeriod.start && currentPeriod.end) {
-    if (currentPeriod.start === currentPeriod.end) {
-      periodLabel = 'اليوم: ' + formatDate(currentPeriod.start);
-    } else {
-      periodLabel = 'من ' + formatDate(currentPeriod.start) + ' إلى ' + formatDate(currentPeriod.end);
-    }
-  }
-  document.getElementById('periodLabel').textContent = periodLabel;
-}
-
-function showSubCategories(type) {
-  currentView.type = type;
-  
-  const titles = { income: '💰 الإيرادات', expense: '💸 الصرفيات' };
-  document.getElementById('subTitle').textContent = titles[type];
-  
-  const categories = {};
-  filteredTransactions.filter(function(t) { return t.type === type; }).forEach(function(t) {
-    if (!categories[t.category]) {
-      categories[t.category] = { amount: 0, count: 0 };
-    }
-    categories[t.category].amount += t.amount;
-    categories[t.category].count++;
-  });
-  
-  const list = document.getElementById('subCategoriesList');
-  list.innerHTML = '';
-  
-  const sorted = Object.keys(categories).sort(function(a, b) {
-    return categories[b].amount - categories[a].amount;
-  });
-  
-  if (sorted.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد حركات في هذه الفترة</div>';
-  } else {
-    sorted.forEach(function(cat) {
-      const div = document.createElement('div');
-      div.className = 'sub-category ' + type;
-      div.onclick = function() { showTransactions(cat, type); };
-      div.innerHTML = '<div class="sub-category-header">' +
-        '<h3>' + cat + '</h3>' +
-        '<div class="sub-category-total">' + formatNumber(categories[cat].amount) + ' د.ع.</div>' +
-        '</div>' +
-        '<div class="sub-category-count">' + categories[cat].count + ' حركة</div>';
-      list.appendChild(div);
+function loadDirect(branch){
+  setStatus("جاري المحاولة عبر "+branch+"…","#2b6de0");
+  var base="https://raw.githubusercontent.com/"+REPO+"/"+branch+"/";
+  var urls=[
+    base+encodeURIComponent(FILE_NAME),
+    base+"%E2%80%8E%E2%81%A8%D8%AA%D8%AF%D9%82%D9%8A%D9%82%20%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AC%D9%88%D9%87%D8%B1%D9%87%E2%81%A9.xlsx",
+    base+"%D8%AA%D8%AF%D9%82%D9%8A%D9%82%20%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AC%D9%88%D9%87%D8%B1%D9%87.xlsx"
+  ];
+  function tryUrl(i){
+    if(i>=urls.length)throw new Error("All URLs failed for "+branch);
+    return fetch(urls[i]).then(function(r){
+      if(!r.ok)throw new Error("URL "+i+": "+r.status);
+      return r.arrayBuffer();
+    }).catch(function(e){
+      if(i+1<urls.length)return tryUrl(i+1);
+      throw e;
     });
   }
-  
-  document.getElementById('subCategories').classList.add('show');
-  document.getElementById('transactionsSection').classList.remove('show');
+  return tryUrl(0);
 }
 
-function showTransactions(category, type) {
-  currentView.category = category;
-  
-  const transactions = filteredTransactions.filter(function(t) {
-    return t.category === category && t.type === type;
-  });
-  
-  currentTransactionsList = transactions;
-  
-  document.getElementById('transactionsTitle').textContent = category;
-  
-  const tbody = document.getElementById('transactionsBody');
-  tbody.innerHTML = '';
-  
-  if (transactions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد حركات</td></tr>';
-  } else {
-    transactions.forEach(function(tx, i) {
-      const tr = document.createElement('tr');
-      tr.onclick = function() { showTransactionDetails(i); };
-      tr.innerHTML = '<td class="date">' + formatDate(tx.date) + '</td>' +
-        '<td>' + tx.name + '</td>' +
-        '<td class="details">' + (tx.details || '—') + '</td>' +
-        '<td class="amount">' + formatNumber(tx.amount) + '</td>';
-      tbody.appendChild(tr);
+function loadViaProxy(){
+  setStatus("جاري استخدام خادم بديل…","#c88a17");
+  var proxies=[
+    "https://corsproxy.io/?url=",
+    "https://api.allorigins.win/raw?url="
+  ];
+  var targetUrl="https://raw.githubusercontent.com/"+REPO+"/main/"+encodeURIComponent(FILE_NAME);
+  function tryProxy(i){
+    if(i>=proxies.length)throw new Error("All proxies failed");
+    return fetch(proxies[i]+encodeURIComponent(targetUrl)).then(function(r){
+      if(!r.ok)throw new Error("Proxy "+i+": "+r.status);
+      return r.arrayBuffer();
+    }).catch(function(e){
+      if(i+1<proxies.length)return tryProxy(i+1);
+      throw e;
     });
   }
-  
-  const total = transactions.reduce(function(s, t) { return s + t.amount; }, 0);
-  document.getElementById('transactionsTotal').textContent = 'المجموع: ' + formatNumber(total) + ' د.ع.';
-  
-  document.getElementById('subCategories').classList.remove('show');
-  document.getElementById('transactionsSection').classList.add('show');
-  document.getElementById('transactionsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  return tryProxy(0);
 }
 
-function showTransactionDetails(index) {
-  const tx = currentTransactionsList[index];
-  if (!tx) return;
-  
-  const body = document.getElementById('modalBody');
-  body.innerHTML = '<div class="detail-row">' +
-    '<span class="detail-label">رقم الوصل:</span>' +
-    '<span class="detail-value">' + (tx.receipt || '—') + '</span>' +
-    '</div>' +
-    '<div class="detail-row">' +
-    '<span class="detail-label">التاريخ:</span>' +
-    '<span class="detail-value">' + formatDate(tx.date) + '</span>' +
-    '</div>' +
-    '<div class="detail-row">' +
-    '<span class="detail-label">النوع:</span>' +
-    '<span class="detail-value">' + tx.category + '</span>' +
-    '</div>' +
-    '<div class="detail-row">' +
-    '<span class="detail-label">الاسم:</span>' +
-    '<span class="detail-value">' + (tx.name || '—') + '</span>' +
-    '</div>' +
-    '<div class="detail-row">' +
-    '<span class="detail-label">التفاصيل:</span>' +
-    '<span class="detail-value">' + (tx.details || '—') + '</span>' +
-    '</div>' +
-    '<div class="detail-row">' +
-    '<span class="detail-label">المبلغ:</span>' +
-    '<span class="detail-value ' + tx.type + '">' + formatNumber(tx.amount) + ' د.ع.</span>' +
-    '</div>';
-  
-  document.getElementById('modalTitle').textContent = '📋 تفاصيل الحركة';
-  document.getElementById('modalOverlay').classList.add('show');
-}
+function loadFile(){
+  LOAD_ATTEMPTS++;
+  setStatus("جاري الاتصال بالمستودع…");
+  $("#ldRing").style.display="";
+  $("#ldStatus").style.display="";
+  $("#ldErr").style.display="none";
+  $("#uploadPanel").classList.remove("vis");
+  $("#ldText").textContent="جاري تحميل بيانات الحسابات…";
+  $("#ldText").style.color="var(--mut)";
 
-document.querySelectorAll('.period-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.period-btn').forEach(function(b) { b.classList.remove('active'); });
-    this.classList.add('active');
-    
-    const period = this.dataset.period;
-    const datePicker = document.getElementById('datePicker');
-    
-    if (period === 'custom') {
-      datePicker.classList.add('show');
-    } else {
-      datePicker.classList.remove('show');
-      
-      const today = new Date();
-      const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-      
-      if (period === 'today') {
-        currentPeriod = { start: todayStr, end: todayStr };
-      } else if (period === 'month') {
-        const firstDay = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
-        currentPeriod = { start: firstDay, end: todayStr };
+  loadViaAPI()
+    .catch(function(e1){
+      console.warn("API failed:",e1.message);
+      setStatus("فشل API — جاري المحاولة المباشرة…","#c88a17");
+      return loadDirect("main");
+    })
+    .catch(function(e2){
+      console.warn("main failed:",e2.message);
+      return loadDirect("master");
+    })
+    .catch(function(e3){
+      console.warn("master failed:",e3.message);
+      setStatus("جاري المحاولة عبر بديل…","#c88a17");
+      return loadViaProxy();
+    })
+    .then(function(buf){
+      parse(buf);
+      onDataReady();
+    })
+    .catch(function(finalErr){
+      console.error("All methods failed:",finalErr);
+      if(LOAD_ATTEMPTS<MAX_ATTEMPTS){
+        setError("المحاولة "+LOAD_ATTEMPTS+" فشلت — جاري إعادة المحاولة…");
+        setTimeout(loadFile,1500);
       } else {
-        currentPeriod = { start: null, end: null };
+        setError("تعذر تحميل الملف بعد "+MAX_ATTEMPTS+" محاولات");
+        showUpload();
       }
-      
-      filterTransactions();
-      updateDashboard();
-      document.getElementById('dashboard').classList.add('show');
-      document.getElementById('subCategories').classList.remove('show');
-      document.getElementById('transactionsSection').classList.remove('show');
+    });
+}
+
+$("#fileInput").addEventListener("change",function(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  $("#ldText").textContent="جاري قراءة الملف…";
+  $("#ldText").style.color="var(--mut)";
+  $("#ldRing").style.display="";
+  $("#ldStatus").style.display="";
+  $("#ldStatus").textContent="جاري تحليل: "+file.name;
+  $("#uploadPanel").classList.remove("vis");
+  $("#ldErr").style.display="none";
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      parse(ev.target.result);
+      onDataReady();
+      toast("✓ تم تحميل "+TX.length+" حركة من الملف المحلي",0);
+    }catch(err){
+      console.error(err);
+      setError("خطأ في قراءة الملف: "+err.message);
+      showUpload();
     }
+  };
+  reader.onerror=function(){
+    setError("فشل قراءة الملف");
+    showUpload();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+$("#retryBtn").addEventListener("click",function(){
+  LOAD_ATTEMPTS=0;
+  loadFile();
+});
+
+function onDataReady(){
+  $("#ldScr").classList.add("done");
+  $("#hdr").style.display="";
+  $("#appWrap").style.display="";
+  toast("✓ تم تحميل "+TX.length+" حركة بنجاح",0);
+  initPeriod();
+}
+
+$("#refreshBtn").addEventListener("click",function(){
+  var btn=this;
+  btn.classList.add("spin");
+  btn.disabled=true;
+  toast("جاري تحديث البيانات…");
+  LOAD_ATTEMPTS=0;
+  loadViaAPI()
+    .catch(function(){return loadDirect("main")})
+    .catch(function(){return loadDirect("master")})
+    .then(function(buf){
+      parse(buf);
+      toast("✓ تم التحديث — "+TX.length+" حركة",0);
+      var cur=$(".scr.on").id;
+      if(cur==="scrDash")showDash();
+      else if(cur==="scrTx"&&CUR)openTx(CUR.k);
+      else if(cur==="scrPeriod")initPeriod();
+    })
+    .catch(function(e){
+      toast("فشل التحديث — تحقق من الاتصال",1);
+      console.error(e);
+    })
+    .finally(function(){
+      btn.classList.remove("spin");
+      btn.disabled=false;
+    });
+});
+
+function parseDate(v){
+  if(v instanceof Date&&!isNaN(v))return dstr(v);
+  if(typeof v==="number"&&v>20000)return dstr(new Date(Math.round((v-25569)*864e5)));
+  var s=String(v==null?"":v).trim();if(!s)return null;
+  s=s.replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)});
+  var m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);if(m)return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m)return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+  var d=new Date(s);return isNaN(d)?null:dstr(d)
+}
+function parseAmt(v){if(typeof v==="number")return v;var s=String(v==null?"":v).replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)}).replace(/[^\d.\-]/g,"");return parseFloat(s)||NaN}
+function bigNum(v){var s=String(v==null?"":v);if(!/\d[\d,]{3,}/.test(s))return NaN;var n=parseAmt(s);return n>0?n:NaN}
+
+function catInfo(cat){
+  cat=String(cat||"").trim();
+  if(/دفعات\s*المستفيدين/.test(cat))return{g:"in",k:"benef",l:"دفعات المستفيدين",i:"🏠"};
+  if(/قبض/.test(cat))return{g:"in",k:"receipt",l:"قبض المبالغ",i:"💰"};
+  if(/تنازل/.test(cat))return{g:"in",k:"transfer",l:"ايراد تنازل",i:"📄"};
+  if(/سحب/.test(cat))return{g:"out",k:"withdraw",l:"سحب المبالغ",i:"🏦"};
+  if(/صرفيات\s*الشركة/.test(cat))return{g:"out",k:"company",l:"صرفيات الشركة",i:"🏢"};
+  if(/صرفيات\s*الموقع/.test(cat))return{g:"out",k:"site",l:"صرفيات الموقع",i:"🏗️"};
+  if(/رواتب/.test(cat))return{g:"out",k:"salary",l:"رواتب الموظفين",i:"👥"};
+  return{g:"out",k:"other",l:cat||"أخرى",i:"📌"}
+}
+function isExcluded(cat,note){
+  if(!(/قبض/.test(cat)||/دفعات\s*المستفيدين/.test(cat)))return false;
+  if(/واصل\s*نقد[اأً]/.test(note))return true;
+  if(/(أ|ا)?بو\s*مرتضى/.test(note))return true;
+  return false
+}
+
+function parse(buf){
+  TX=[];
+  var wb=XLSX.read(new Uint8Array(buf),{type:"array",cellDates:true});
+  var ws=wb.Sheets[wb.SheetNames[0]];
+  var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true})||[];
+  var HR=-1,HD=[];
+  for(var r=0;r<Math.min(30,raw.length);r++){
+    var row=raw[r]||[],sc=0;
+    for(var c=0;c<row.length;c++){var v=String(row[c]==null?"":row[c]).trim();
+      if(/الوصل/.test(v))sc++;if(/التاريخ/.test(v))sc++;if(/النوع|الصنف/.test(v))sc++;if(/الاسم/.test(v))sc++;if(/المبلغ/.test(v))sc++}
+    if(sc>=3){HR=r;HD=row.map(function(x){return String(x==null?"":x).trim()});break}
+  }
+  var iQ=-1,iR=-1,iD=-1,iC=-1,iN=-1,iDt=-1,iAO=-1,iAI=-1;
+  if(HR>=0){for(var i=0;i<HD.length;i++){var h=HD[i];
+    if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
+    if(iR<0&&/الوصل/.test(h))iR=i;
+    if(iD<0&&/التاريخ/.test(h))iD=i;
+    if(iC<0&&/النوع|الصنف/.test(h))iC=i;
+    if(iN<0&&/الاسم/.test(h))iN=i;
+    if(iDt<0&&/التفاصيل/.test(h))iDt=i;
+    if(iAO<0&&/المبلغ\s*الصرف|صرف/.test(h))iAO=i;
+    if(iAI<0&&/المبلغ\s*الايراد|ايراد|إيراد/.test(h))iAI=i;
+  }}else{iQ=0;iR=1;iD=2;iC=3;iN=4;iDt=5;iAO=6;iAI=7;HR=1}
+  if(iC<0||(iAO<0&&iAI<0))throw new Error("تعذر التعرف على أعمدة الملف");
+
+  var lastD=null;
+  for(var rr=HR+1;rr<raw.length;rr++){
+    var rw=raw[rr]||[];
+    var cat=String(rw[iC]==null?"":rw[iC]).trim();
+    var rec=iR>=0?String(rw[iR]==null?"":rw[iR]).trim():"";
+    if(!cat||/النوع|الصنف/.test(cat)||/^---/.test(cat)||/الوصل/.test(rec))continue;
+    var name=iN>=0?String(rw[iN]==null?"":rw[iN]).trim():"";
+    if(/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(cat)||/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(name))continue;
+
+    var aO=iAO>=0?bigNum(rw[iAO]):NaN;
+    var aIn=iAI>=0?bigNum(rw[iAI]):NaN;
+    var slice=rw.slice(Math.max(iAO||0,iAI||0)+1),notes=[];
+    for(var s2=0;s2<slice.length;s2++){var cs=String(slice[s2]==null?"":slice[s2]).trim();if(!cs)continue;
+      var bn=bigNum(cs);if(!isNaN(bn)&&isNaN(aIn))aIn=bn;else if(isNaN(bn))notes.push(cs)}
+    var aoT=iAO>=0?String(rw[iAO]==null?"":rw[iAO]).trim():"";
+    if(aoT&&isNaN(bigNum(aoT)))notes.unshift(aoT);
+    var note=notes.join(" ");
+
+    var ci=catInfo(cat);
+    var amt=ci.g==="in"?(!isNaN(aIn)?aIn:aO):(!isNaN(aO)?aO:aIn);
+    if(isNaN(amt)||amt<=0)continue;
+    if(isExcluded(cat,note))continue;
+
+    var date=iD>=0?parseDate(rw[iD]):null;
+    if(date)lastD=date;else date=lastD;
+    if(!date)continue;
+    if(!name)name="—";
+
+    TX.push({seq:iQ>=0?String(rw[iQ]==null?"":rw[iQ]).trim():String(rr-HR),
+      receipt:rec,date:date,cat:cat,name:name,
+      det:iDt>=0?String(rw[iDt]==null?"":rw[iDt]).trim():"",
+      note:note,amt:amt,g:ci.g,k:ci.k,l:ci.l,i:ci.i});
+  }
+  if(!TX.length)throw new Error("لا توجد حركات صالحة في الملف");
+}
+
+function initPeriod(){
+  var dates=TX.map(function(t){return t.date}).filter(Boolean).sort();
+  var ys={},ms={};
+  dates.forEach(function(d){ys[d.slice(0,4)]=1;ms[d.slice(0,7)]=1});
+  var yA=Object.keys(ys).sort(),mA=Object.keys(ms).sort();
+  var mN=["","كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+  $("#selYear").innerHTML=yA.map(function(y){return"<option>"+y+"</option>"}).join("");
+  $("#selMonth").innerHTML=mA.map(function(m){return"<option value=\""+m+"\">"+(mN[+m.slice(5,7)]||m.slice(5))+" "+m.slice(0,4)+"</option>"}).join("");
+  if(mA.length)$("#selMonth").value=mA[mA.length-1];
+  $("#pInfo").textContent="إجمالي الحركات: "+TX.length+" حركة · آخر تاريخ: "+(dates.length?fmtD(dates[dates.length-1]):"—");
+}
+
+$$(".p-opt").forEach(function(o){o.onclick=function(){
+  $$(".p-opt").forEach(function(x){x.classList.remove("sel")});o.classList.add("sel");
+  var m=o.dataset.m;
+  $("#exMonth").classList.toggle("vis",m==="month");
+  $("#exCustom").classList.toggle("vis",m==="custom");
+}});
+
+$("#btnGo").onclick=function(){
+  var sel=$(".p-opt.sel"),mode=sel?sel.dataset.m:"all";
+  PER.mode=mode;
+  if(mode==="month"){
+    var mv=$("#selMonth").value;if(!mv){toast("اختر الشهر",1);return}
+    PER.from=mv+"-01";
+    var y=+mv.slice(0,4),mm=+mv.slice(5,7),last=new Date(y,mm,0).getDate();
+    PER.to=mv+"-"+String(last).padStart(2,"0");
+  }else if(mode==="custom"){
+    PER.from=$("#dtFrom").value||null;PER.to=$("#dtTo").value||null;
+    if(!PER.from&&!PER.to){toast("حدد تاريخاً واحداً على الأقل",1);return}
+  }else{PER.from=null;PER.to=null}
+  showDash();
+};
+
+function inPer(d){
+  if(!PER.from&&!PER.to)return true;
+  if(PER.from&&d<PER.from)return false;
+  if(PER.to&&d>PER.to)return false;
+  return true
+}
+function filt(){return TX.filter(function(t){return inPer(t.date)})}
+function perLabel(){
+  if(PER.mode==="all")return"كامل الفترة";
+  if(PER.mode==="month"){var s=$("#selMonth");return s.options[s.selectedIndex]?s.options[s.selectedIndex].text:""}
+  return(PER.from?fmtD(PER.from):"…")+" — "+(PER.to?fmtD(PER.to):"…")
+}
+
+var stack=[];
+function nav(id,title){
+  stack.push({s:$(".scr.on").id,t:$("#hdrTitle").textContent});
+  $$(".scr").forEach(function(s){s.classList.remove("on")});
+  $(id).classList.add("on");
+  $("#hdrTitle").textContent=title;
+  $("#backBtn").classList.add("vis");
+}
+$("#backBtn").onclick=function(){
+  if(!stack.length)return;
+  var p=stack.pop();
+  $$(".scr").forEach(function(s){s.classList.remove("on")});
+  $("#"+p.s).classList.add("on");
+  $("#hdrTitle").textContent=p.t;
+  if(!stack.length)$("#backBtn").classList.remove("vis");
+  if(p.s==="scrPeriod")$("#hdrBadge").textContent="2026";
+};
+
+function showDash(){
+  var rows=filt();
+  if(!rows.length){toast("لا حركات في هذه الفترة",1);return}
+  var tIn=0,tOut=0;
+  rows.forEach(function(t){if(t.g==="in")tIn+=t.amt;else tOut+=t.amt});
+  $("#hdrBadge").textContent=perLabel();
+  nav("#scrDash","لوحة الحسابات");
+
+  $("#sumRow").innerHTML=
+    '<div class="s-card si"><div class="sl">الإيرادات</div><div class="sv">'+money(tIn)+'</div></div>'+
+    '<div class="s-card so"><div class="sl">الصرفيات</div><div class="sv">'+money(tOut)+'</div></div>'+
+    '<div class="s-card sn"><div class="sl">الصافي</div><div class="sv">'+money(tIn-tOut)+'</div></div>';
+
+  var cats={};
+  rows.forEach(function(t){
+    if(!cats[t.k])cats[t.k]={k:t.k,l:t.l,i:t.i,g:t.g,tot:0,n:0};
+    cats[t.k].tot+=t.amt;cats[t.k].n++;
   });
+
+  var inH="",outH="";
+  Object.keys(cats).sort(function(a,b){return cats[a].g===cats[b].g?cats[b].tot-cats[a].tot:0}).forEach(function(k){
+    var c=cats[k];
+    var cls=c.k==="withdraw"?"cw":c.k==="salary"?"cs":c.g==="in"?"ci":"co";
+    var card='<div class="c-card '+cls+'" data-k="'+c.k+'"><div class="c-ico">'+c.i+'</div><div class="c-info"><h3>'+c.l+'</h3><span>'+c.n+' حركة</span></div><div class="c-tot">'+money(c.tot)+'</div></div>';
+    if(c.g==="in")inH+=card;else outH+=card;
+  });
+  $("#inCats").innerHTML=inH||'<div class="empty"><p>لا إيرادات في هذه الفترة</p></div>';
+  $("#outCats").innerHTML=outH||'<div class="empty"><p>لا صرفيات في هذه الفترة</p></div>';
+}
+$("#inCats").addEventListener("click",function(e){var c=e.target.closest(".c-card");if(c)openTx(c.dataset.k)});
+$("#outCats").addEventListener("click",function(e){var c=e.target.closest(".c-card");if(c)openTx(c.dataset.k)});
+
+function openTx(key){
+  var rows=filt().filter(function(t){return t.k===key});
+  if(!rows.length){toast("لا حركات",1);return}
+  CUR={k:key,rows:rows};
+  var f=rows[0],tot=rows.reduce(function(s,t){return s+t.amt},0);
+  nav("#scrTx",f.l);
+  $("#txTitle").innerHTML=f.i+" "+f.l;
+  $("#txBadge").textContent=rows.length+" حركة";
+
+  var acls=f.k==="withdraw"?"aw":f.k==="salary"?"as":f.g==="in"?"ai":"ao";
+  $("#txBody").innerHTML=rows.map(function(t,i){
+    return'<tr data-i="'+i+'"><td style="direction:ltr;font-size:11px">'+fmtD(t.date)+'</td><td class="td-name">'+esc(t.name)+'</td><td class="td-det">'+esc(t.det||"—")+'</td><td><span class="td-amt '+acls+'">'+money(t.amt)+'</span></td></tr>'
+  }).join("");
+  $("#txTotal").textContent=money(tot)+" د.ع.";
+  $("#txTotal").style.color=acls==="ai"?"var(--grn)":acls==="aw"?"var(--gold)":acls==="as"?"var(--purp)":"var(--red)";
+}
+$("#txBody").addEventListener("click",function(e){
+  var tr=e.target.closest("tr[data-i]");
+  if(tr&&CUR)openDet(CUR.rows[+tr.dataset.i]);
 });
 
-document.getElementById('dateFrom').addEventListener('change', function() {
-  currentPeriod.start = this.value;
-  if (currentPeriod.start && currentPeriod.end) {
-    filterTransactions();
-    updateDashboard();
-    document.getElementById('dashboard').classList.add('show');
-    document.getElementById('subCategories').classList.remove('show');
-    document.getElementById('transactionsSection').classList.remove('show');
-  }
-});
+function openDet(t){
+  if(!t)return;
+  $("#detT").textContent=t.i+" "+t.l;
+  var col=t.g==="in"?"var(--grn)":t.k==="withdraw"?"var(--gold)":t.k==="salary"?"var(--purp)":"var(--red)";
+  var h="";
+  h+='<div class="d-row"><span class="dl">رقم الوصل</span><span class="dv ltr">'+esc(t.receipt||"—")+'</span></div>';
+  h+='<div class="d-row"><span class="dl">التسلسل</span><span class="dv ltr">'+esc(t.seq||"—")+'</span></div>';
+  h+='<div class="d-row"><span class="dl">التاريخ</span><span class="dv ltr">'+fmtD(t.date)+'</span></div>';
+  h+='<div class="d-row"><span class="dl">النوع / الصنف</span><span class="dv">'+esc(t.cat)+'</span></div>';
+  h+='<div class="d-row"><span class="dl">الاسم</span><span class="dv">'+esc(t.name)+'</span></div>';
+  if(t.det)h+='<div class="d-row"><span class="dl">التفاصيل</span><span class="dv">'+esc(t.det)+'</span></div>';
+  if(t.note)h+='<div class="d-row"><span class="dl">ملاحظات</span><span class="dv">'+esc(t.note)+'</span></div>';
+  h+='<div class="d-amt-box"><div class="lbl">المبلغ</div><div class="big" style="color:'+col+'">'+money(t.amt)+' د.ع.</div></div>';
+  $("#detB").innerHTML=h;
+  $("#detOv").classList.add("vis");
+}
+$("#detX").onclick=function(){$("#detOv").classList.remove("vis")};
+$("#detOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")$("#detOv").classList.remove("vis")});
 
-document.getElementById('dateTo').addEventListener('change', function() {
-  currentPeriod.end = this.value;
-  if (currentPeriod.start && currentPeriod.end) {
-    if (currentPeriod.end < currentPeriod.start) {
-      const temp = currentPeriod.start;
-      currentPeriod.start = currentPeriod.end;
-      currentPeriod.end = temp;
-      document.getElementById('dateFrom').value = currentPeriod.start;
-      document.getElementById('dateTo').value = currentPeriod.end;
-    }
-    filterTransactions();
-    updateDashboard();
-    document.getElementById('dashboard').classList.add('show');
-    document.getElementById('subCategories').classList.remove('show');
-    document.getElementById('transactionsSection').classList.remove('show');
-  }
-});
-
-document.getElementById('incomeCard').addEventListener('click', function() {
-  showSubCategories('income');
-});
-
-document.getElementById('expenseCard').addEventListener('click', function() {
-  showSubCategories('expense');
-});
-
-document.getElementById('backBtn').addEventListener('click', function() {
-  document.getElementById('transactionsSection').classList.remove('show');
-  document.getElementById('subCategories').classList.add('show');
-});
-
-document.getElementById('backToMain').addEventListener('click', function() {
-  document.getElementById('subCategories').classList.remove('show');
-  document.getElementById('transactionsSection').classList.remove('show');
-});
-
-document.getElementById('modalClose').addEventListener('click', function() {
-  document.getElementById('modalOverlay').classList.remove('show');
-});
-
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) {
-    this.classList.remove('show');
-  }
-});
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    document.getElementById('modalOverlay').classList.remove('show');
-  }
-});
-
-loadData();
+loadFile();
+})();
 </script>
 </body>
 </html>
