@@ -84,7 +84,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 #ovText{font-size:13px;font-weight:800;color:#4f46e5}
 .toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 
-/* ✅ زر اختيار اليوم + القائمة المنسدلة الأنيقة */
+/* ✅ زر اختيار اليوم */
 .day-picker{position:relative;display:inline-block}
 .day-btn{width:34px;height:34px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;display:grid;place-items:center;cursor:pointer;transition:.2s;font-size:13px;position:relative}
 .day-btn:hover{border-color:#c7d2fe;color:#4f46e5;background:#f5f8ff}
@@ -147,8 +147,9 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
     <div class="kpi" style="--c:#0d9488"><div class="t"><span class="ic"><i class="fa-solid fa-wallet"></i></span>صافي المبيعات</div><div class="v" id="kNet">0</div><div class="s">الإجمالي − المردودات − الحسم</div></div>
     <div class="kpi" style="--c:#ea580c"><div class="t"><span class="ic"><i class="fa-solid fa-boxes-stacked"></i></span>تكلفة البضاعة المباعة</div><div class="v" id="kCogs">0</div><div class="s">مدين − دائن</div></div>
     <div class="kpi" style="--c:#7c3aed"><div class="t"><span class="ic"><i class="fa-solid fa-chart-simple"></i></span>مجمل الدخل</div><div class="v" id="kGross">0</div><div class="s">صافي المبيعات − التكلفة</div></div>
+    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-coins"></i></span>إيرادات مختلفة</div><div class="v pos" id="kOther">0</div><div class="s" id="kOtherS">من ورقة التكلفة</div></div>
     <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-receipt"></i></span>إجمالي المصاريف</div><div class="v neg" id="kExp">0</div><div class="s" id="kExpS"></div></div>
-    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-sack-dollar"></i></span>صافي الدخل</div><div class="v pos" id="kNetInc">0</div><div class="s">مجمل الدخل − المصاريف</div></div>
+    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-sack-dollar"></i></span>صافي الدخل</div><div class="v pos" id="kNetInc">0</div><div class="s">مجمل + إيرادات − مصاريف</div></div>
   </section>
 
   <div class="grid2">
@@ -170,7 +171,6 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
     <section class="card hidden" id="chartCard" oncontextmenu="return false">
       <div class="card-head">
         <h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2>
-        <!-- ✅ زر اختيار اليوم الأنيق -->
         <div class="day-picker">
           <button class="day-btn" id="dayBtn" title="اختر يوم"><i class="fa-regular fa-calendar"></i></button>
           <div class="day-pop" id="dayPop">
@@ -208,7 +208,7 @@ const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوص�
 
 let RAW=null, CURRENT=null, CHART=null;
 let chartFrom=null, chartTo=null, selectedDay=null;
-let popCloseTimer=null; // مؤقت الإغلاق التلقائي
+let popCloseTimer=null;
 
 /* ---------- IndexedDB ---------- */
 function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
@@ -224,25 +224,41 @@ function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hid
 function toNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[,،\s]/g,''));return isFinite(n)?n:0;}
 function toDate(v){if(v instanceof Date)return v;if(typeof v==='number')return new Date(Math.round((v-25569)*864e5));const m=String(v).match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);const d=new Date(v);return isNaN(d)?null:d;}
 function rowsFrom(ws){if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{defval:null}).map(r=>({date:toDate(r['التاريخ']),voucher:r['رقم السند'],type:r['النوع'],debit:toNum(r['مدين']),credit:toNum(r['دائن']),stmt:r['البيان']||'',acc:(r['اسم الحساب']||'').trim()})).filter(r=>r.date);}
-function wbToRAW(wb){const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
-return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),cogs:rowsFrom(find('تكلفة')),expenses:rowsFrom(find('المصاريف'))};}
+function wbToRAW(wb){
+  const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
+  const costWS=find('تكلفة');
+  const costRows=rowsFrom(costWS);
+  // ✅ فصل التكلفة عن الإيرادات المختلفة من نفس الورقة
+  const cogsRows=costRows.filter(r=>!norm(r.acc).includes('ايرادات')&&!norm(r.acc).includes('إيرادات'));
+  const otherIncomeRows=costRows.filter(r=>norm(r.acc).includes('ايرادات')||norm(r.acc).includes('إيرادات'));
+  return{
+    sales:rowsFrom(find('المبيعات')),
+    returns:rowsFrom(find('المردودات')),
+    discounts:rowsFrom(find('الحسم')),
+    cogs:cogsRows,
+    otherIncome:otherIncomeRows,
+    expenses:rowsFrom(find('المصاريف'))
+  };
+}
 function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
 function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
 
 /* ---------- الحسابات ---------- */
 function computeStats(from,to){
   const inR=r=>r.date>=from&&r.date<=to;
-  const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR);
+  const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR),OI=(RAW.otherIncome||[]).filter(inR);
   const sum=(a,k)=>a.reduce((s,r)=>s+r[k],0);
   const sales=sum(S,'credit'),ret=sum(R,'debit'),disc=sum(D,'debit')-sum(D,'credit');
   const netSales=sales-ret-disc;
   const cogs=sum(C,'debit')-sum(C,'credit');
   const gross=netSales-cogs;
+  // ✅ الإيرادات المختلفة من عمود الدائن (لأنها إيرادات = دائن)
+  const otherIncome=sum(OI,'credit');
   const lookup={};CATS.forEach(c=>lookup[norm(c[0])]=c[0]);
   const catMap={};CATS.forEach(c=>catMap[c[0]]={name:c[0],icon:c[1],amt:0,rows:[]});
   E.forEach(r=>{let key=ALIAS[norm(r.acc)]||lookup[norm(r.acc)];if(key&&catMap[key]){catMap[key].amt+=r.debit-r.credit;catMap[key].rows.push(r);}});
   const expenses=CATS.reduce((s,c)=>s+catMap[c[0]].amt,0);
-  return{sales,ret,disc,netSales,cogs,gross,expenses,net:gross-expenses,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length}};
+  return{sales,ret,disc,netSales,cogs,gross,otherIncome,expenses,net:gross+otherIncome-expenses,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length,oi:OI.length}};
 }
 function computeDaily(from,to){
   const daily={};
@@ -266,11 +282,12 @@ function renderAll(){
   anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
   anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
   anim($('#kNet'),st.netSales);anim($('#kCogs'),st.cogs);anim($('#kGross'),st.gross);
+  anim($('#kOther'),st.otherIncome);$('#kOtherS').textContent=st.counts.oi+' قيد إيرادات';
   anim($('#kExp'),st.expenses);$('#kExpS').textContent=st.counts.e+' سند';
   anim($('#kNetInc'),st.net);
   $('#s1').textContent=fmt(st.sales);$('#s2').textContent=fmt(st.ret);$('#s3').textContent=fmt(st.disc);
   $('#s4').textContent=fmt(st.netSales);$('#s5').textContent=fmt(st.cogs);$('#s6').textContent=fmt(st.gross);
-  $('#s7').textContent='0';$('#s8').textContent=fmt(st.gross);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
+  $('#s7').textContent=fmt(st.otherIncome);$('#s8').textContent=fmt(st.gross+st.otherIncome);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
 
   const rc=$('#rangeChip');
   if(selKey){rc.textContent='📅 يوم محدد: '+selKey;rc.classList.add('day');}
@@ -336,7 +353,7 @@ function resetRange(){
   renderAll();
 }
 
-/* ---------- زر اختيار اليوم (قائمة منسدلة مع إغلاق تلقائي بعد 3 ثوانٍ) ---------- */
+/* ---------- زر اختيار اليوم ---------- */
 function renderDayButtonState(selKey){
   const btn=$('#dayBtn');
   if(selKey){btn.classList.add('on');btn.title='اليوم المحدد: '+selKey;}
@@ -359,7 +376,6 @@ function openDayPop(){
     });
   }
   $('#dayPop').classList.add('open');
-  // ✅ إغلاق تلقائي بعد 3 ثوانٍ إن لم يختر المستخدم شيئاً
   clearTimeout(popCloseTimer);
   popCloseTimer=setTimeout(closeDayPop,3000);
 }
@@ -369,12 +385,10 @@ function closeDayPop(){
 }
 $('#dayBtn').onclick=(e)=>{e.stopPropagation();const pop=$('#dayPop');if(pop.classList.contains('open'))closeDayPop();else openDayPop();};
 $('#dayClear').onclick=(e)=>{e.stopPropagation();if(selectedDay){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');renderAll();}closeDayPop();};
-// إغلاق القائمة عند النقر خارجها
 document.addEventListener('click',(e)=>{
   const pop=$('#dayPop');const btn=$('#dayBtn');
   if(pop&&pop.classList.contains('open')&&!pop.contains(e.target)&&!btn.contains(e.target))closeDayPop();
 });
-// إعادة ضبط المؤقت عند مرور الماوس على القائمة (لا تُغلق أثناء الاستعراض)
 document.addEventListener('mouseover',(e)=>{
   const pop=$('#dayPop');
   if(pop&&pop.classList.contains('open')&&pop.contains(e.target)){
@@ -394,7 +408,7 @@ async function renderLocal(){
     const el=document.createElement('div');el.className='file-item';
     el.innerHTML='<div class="fi-icon"><i class="fa-solid fa-file-excel"></i></div>'+
     '<div class="fi-info"><b>'+it.name+'</b><span>حُفظ: '+new Date(it.savedAt).toLocaleString('ar-IQ')+'</span>'+
-    '<div class="fi-mini"><em>سجلات: <b>'+((m.counts&&(m.counts.s+m.counts.r+m.counts.d+m.counts.c+m.counts.e))||0)+'</b></em><em>مبيعات: <b>'+fmt(m.sales)+'</b></em><em>تكلفة: <b>'+fmt(m.cogs)+'</b></em><em>صافي: <b>'+fmt(m.net)+'</b></em></div></div>'+
+    '<div class="fi-mini"><em>سجلات: <b>'+((m.counts&&(m.counts.s+m.counts.r+m.counts.d+m.counts.c+m.counts.e+m.counts.oi))||0)+'</b></em><em>مبيعات: <b>'+fmt(m.sales)+'</b></em><em>تكلفة: <b>'+fmt(m.cogs)+'</b></em><em>إيرادات: <b>'+fmt(m.otherIncome)+'</b></em><em>صافي: <b>'+fmt(m.net)+'</b></em></div></div>'+
     '<div class="fi-actions"><button class="btn btn-sm btn-ghost" data-open="'+it.id+'"><i class="fa-solid fa-folder-open"></i> فتح</button><button class="btn btn-sm btn-danger" data-del="'+it.id+'"><i class="fa-solid fa-trash"></i></button></div>';
     box.appendChild(el);
   });
@@ -437,7 +451,7 @@ $('#btnSave').onclick=async()=>{
   if(!RAW||!CURRENT){toast('لا يوجد ملف مفتوح للحفظ');return;}
   const[mn,mx]=fullRange();const st=computeStats(mn,mx);
   const item={id:CURRENT.name,name:CURRENT.name,savedAt:new Date().toISOString(),data:serializeRAW(),
-    meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,expenses:st.expenses,net:st.net,counts:st.counts}};
+    meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,otherIncome:st.otherIncome,expenses:st.expenses,net:st.net,counts:st.counts}};
   try{await idbPut(item);await renderLocal();toast('✔ تم حفظ "'+CURRENT.name+'" في قائمة الملفات');}
   catch(e){toast('تعذّر الحفظ (مساحة التخزين ممتلئة)');}
 };
