@@ -7,7 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>window.XLSX||document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>window.Chart||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
 body{background:linear-gradient(180deg,#e9edf8,#dfe4f2);min-height:100vh;color:#0f172a;padding-bottom:60px}
@@ -82,9 +84,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:col
 .spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 #ovText{font-size:13px;font-weight:800;color:#4f46e5}
-.toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-
-/* ✅ زر اختيار اليوم */
+.toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92%;text-align:center}
 .day-picker{position:relative;display:inline-block}
 .day-btn{width:34px;height:34px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;display:grid;place-items:center;cursor:pointer;transition:.2s;font-size:13px;position:relative}
 .day-btn:hover{border-color:#c7d2fe;color:#4f46e5;background:#f5f8ff}
@@ -210,14 +210,12 @@ let RAW=null, CURRENT=null, CHART=null;
 let chartFrom=null, chartTo=null, selectedDay=null;
 let popCloseTimer=null;
 
-/* ---------- IndexedDB ---------- */
 function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
 async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
 async function idbGet(id){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function idbPut(item){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(item);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
 async function idbDel(id){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
 
-/* ---------- أدوات ---------- */
 function ov(t){$('#ovText').textContent=t;$('#overlay').classList.remove('hidden');}
 function ovHide(){$('#overlay').classList.add('hidden');}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add('hidden'),2600);}
@@ -228,22 +226,13 @@ function wbToRAW(wb){
   const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
   const costWS=find('تكلفة');
   const costRows=rowsFrom(costWS);
-  // ✅ فصل التكلفة عن الإيرادات المختلفة من نفس الورقة
   const cogsRows=costRows.filter(r=>!norm(r.acc).includes('ايرادات')&&!norm(r.acc).includes('إيرادات'));
   const otherIncomeRows=costRows.filter(r=>norm(r.acc).includes('ايرادات')||norm(r.acc).includes('إيرادات'));
-  return{
-    sales:rowsFrom(find('المبيعات')),
-    returns:rowsFrom(find('المردودات')),
-    discounts:rowsFrom(find('الحسم')),
-    cogs:cogsRows,
-    otherIncome:otherIncomeRows,
-    expenses:rowsFrom(find('المصاريف'))
-  };
+  return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),cogs:cogsRows,otherIncome:otherIncomeRows,expenses:rowsFrom(find('المصاريف'))};
 }
 function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
 function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
 
-/* ---------- الحسابات ---------- */
 function computeStats(from,to){
   const inR=r=>r.date>=from&&r.date<=to;
   const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR),OI=(RAW.otherIncome||[]).filter(inR);
@@ -252,7 +241,6 @@ function computeStats(from,to){
   const netSales=sales-ret-disc;
   const cogs=sum(C,'debit')-sum(C,'credit');
   const gross=netSales-cogs;
-  // ✅ الإيرادات المختلفة من عمود الدائن (لأنها إيرادات = دائن)
   const otherIncome=sum(OI,'credit');
   const lookup={};CATS.forEach(c=>lookup[norm(c[0])]=c[0]);
   const catMap={};CATS.forEach(c=>catMap[c[0]]={name:c[0],icon:c[1],amt:0,rows:[]});
@@ -268,7 +256,6 @@ function computeDaily(from,to){
 }
 function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
 
-/* ---------- العرض ---------- */
 function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
 
 function renderAll(){
@@ -277,7 +264,6 @@ function renderAll(){
   const selKey=selectedDay?iso(selectedDay):null;
   const df=selectedDay||chartFrom, dt=selectedDay||chartTo;
   const st=computeStats(df,dt);
-
   anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
   anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
   anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
@@ -288,15 +274,12 @@ function renderAll(){
   $('#s1').textContent=fmt(st.sales);$('#s2').textContent=fmt(st.ret);$('#s3').textContent=fmt(st.disc);
   $('#s4').textContent=fmt(st.netSales);$('#s5').textContent=fmt(st.cogs);$('#s6').textContent=fmt(st.gross);
   $('#s7').textContent=fmt(st.otherIncome);$('#s8').textContent=fmt(st.gross+st.otherIncome);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
-
   const rc=$('#rangeChip');
   if(selKey){rc.textContent='📅 يوم محدد: '+selKey;rc.classList.add('day');}
   else{rc.textContent='الفترة: '+iso(chartFrom)+' ← '+iso(chartTo);rc.classList.remove('day');}
   $('#fileChip').textContent='الملف: '+CURRENT.name;
-
   renderChart(selKey);
   renderDayButtonState(selKey);
-
   const box=$('#expList');box.innerHTML='';
   CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
     const sumD=c.rows.reduce((s,r)=>s+r.debit,0);
@@ -311,8 +294,9 @@ function renderAll(){
     box.appendChild(el);
   });
 }
+/* نهاية الجزء الأول - الصق الجزء الثاني مباشرة تحت هذا السطر */
+/* بداية الجزء الثاني - الصق هذا المحتوى مباشرة تحت آخر سطر في الجزء الأول */
 
-/* ---------- الرسم البياني ---------- */
 function renderChart(selKey){
   const daily=computeDaily(chartFrom,chartTo);
   const days=Object.keys(daily).sort();
@@ -353,7 +337,6 @@ function resetRange(){
   renderAll();
 }
 
-/* ---------- زر اختيار اليوم ---------- */
 function renderDayButtonState(selKey){
   const btn=$('#dayBtn');
   if(selKey){btn.classList.add('on');btn.title='اليوم المحدد: '+selKey;}
@@ -397,7 +380,6 @@ document.addEventListener('mouseover',(e)=>{
   }
 });
 
-/* ---------- إدارة الملفات ---------- */
 async function renderLocal(){
   const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
   const box=$('#localList');
@@ -418,26 +400,43 @@ async function renderLocal(){
 async function refreshRepo(){
   ov('جارٍ الاتصال بالمستودع…');
   try{
-    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
-    if(!r.ok)throw 0;
-    const items=(await r.json()).filter(i=>i.name.endsWith('.xlsx'));
+    let items=[];
+    try{
+      const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
+      if(r.ok)items=(await r.json()).filter(i=>i.name.endsWith('.xlsx'));
+    }catch(e){}
+    if(!items.length){
+      try{
+        const r2=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');
+        if(r2.ok){const j=await r2.json();items=(j.tree||[]).filter(i=>i.path&&i.path.endsWith('.xlsx')).map(i=>({name:i.path.split('/').pop(),download_url:'https://raw.githubusercontent.com/'+REPO+'/main/'+i.path,size:i.size||0}));}
+      }catch(e){}
+    }
     const box=$('#repoList');$('#repoCard').classList.remove('hidden');
     if(!items.length){box.innerHTML='<div class="empty">لا توجد ملفات Excel في المستودع</div>';ovHide();return;}
     box.innerHTML='';
     items.forEach(f=>{
       const el=document.createElement('div');el.className='file-item';
-      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size/1048576).toFixed(2)+' MB</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
+      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size?(f.size/1048576).toFixed(2)+' MB':'')+'</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
       box.appendChild(el);
     });
     box.querySelectorAll('[data-url]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(b.dataset.url,b.dataset.n);});
     ovHide();toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
     return items;
-  }catch(e){ovHide();toast('تعذّر الاتصال بالمستودع — تحقق من الإنترنت');return[];}
+  }catch(e){ovHide();toast('تعذّر الاتصال بالمستودع');return[];}
 }
 async function openURL(url,name){
   try{
-    const r=await fetch(url);if(!r.ok)throw 0;
-    const wb=XLSX.read(await r.arrayBuffer(),{type:'array'});
+    let buf=null;
+    try{const r=await fetch(url);if(r.ok)buf=await r.arrayBuffer();}catch(e){}
+    if(!buf){
+      try{
+        const alt=url.replace('raw.githubusercontent.com','github.com').replace('/main/','/blob/main/');
+        const r2=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(url.split('/').pop()),{headers:{Accept:'application/vnd.github.v3.raw'}});
+        if(r2.ok)buf=await r2.arrayBuffer();
+      }catch(e){}
+    }
+    if(!buf)throw 0;
+    const wb=XLSX.read(buf,{type:'array'});
     RAW=wbToRAW(wb);CURRENT={name:name};
     ovHide();resetRange();
     toast('تم فتح الملف — اضغط "حفظ الملف" للاحتفاظ به محلياً');
@@ -453,10 +452,9 @@ $('#btnSave').onclick=async()=>{
   const item={id:CURRENT.name,name:CURRENT.name,savedAt:new Date().toISOString(),data:serializeRAW(),
     meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,otherIncome:st.otherIncome,expenses:st.expenses,net:st.net,counts:st.counts}};
   try{await idbPut(item);await renderLocal();toast('✔ تم حفظ "'+CURRENT.name+'" في قائمة الملفات');}
-  catch(e){toast('تعذّر الحفظ (مساحة التخزين ممتلئة)');}
+  catch(e){toast('تعذّر الحفظ');}
 };
 
-/* ---------- الإقلاع ---------- */
 (async function init(){
   try{
     const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
