@@ -71,16 +71,44 @@ input[type=file]{display:none}
 .p-opt.sel .pi{background:var(--grn);color:#fff}
 .p-opt .pt b{display:block;font-size:13.5px;font-weight:600}
 .p-opt .pt span{font-size:11px;color:var(--mut)}
-.extra{display:none;margin-top:12px;animation:fadeUp .25s}
+.extra{display:none;margin-top:14px;animation:fadeUp .25s}
 .extra.vis{display:block}
-.extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.extra label{display:block;font-size:11.5px;font-weight:600;color:var(--mut);margin-bottom:4px}
-.extra select,.extra input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font:inherit;font-size:13.5px;background:var(--bg)}
-.extra select:focus,.extra input:focus{outline:none;border-color:var(--grn);background:#fff}
 .btn-go{width:100%;margin-top:18px;padding:13px;background:var(--grn);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:15.5px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 3px 14px rgba(13,150,104,.2)}
 .btn-go:hover{background:#0b8158}
 .btn-go:active{transform:scale(.98)}
 .p-info{margin-top:12px;text-align:center;font-size:11.5px;color:var(--mut)}
+
+/* ═══ منتقي السنة والشهر (أرقام) ═══ */
+.pick-lbl{font-size:11.5px;font-weight:700;color:var(--mut);margin:10px 0 6px}
+.pick-lbl:first-child{margin-top:0}
+.years-row{display:flex;gap:6px;flex-wrap:wrap}
+.yr-btn{padding:8px 18px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer;transition:.12s}
+.yr-btn:hover{border-color:var(--grn)}
+.yr-btn.sel{background:var(--grn);border-color:var(--grn);color:#fff}
+.months-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.mo-btn{position:relative;padding:10px 0 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--card);font-family:'Changa';font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer;transition:.12s}
+.mo-btn:hover{border-color:var(--grn)}
+.mo-btn.sel{background:var(--grn);border-color:var(--grn);color:#fff}
+.mo-btn.off{opacity:.4}
+.mo-btn .dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--grn)}
+.mo-btn.sel .dot{background:#fff}
+
+/* ═══ منتقي الأيام (تقويم مخصص) ═══ */
+.range-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.range-btn{padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center;transition:.12s}
+.range-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.range-btn.filled{border-color:var(--grn-br);color:var(--grn);background:var(--grn-bg)}
+.range-btn.active.filled{border-color:var(--grn)}
+.cal-panel{margin-top:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);padding:10px;animation:fadeUp .25s}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-head .t{font-family:'Changa';font-size:14px;font-weight:700;direction:ltr}
+.cal-nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:13px;color:var(--mut);transition:.12s}
+.cal-nav:hover{color:var(--grn);border-color:var(--grn)}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{padding:9px 0;border:none;border-radius:8px;background:transparent;font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer;transition:.1s}
+.cal-day:hover{background:var(--bg)}
+.cal-day.inr{background:var(--grn-bg);color:var(--grn)}
+.cal-day.sel{background:var(--grn);color:#fff}
 
 .sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
 .s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
@@ -151,7 +179,7 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 .empty{text-align:center;padding:40px 16px;color:var(--mut)}
 .empty p{font-size:13px;font-weight:500}
 
-@media(max-width:420px){.sum-row{grid-template-columns:1fr}.extra-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.sum-row{grid-template-columns:1fr}.months-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
@@ -189,17 +217,32 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 <p class="sub">اختر الفترة الزمنية لعرض الحسابات</p>
 <div class="p-opts">
 <div class="p-opt sel" data-m="all"><div class="pi">📋</div><div class="pt"><b>كامل الفترة</b><span>جميع الحركات المسجلة</span></div></div>
-<div class="p-opt" data-m="month"><div class="pi">📅</div><div class="pt"><b>حسب الشهر</b><span>اختر شهراً محدداً</span></div></div>
+<div class="p-opt" data-m="month"><div class="pi">📅</div><div class="pt"><b>حسب الشهر</b><span>اختر السنة والشهر بالأرقام</span></div></div>
 <div class="p-opt" data-m="custom"><div class="pi">🎯</div><div class="pt"><b>فترة مخصصة</b><span>من تاريخ — إلى تاريخ</span></div></div>
 </div>
-<div class="extra" id="exMonth"><div class="extra-grid">
-<div><label>الشهر</label><select id="selMonth"></select></div>
-<div><label>السنة</label><select id="selYear"></select></div>
-</div></div>
-<div class="extra" id="exCustom"><div class="extra-grid">
-<div><label>من تاريخ</label><input type="date" id="dtFrom"></div>
-<div><label>إلى تاريخ</label><input type="date" id="dtTo"></div>
-</div></div>
+
+<div class="extra" id="exMonth">
+<div class="pick-lbl">السنة</div>
+<div class="years-row" id="yearsRow"></div>
+<div class="pick-lbl">الشهر</div>
+<div class="months-grid" id="monthsGrid"></div>
+</div>
+
+<div class="extra" id="exCustom">
+<div class="range-fields">
+<button type="button" class="range-btn active" id="fromBtn">من تاريخ</button>
+<button type="button" class="range-btn" id="toBtn">إلى تاريخ</button>
+</div>
+<div class="cal-panel">
+<div class="cal-head">
+<button type="button" class="cal-nav" id="calPrev">❮</button>
+<span class="t" id="calTitle"></span>
+<button type="button" class="cal-nav" id="calNext">❯</button>
+</div>
+<div class="cal-days" id="calDays"></div>
+</div>
+</div>
+
 <button class="btn-go" id="btnGo">عرض الحسابات ←</button>
 <div class="p-info" id="pInfo"></div>
 </div>
@@ -241,6 +284,7 @@ var TX=[],PER={mode:"all",from:null,to:null},CUR=null;
 
 function $(s){return document.querySelector(s)}
 function $$(s){return[].slice.call(document.querySelectorAll(s))}
+function pad(n){return String(n).padStart(2,"0")}
 function money(n){return(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0})}
 function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]+"-"+p[0]}
 function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
@@ -520,8 +564,7 @@ function parse(buf){
 
     var ci=catInfo(cat);
 
-    /* القاعدة: الإيرادات تُجمع من عمود المبلغ الايراد فقط
-       الصرفيات تُجمع من عمود المبلغ الصرف فقط */
+    /* القاعدة: الإيرادات من عمود المبلغ الايراد فقط — الصرفيات من عمود المبلغ الصرف فقط */
     var amt;
     if(ci.g==="in"){amt=aIn;}
     else{amt=aO;}
@@ -541,16 +584,83 @@ function parse(buf){
   if(!TX.length)throw new Error("لا توجد حركات صالحة في الملف");
 }
 
+/* ═══ منتقي الفترة (أرقام) ═══ */
+var MSEL={y:null,m:null},AVAIL={y:[],m:[]};
+var CAL={y:2026,m:1,target:"from"};
+var CSEL={from:null,to:null};
+
 function initPeriod(){
   var dates=TX.map(function(t){return t.date}).filter(Boolean).sort();
   var ys={},ms={};
   dates.forEach(function(d){ys[d.slice(0,4)]=1;ms[d.slice(0,7)]=1});
-  var yA=Object.keys(ys).sort(),mA=Object.keys(ms).sort();
-  var mN=["","كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
-  $("#selYear").innerHTML=yA.map(function(y){return"<option>"+y+"</option>"}).join("");
-  $("#selMonth").innerHTML=mA.map(function(m){return"<option value=\""+m+"\">"+(mN[+m.slice(5,7)]||m.slice(5))+" "+m.slice(0,4)+"</option>"}).join("");
-  if(mA.length)$("#selMonth").value=mA[mA.length-1];
+  AVAIL.y=Object.keys(ys).sort();
+  AVAIL.m=Object.keys(ms).sort();
+  MSEL.y=AVAIL.y[AVAIL.y.length-1]||"2026";
+  var lm=AVAIL.m[AVAIL.m.length-1];
+  MSEL.m=lm?+lm.slice(5,7):1;
+  CAL.y=lm?+lm.slice(0,4):+MSEL.y;
+  CAL.m=lm?+lm.slice(5,7):1;
+  renderYears();renderMonths();renderCal();updateRange();
   $("#pInfo").textContent="إجمالي الحركات: "+TX.length+" حركة · آخر تاريخ: "+(dates.length?fmtD(dates[dates.length-1]):"—");
+}
+
+function renderYears(){
+  $("#yearsRow").innerHTML=AVAIL.y.map(function(y){
+    return'<button type="button" class="yr-btn'+(y===MSEL.y?' sel':'')+'" data-y="'+y+'">'+y+'</button>'
+  }).join('');
+}
+$("#yearsRow").addEventListener("click",function(e){
+  var b=e.target.closest("[data-y]");if(!b)return;
+  MSEL.y=b.getAttribute("data-y");renderYears();renderMonths();
+});
+
+function renderMonths(){
+  var has={};
+  AVAIL.m.forEach(function(m){if(m.slice(0,4)===MSEL.y)has[+m.slice(5,7)]=1});
+  var h="";
+  for(var i=1;i<=12;i++){
+    h+='<button type="button" class="mo-btn'+(i===+MSEL.m?' sel':'')+(has[i]?'':' off')+'" data-m="'+i+'">'+i+(has[i]?'<span class="dot"></span>':'')+'</button>';
+  }
+  $("#monthsGrid").innerHTML=h;
+}
+$("#monthsGrid").addEventListener("click",function(e){
+  var b=e.target.closest("[data-m]");if(!b)return;
+  MSEL.m=+b.getAttribute("data-m");renderMonths();
+});
+
+function renderCal(){
+  $("#calTitle").textContent=CAL.y+"/"+pad(CAL.m);
+  var n=new Date(+CAL.y,CAL.m,0).getDate();
+  var h="";
+  for(var d=1;d<=n;d++){
+    var iso=CAL.y+"-"+pad(CAL.m)+"-"+pad(d);
+    var cls="cal-day";
+    if(CSEL.from&&CSEL.to&&iso>CSEL.from&&iso<CSEL.to)cls+=" inr";
+    if(iso===CSEL.from||iso===CSEL.to)cls+=" sel";
+    h+='<button type="button" class="'+cls+'" data-d="'+iso+'">'+d+'</button>';
+  }
+  $("#calDays").innerHTML=h;
+}
+$("#calPrev").onclick=function(){CAL.m--;if(CAL.m<1){CAL.m=12;CAL.y--}renderCal()};
+$("#calNext").onclick=function(){CAL.m++;if(CAL.m>12){CAL.m=1;CAL.y++}renderCal()};
+$("#calDays").addEventListener("click",function(e){
+  var b=e.target.closest("[data-d]");if(!b)return;
+  var iso=b.getAttribute("data-d");
+  if(CAL.target==="from"){CSEL.from=iso;CAL.target="to";}
+  else{CSEL.to=iso;CAL.target="from";}
+  if(CSEL.from&&CSEL.to&&CSEL.from>CSEL.to){var t=CSEL.from;CSEL.from=CSEL.to;CSEL.to=t}
+  updateRange();renderCal();
+});
+$("#fromBtn").onclick=function(){CAL.target="from";updateRange()};
+$("#toBtn").onclick=function(){CAL.target="to";updateRange()};
+function updateRange(){
+  var f=$("#fromBtn"),t=$("#toBtn");
+  f.textContent=CSEL.from?"من: "+fmtD(CSEL.from):"من تاريخ";
+  t.textContent=CSEL.to?"إلى: "+fmtD(CSEL.to):"إلى تاريخ";
+  f.classList.toggle("active",CAL.target==="from");
+  t.classList.toggle("active",CAL.target==="to");
+  f.classList.toggle("filled",!!CSEL.from);
+  t.classList.toggle("filled",!!CSEL.to);
 }
 
 $$(".p-opt").forEach(function(o){o.onclick=function(){
@@ -564,12 +674,12 @@ $("#btnGo").onclick=function(){
   var sel=$(".p-opt.sel"),mode=sel?sel.dataset.m:"all";
   PER.mode=mode;
   if(mode==="month"){
-    var mv=$("#selMonth").value;if(!mv){toast("اختر الشهر",1);return}
-    PER.from=mv+"-01";
-    var y=+mv.slice(0,4),mm=+mv.slice(5,7),last=new Date(y,mm,0).getDate();
-    PER.to=mv+"-"+String(last).padStart(2,"0");
+    if(!MSEL.y||!MSEL.m){toast("اختر الشهر",1);return}
+    PER.from=MSEL.y+"-"+pad(MSEL.m)+"-01";
+    var last=new Date(+MSEL.y,MSEL.m,0).getDate();
+    PER.to=MSEL.y+"-"+pad(MSEL.m)+"-"+pad(last);
   }else if(mode==="custom"){
-    PER.from=$("#dtFrom").value||null;PER.to=$("#dtTo").value||null;
+    PER.from=CSEL.from;PER.to=CSEL.to;
     if(!PER.from&&!PER.to){toast("حدد تاريخاً واحداً على الأقل",1);return}
   }else{PER.from=null;PER.to=null}
   showDash();
@@ -584,7 +694,7 @@ function inPer(d){
 function filt(){return TX.filter(function(t){return inPer(t.date)})}
 function perLabel(){
   if(PER.mode==="all")return"كامل الفترة";
-  if(PER.mode==="month"){var s=$("#selMonth");return s.options[s.selectedIndex]?s.options[s.selectedIndex].text:""}
+  if(PER.mode==="month")return MSEL.m+"/"+MSEL.y;
   return(PER.from?fmtD(PER.from):"…")+" — "+(PER.to?fmtD(PER.to):"…")
 }
 
