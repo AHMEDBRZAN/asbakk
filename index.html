@@ -78,7 +78,6 @@ input[type=file]{display:none}
 .btn-go:active{transform:scale(.98)}
 .p-info{margin-top:12px;text-align:center;font-size:11.5px;color:var(--mut)}
 
-/* ═══ منتقي السنة والشهر (أرقام) ═══ */
 .pick-lbl{font-size:11.5px;font-weight:700;color:var(--mut);margin:10px 0 6px}
 .pick-lbl:first-child{margin-top:0}
 .years-row{display:flex;gap:6px;flex-wrap:wrap}
@@ -93,7 +92,6 @@ input[type=file]{display:none}
 .mo-btn .dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--grn)}
 .mo-btn.sel .dot{background:#fff}
 
-/* ═══ منتقي الأيام (تقويم مخصص) ═══ */
 .range-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .range-btn{padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center;transition:.12s}
 .range-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
@@ -524,13 +522,19 @@ function parse(buf){
   var wb=XLSX.read(new Uint8Array(buf),{type:"array",cellDates:true});
   var ws=wb.Sheets[wb.SheetNames[0]];
   var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true})||[];
+
+  /* ═══ اكتشاف صف العناوين ═══ */
   var HR=-1,HD=[];
   for(var r=0;r<Math.min(30,raw.length);r++){
     var row=raw[r]||[],sc=0;
     for(var c=0;c<row.length;c++){var v=String(row[c]==null?"":row[c]).trim();
-      if(/الوصل/.test(v))sc++;if(/التاريخ/.test(v))sc++;if(/النوع|الصنف/.test(v))sc++;if(/الاسم/.test(v))sc++;if(/المبلغ/.test(v))sc++}
+      if(/الوصل/.test(v))sc++;if(/التاريخ/.test(v))sc++;if(/النوع|الصنف/.test(v))sc++;if(/الاسم/.test(v))sc++;if(/مبلغ|المبلغ/.test(v))sc++}
     if(sc>=3){HR=r;HD=row.map(function(x){return String(x==null?"":x).trim()});break}
   }
+
+  /* ═══ تحديد الأعمدة ═══
+     مبلغ الصرفيات / المبلغ الصرف  ← عمود الصرفيات
+     مبلغ إيرادات / المبلغ الايراد ← عمود الإيرادات */
   var iQ=-1,iR=-1,iD=-1,iC=-1,iN=-1,iDt=-1,iAO=-1,iAI=-1;
   if(HR>=0){for(var i=0;i<HD.length;i++){var h=HD[i];
     if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
@@ -539,8 +543,8 @@ function parse(buf){
     if(iC<0&&/النوع|الصنف/.test(h))iC=i;
     if(iN<0&&/الاسم/.test(h))iN=i;
     if(iDt<0&&/التفاصيل/.test(h))iDt=i;
-    if(iAO<0&&/المبلغ\s*الصرف|صرف/.test(h))iAO=i;
-    if(iAI<0&&/المبلغ\s*الايراد|ايراد|إيراد/.test(h))iAI=i;
+    if(iAO<0&&/صرف/.test(h))iAO=i;
+    if(iAI<0&&/ايراد|إيراد/.test(h))iAI=i;
   }}else{iQ=0;iR=1;iD=2;iC=3;iN=4;iDt=5;iAO=6;iAI=7;HR=1}
   if(iC<0||(iAO<0&&iAI<0))throw new Error("تعذر التعرف على أعمدة الملف");
 
@@ -553,18 +557,24 @@ function parse(buf){
     var name=iN>=0?String(rw[iN]==null?"":rw[iN]).trim():"";
     if(/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(cat)||/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(name))continue;
 
+    /* المبلغ من العمودين الرسميين */
     var aO=iAO>=0?bigNum(rw[iAO]):NaN;
     var aIn=iAI>=0?bigNum(rw[iAI]):NaN;
-    var slice=rw.slice(Math.max(iAO>=0?iAO:0,iAI>=0?iAI:0)+1),notes=[];
-    for(var s2=0;s2<slice.length;s2++){var cs=String(slice[s2]==null?"":slice[s2]).trim();if(!cs)continue;
-      var bn=bigNum(cs);if(isNaN(bn))notes.push(cs)}
+
+    /* الملاحظات: نصوص خلايا المبلغ + العمود الإضافي */
+    var notes=[];
     var aoT=iAO>=0?String(rw[iAO]==null?"":rw[iAO]).trim():"";
-    if(aoT&&isNaN(bigNum(aoT)))notes.unshift(aoT);
+    if(aoT&&isNaN(bigNum(aoT)))notes.push(aoT);
+    var aiT=iAI>=0?String(rw[iAI]==null?"":rw[iAI]).trim():"";
+    if(aiT&&isNaN(bigNum(aiT)))notes.push(aiT);
+    var slice=rw.slice(Math.max(iAO>=0?iAO:0,iAI>=0?iAI:0)+1);
+    for(var s2=0;s2<slice.length;s2++){var cs=String(slice[s2]==null?"":slice[s2]).trim();if(!cs)continue;
+      if(isNaN(bigNum(cs)))notes.push(cs)}
     var note=notes.join(" ");
 
     var ci=catInfo(cat);
 
-    /* القاعدة: الإيرادات من عمود المبلغ الايراد فقط — الصرفيات من عمود المبلغ الصرف فقط */
+    /* القاعدة: الإيرادات من مبلغ إيرادات فقط — الصرفيات من مبلغ الصرفيات فقط */
     var amt;
     if(ci.g==="in"){amt=aIn;}
     else{amt=aO;}
