@@ -202,9 +202,17 @@ const fmt=(n,d=0)=>(isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigi
 const fmtShort=v=>v>=1e6?(v/1e6).toLocaleString('en-US',{maximumFractionDigits:1})+'M':v>=1e3?(v/1e3).toLocaleString('en-US',{maximumFractionDigits:0})+'K':v;
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const norm=s=>(s||'').replace(/\s+/g,'');
+function cleanName(s){return (s||'').replace(/[\u200E\u200F\u2066\u2067\u2068\u2069\u202A-\u202E\uFEFF]/g,'').trim();}
 
 const CATS=[["ايجار بناية","fa-building"],["كهرباء","fa-bolt"],["اشتراك مولد","fa-plug-circle-bolt"],["مصاريف مختلفة","fa-shapes"],["شراء ماء للمحل","fa-droplet"],["شراء قرطاسية متنوعة","fa-pen-ruler"],["شراء منظفات","fa-soap"],["شراء علاليك","fa-box-archive"],["مشتريات المحل","fa-cart-shopping"],["مكافئات تشجيعية","fa-gift"],["اجور نقل","fa-truck-fast"],["مشروبات ساخنة","fa-mug-hot"],["صيانة","fa-screwdriver-wrench"],["اعانة محتاجين","fa-hand-holding-heart"],["عمولة حوالات الشركات","fa-money-bill-transfer"],["زيادة ونقص صندوق","fa-scale-unbalanced"],["اجور الموظفين","fa-users"],["طعام الموظفين","fa-utensils"],["مصاريف تسويق وتطوير","fa-bullhorn"],["ايجار المخزن الخارجي","fa-warehouse"],["اجور توصيل البضاعة","fa-truck"],["اعلام ونشر الشركة","fa-rectangle-ad"]];
 const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوصيلبضاعة':'اجور توصيل البضاعة'};
+
+const KNOWN_FILES=[
+ '\u200E\u2068الشهر ال 6\u2069.xlsx','الشهر ال 6.xlsx',
+ '\u200E\u2068الشهر 6 فقط\u2069.xlsx','الشهر 6 فقط.xlsx',
+ '\u200E\u2068الشهر - 6 - فقط\u2069.xlsx','الشهر - 6 - فقط.xlsx','الشهر 6.xlsx'
+];
+const rawUrl=n=>'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURI(n);
 
 let RAW=null, CURRENT=null, CHART=null;
 let chartFrom=null, chartTo=null, selectedDay=null;
@@ -224,11 +232,11 @@ function toDate(v){if(v instanceof Date)return v;if(typeof v==='number')return n
 function rowsFrom(ws){if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{defval:null}).map(r=>({date:toDate(r['التاريخ']),voucher:r['رقم السند'],type:r['النوع'],debit:toNum(r['مدين']),credit:toNum(r['دائن']),stmt:r['البيان']||'',acc:(r['اسم الحساب']||'').trim()})).filter(r=>r.date);}
 function wbToRAW(wb){
   const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
-  const costWS=find('تكلفة');
-  const costRows=rowsFrom(costWS);
-  const cogsRows=costRows.filter(r=>!norm(r.acc).includes('ايرادات')&&!norm(r.acc).includes('إيرادات'));
-  const otherIncomeRows=costRows.filter(r=>norm(r.acc).includes('ايرادات')||norm(r.acc).includes('إيرادات'));
-  return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),cogs:cogsRows,otherIncome:otherIncomeRows,expenses:rowsFrom(find('المصاريف'))};
+  const costRows=rowsFrom(find('تكلفة'));
+  return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),
+    cogs:costRows.filter(r=>!norm(r.acc).includes('ايرادات')&&!norm(r.acc).includes('إيرادات')),
+    otherIncome:costRows.filter(r=>norm(r.acc).includes('ايرادات')||norm(r.acc).includes('إيرادات')),
+    expenses:rowsFrom(find('المصاريف'))};
 }
 function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
 function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
@@ -255,15 +263,13 @@ function computeDaily(from,to){
   return daily;
 }
 function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
-
 function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
 
 function renderAll(){
   if(!RAW||!chartFrom)return;
   ['filterCard','kpis','stmtCard','chartCard','expCard'].forEach(id=>$('#'+id).classList.remove('hidden'));
   const selKey=selectedDay?iso(selectedDay):null;
-  const df=selectedDay||chartFrom, dt=selectedDay||chartTo;
-  const st=computeStats(df,dt);
+  const st=computeStats(selectedDay||chartFrom,selectedDay||chartTo);
   anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
   anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
   anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
@@ -278,24 +284,19 @@ function renderAll(){
   if(selKey){rc.textContent='📅 يوم محدد: '+selKey;rc.classList.add('day');}
   else{rc.textContent='الفترة: '+iso(chartFrom)+' ← '+iso(chartTo);rc.classList.remove('day');}
   $('#fileChip').textContent='الملف: '+CURRENT.name;
-  renderChart(selKey);
-  renderDayButtonState(selKey);
+  renderChart(selKey);renderDayButtonState(selKey);
   const box=$('#expList');box.innerHTML='';
   CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
-    const sumD=c.rows.reduce((s,r)=>s+r.debit,0);
-    const sumC=c.rows.reduce((s,r)=>s+r.credit,0);
+    const sumD=c.rows.reduce((s,r)=>s+r.debit,0),sumC=c.rows.reduce((s,r)=>s+r.credit,0);
     const el=document.createElement('div');el.className='acc-item';
     el.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+c.icon+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
     '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
     c.rows.map(r=>'<tr><td>'+iso(r.date)+'</td><td>'+r.voucher+'</td><td>'+r.stmt+'</td><td class="amt">'+fmt(r.debit-r.credit)+'</td></tr>').join('')+
-    '</tbody><tfoot><tr><td colspan="3">مجموع مدين: '+fmt(sumD)+' − مجموع دائن: '+fmt(sumC)+'</td><td class="amt">'+fmt(c.amt)+'</td></tr></tfoot>'+
-    '</table></div></div></div>';
+    '</tbody><tfoot><tr><td colspan="3">مجموع مدين: '+fmt(sumD)+' − مجموع دائن: '+fmt(sumC)+'</td><td class="amt">'+fmt(c.amt)+'</td></tr></tfoot></table></div></div></div>';
     el.querySelector('.acc-head').onclick=()=>el.classList.toggle('open');
     box.appendChild(el);
   });
 }
-/* نهاية الجزء الأول - الصق الجزء الثاني مباشرة تحت هذا السطر */
-/* بداية الجزء الثاني - الصق هذا المحتوى مباشرة تحت آخر سطر في الجزء الأول */
 
 function renderChart(selKey){
   const daily=computeDaily(chartFrom,chartTo);
@@ -303,19 +304,17 @@ function renderChart(selKey){
   const labels=days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];});
   const barColors=days.map(d=>d===selKey?'#f59e0b':'#4f46e5');
   if(CHART)CHART.destroy();
+  if(typeof Chart==='undefined')return;
   CHART=new Chart($('#chart'),{data:{labels:labels,datasets:[
     {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:3,barPercentage:.95,categoryPercentage:.85},
     {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:1.5,pointRadius:2,tension:.3}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      animation:false,
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
       onClick:(evt,els)=>{if(els.length&&els[0].datasetIndex===0){toggleDay(days[els[0].index]);}},
       onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=(els.length&&els[0].datasetIndex===0)?'pointer':'default';},
       plugins:{legend:{labels:{font:{family:'Cairo',weight:700,size:10},boxWidth:12,boxHeight:12}},
         tooltip:{titleFont:{family:'Cairo'},bodyFont:{family:'Cairo'},callbacks:{title:items=>'اليوم: '+days[items[0].dataIndex],label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
-        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}}
-      }}});
+      scales:{x:{grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
+        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}}}}});
 }
 function toggleDay(key){
   if(selectedDay&&iso(selectedDay)===key){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');}
@@ -327,16 +326,13 @@ function apply(){
   let f=new Date($('#dFrom').value+'T00:00:00'),t=new Date($('#dTo').value+'T23:59:59');
   if(isNaN(f)||isNaN(t))return;
   if(f>t)[f,t]=[t,f];
-  chartFrom=f;chartTo=t;selectedDay=null;
-  renderAll();
+  chartFrom=f;chartTo=t;selectedDay=null;renderAll();
 }
 function resetRange(){
   const[mn,mx]=fullRange();if(!mn)return;
   chartFrom=mn;chartTo=mx;selectedDay=null;
-  $('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);
-  renderAll();
+  $('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);renderAll();
 }
-
 function renderDayButtonState(selKey){
   const btn=$('#dayBtn');
   if(selKey){btn.classList.add('on');btn.title='اليوم المحدد: '+selKey;}
@@ -344,41 +340,25 @@ function renderDayButtonState(selKey){
 }
 function openDayPop(){
   if(!chartFrom||!chartTo)return;
-  const daily=computeDaily(chartFrom,chartTo);
-  const days=Object.keys(daily).sort();
+  const days=Object.keys(computeDaily(chartFrom,chartTo)).sort();
   const selKey=selectedDay?iso(selectedDay):null;
   const grid=$('#dayGrid');grid.innerHTML='';
   if(!days.length){grid.innerHTML='<div class="day-pop-empty">لا توجد أيام في الفترة الحالية</div>';}
-  else{
-    days.forEach(d=>{
-      const b=document.createElement('button');
-      b.className='day-cell'+(d===selKey?' on':'');
-      b.textContent=+d.split('-')[2];
-      b.onclick=(e)=>{e.stopPropagation();toggleDay(d);closeDayPop();};
-      grid.appendChild(b);
-    });
-  }
+  else days.forEach(d=>{
+    const b=document.createElement('button');
+    b.className='day-cell'+(d===selKey?' on':'');
+    b.textContent=+d.split('-')[2];
+    b.onclick=e=>{e.stopPropagation();toggleDay(d);closeDayPop();};
+    grid.appendChild(b);
+  });
   $('#dayPop').classList.add('open');
-  clearTimeout(popCloseTimer);
-  popCloseTimer=setTimeout(closeDayPop,3000);
+  clearTimeout(popCloseTimer);popCloseTimer=setTimeout(closeDayPop,3000);
 }
-function closeDayPop(){
-  $('#dayPop').classList.remove('open');
-  clearTimeout(popCloseTimer);
-}
-$('#dayBtn').onclick=(e)=>{e.stopPropagation();const pop=$('#dayPop');if(pop.classList.contains('open'))closeDayPop();else openDayPop();};
-$('#dayClear').onclick=(e)=>{e.stopPropagation();if(selectedDay){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');renderAll();}closeDayPop();};
-document.addEventListener('click',(e)=>{
-  const pop=$('#dayPop');const btn=$('#dayBtn');
-  if(pop&&pop.classList.contains('open')&&!pop.contains(e.target)&&!btn.contains(e.target))closeDayPop();
-});
-document.addEventListener('mouseover',(e)=>{
-  const pop=$('#dayPop');
-  if(pop&&pop.classList.contains('open')&&pop.contains(e.target)){
-    clearTimeout(popCloseTimer);
-    popCloseTimer=setTimeout(closeDayPop,3000);
-  }
-});
+function closeDayPop(){$('#dayPop').classList.remove('open');clearTimeout(popCloseTimer);}
+$('#dayBtn').onclick=e=>{e.stopPropagation();const p=$('#dayPop');if(p.classList.contains('open'))closeDayPop();else openDayPop();};
+$('#dayClear').onclick=e=>{e.stopPropagation();if(selectedDay){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');renderAll();}closeDayPop();};
+document.addEventListener('click',e=>{const p=$('#dayPop'),b=$('#dayBtn');if(p&&p.classList.contains('open')&&!p.contains(e.target)&&!b.contains(e.target))closeDayPop();});
+document.addEventListener('mouseover',e=>{const p=$('#dayPop');if(p&&p.classList.contains('open')&&p.contains(e.target)){clearTimeout(popCloseTimer);popCloseTimer=setTimeout(closeDayPop,3000);}});
 
 async function renderLocal(){
   const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
@@ -397,51 +377,62 @@ async function renderLocal(){
   box.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{ov('جارٍ فتح الملف…');const it=await idbGet(b.dataset.open);RAW=deserializeRAW(it.data);CURRENT={name:it.name};ovHide();resetRange();toast('تم فتح: '+it.name);window.scrollTo({top:0,behavior:'smooth'});});
   box.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذا الملف من القائمة المحلية؟'))return;await idbDel(b.dataset.del);renderLocal();toast('تم الحذف');});
 }
+
+/* ✅ الطريقة 3: فحص مباشر بأسماء معروفة بدون API */
+async function probeKnown(){
+  const found=[];
+  for(const n of KNOWN_FILES){
+    try{
+      const r=await fetch(rawUrl(n),{method:'HEAD'});
+      if(r.ok)found.push({name:cleanName(n),download_url:rawUrl(n),size:0});
+    }catch(e){}
+  }
+  return found;
+}
 async function refreshRepo(){
   ov('جارٍ الاتصال بالمستودع…');
+  let items=[],apiFailed=false;
   try{
-    let items=[];
+    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
+    if(r.ok)items=(await r.json()).filter(i=>i.name.endsWith('.xlsx')).map(i=>({name:cleanName(i.name),download_url:i.download_url,size:i.size||0}));
+    else apiFailed=true;
+  }catch(e){apiFailed=true;}
+  if(!items.length){
     try{
-      const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
-      if(r.ok)items=(await r.json()).filter(i=>i.name.endsWith('.xlsx'));
-    }catch(e){}
-    if(!items.length){
-      try{
-        const r2=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');
-        if(r2.ok){const j=await r2.json();items=(j.tree||[]).filter(i=>i.path&&i.path.endsWith('.xlsx')).map(i=>({name:i.path.split('/').pop(),download_url:'https://raw.githubusercontent.com/'+REPO+'/main/'+i.path,size:i.size||0}));}
-      }catch(e){}
-    }
-    const box=$('#repoList');$('#repoCard').classList.remove('hidden');
-    if(!items.length){box.innerHTML='<div class="empty">لا توجد ملفات Excel في المستودع</div>';ovHide();return;}
-    box.innerHTML='';
-    items.forEach(f=>{
-      const el=document.createElement('div');el.className='file-item';
-      el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size?(f.size/1048576).toFixed(2)+' MB':'')+'</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
-      box.appendChild(el);
-    });
-    box.querySelectorAll('[data-url]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(b.dataset.url,b.dataset.n);});
-    ovHide();toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
-    return items;
-  }catch(e){ovHide();toast('تعذّر الاتصال بالمستودع');return[];}
+      const r2=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');
+      if(r2.ok){const j=await r2.json();items=(j.tree||[]).filter(i=>i.path&&i.path.endsWith('.xlsx')).map(i=>({name:cleanName(i.path.split('/').pop()),download_url:rawUrl(i.path),size:i.size||0}));}
+      else apiFailed=true;
+    }catch(e){apiFailed=true;}
+  }
+  if(!items.length)items=await probeKnown();
+  const box=$('#repoList');$('#repoCard').classList.remove('hidden');
+  if(!items.length){
+    box.innerHTML='<div class="empty">'+(apiFailed?'تعذّر الاتصال بالمستودع (حد الطلبات) — أعد المحاولة بعد دقيقة':'لا توجد ملفات Excel في المستودع')+'</div>';
+    ovHide();return[];
+  }
+  box.innerHTML='';
+  items.forEach(f=>{
+    const el=document.createElement('div');el.className='file-item';
+    el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size?(f.size/1048576).toFixed(2)+' MB':'')+'</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
+    box.appendChild(el);
+  });
+  box.querySelectorAll('[data-url]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(b.dataset.url,b.dataset.n);});
+  ovHide();toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
+  return items;
 }
 async function openURL(url,name){
   try{
+    if(typeof XLSX==='undefined')throw new Error('مكتبة Excel غير محملة — حدّث الصفحة');
     let buf=null;
-    try{const r=await fetch(url);if(r.ok)buf=await r.arrayBuffer();}catch(e){}
-    if(!buf){
-      try{
-        const alt=url.replace('raw.githubusercontent.com','github.com').replace('/main/','/blob/main/');
-        const r2=await fetch('https://api.github.com/repos/'+REPO+'/contents/'+encodeURIComponent(url.split('/').pop()),{headers:{Accept:'application/vnd.github.v3.raw'}});
-        if(r2.ok)buf=await r2.arrayBuffer();
-      }catch(e){}
-    }
-    if(!buf)throw 0;
-    const wb=XLSX.read(buf,{type:'array'});
-    RAW=wbToRAW(wb);CURRENT={name:name};
+    const tries=[url,rawUrl(KNOWN_FILES[0]),rawUrl(KNOWN_FILES[1]),rawUrl(KNOWN_FILES[3])];
+    for(const u of tries){if(!u)continue;try{const r=await fetch(u);if(r.ok){buf=await r.arrayBuffer();break;}}catch(e){}}
+    if(!buf)throw new Error('تعذر التنزيل');
+    const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+    RAW=wbToRAW(wb);CURRENT={name:cleanName(name)};
     ovHide();resetRange();
     toast('تم فتح الملف — اضغط "حفظ الملف" للاحتفاظ به محلياً');
     window.scrollTo({top:0,behavior:'smooth'});
-  }catch(e){ovHide();toast('فشل فتح الملف');}
+  }catch(e){ovHide();toast('فشل فتح الملف: '+((e&&e.message)?e.message:'تحقق من الإنترنت'));}
 }
 $('#btnRepo').onclick=refreshRepo;
 $('#btnApply').onclick=apply;
@@ -459,13 +450,8 @@ $('#btnSave').onclick=async()=>{
   try{
     const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
     await renderLocal();
-    if(items.length){
-      RAW=deserializeRAW(items[0].data);CURRENT={name:items[0].name};
-      resetRange();
-    }else{
-      const files=await refreshRepo();
-      if(files&&files.length)await openURL(files[0].download_url,files[0].name);
-    }
+    if(items.length){RAW=deserializeRAW(items[0].data);CURRENT={name:items[0].name};resetRange();}
+    else{const files=await refreshRepo();if(files&&files.length)await openURL(files[0].download_url,files[0].name);}
   }catch(e){}
   ovHide();
 })();
