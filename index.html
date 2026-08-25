@@ -2,459 +2,1259 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>نظام الحسابات المتكامل</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>window.XLSX||document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>window.Chart||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>نظام حسابات الجوهره — v4.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
-body{background:linear-gradient(180deg,#e9edf8,#dfe4f2);min-height:100vh;color:#0f172a;padding-bottom:60px}
-.hidden{display:none!important}
-.topbar{background:rgba(255,255,255,.92);box-shadow:0 4px 20px rgba(15,23,42,.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.brand{display:flex;gap:10px;align-items:center}
-.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:grid;place-items:center;font-size:18px}
-.brand h1{font-size:16px;font-weight:900}
-.brand small{color:#64748b;font-size:10.5px}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-family:'Cairo';font-weight:800;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.2s}
-.btn-green{background:#059669;color:#fff}.btn-green:hover{background:#047857}
-.btn-indigo{background:#4f46e5;color:#fff}.btn-indigo:hover{background:#4338ca}
-.btn-sm{padding:7px 12px;font-size:11.5px;border-radius:10px}
-.btn-ghost{background:#eef2ff;color:#4f46e5}
-.btn-danger{background:#fee2e2;color:#dc2626}
-main{max-width:1200px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px}
-.card{background:#f8f9fd;border-radius:22px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px}
-.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.card-head h2{font-size:14.5px;font-weight:900;display:flex;gap:8px;align-items:center;color:#1e293b}
-.card-head h2 i{color:#4f46e5}
-.hint{font-size:10px;color:#94a3b8;font-weight:700;margin-top:4px}
-.file-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-.file-item{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;transition:.2s}
-.file-item:hover{border-color:#c7d2fe;box-shadow:0 6px 16px rgba(79,70,229,.12)}
-.fi-icon{width:42px;height:42px;border-radius:12px;background:#ecfdf5;color:#059669;display:grid;place-items:center;font-size:18px;flex-shrink:0}
-.fi-icon.repo{background:#eef2ff;color:#4f46e5}
-.fi-info{flex:1;min-width:0}
-.fi-info b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fi-info span{font-size:10.5px;color:#64748b}
-.fi-mini{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:#475569;margin-top:4px}
-.fi-mini em{font-style:normal}.fi-mini b{display:inline;color:#059669}
-.fi-actions{display:flex;gap:6px;flex-shrink:0}
-.empty{color:#94a3b8;font-size:12px;text-align:center;padding:14px}
-.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
-.f-group label{font-size:11px;font-weight:800;color:#64748b;display:block;margin-bottom:4px}
-.f-group input{border:1.5px solid #e2e8f0;background:#fff;border-radius:12px;padding:9px 12px;font-family:'Cairo';font-size:13px;font-weight:700}
-.chip{background:#eef2ff;color:#4f46e5;border-radius:999px;padding:9px 14px;font-size:11px;font-weight:800}
-.chip.day{background:#fffbeb;color:#d97706}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
-.kpi{background:#f8f9fd;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:14px;position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;inset-inline-end:0;top:12px;bottom:12px;width:4px;border-radius:4px;background:var(--c)}
-.kpi .t{display:flex;gap:8px;align-items:center;font-size:11px;font-weight:800;color:#64748b}
-.kpi .ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.7);color:var(--c);display:grid;place-items:center;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--c)}
-.kpi .v{font-size:18px;font-weight:900;margin-top:8px}
-.kpi .s{font-size:9.5px;color:#94a3b8;font-weight:700}
-.grid2{display:grid;grid-template-columns:1fr;gap:14px}
-@media(min-width:950px){.grid2{grid-template-columns:1fr 1fr}}
-.stmt .row{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1.5px dashed #e2e8f0;font-size:12.5px;font-weight:700}
-.stmt .row b{font-weight:900}
-.pos{color:#059669}.neg{color:#e11d48}
-.total-btn{margin-top:14px;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;box-shadow:0 10px 24px rgba(5,150,105,.35)}
-#chartCard,#chartCard *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-.acc-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-top:10px;overflow:hidden}
-.acc-head{width:100%;border:none;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-family:'Cairo'}
-.acc-head:hover{background:#f8fafc}
-.acc-ic{width:34px;height:34px;border-radius:10px;background:#fef2f2;color:#e11d48;display:grid;place-items:center;font-size:13px;flex-shrink:0}
-.acc-name{flex:1;text-align:right;font-size:12.5px;font-weight:800}
-.acc-count{font-size:10px;font-weight:800;color:#64748b;background:#f1f5f9;border-radius:999px;padding:3px 9px}
-.acc-total{font-size:12.5px;font-weight:900;color:#e11d48}
-.acc-chev{color:#94a3b8;font-size:11px;transition:.3s}
-.acc-item.open .acc-chev{transform:rotate(180deg)}
-.acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
-.acc-item.open .acc-body{grid-template-rows:1fr}
-.acc-inner{overflow:hidden;background:#f7f6fd}
-.tbl-wrap{max-height:260px;overflow:auto;border-top:1px dashed #e2e0f5;border-inline-start:4px solid #e6e4fb}
-.acc-inner table{width:100%;border-collapse:collapse;font-size:11px}
-.acc-inner th{background:#efedfb;color:#5a5878;font-weight:800;padding:7px 10px;text-align:right;position:sticky;top:0}
-.acc-inner td{padding:7px 10px;border-top:1px solid #eceafb;font-weight:700;color:#555a75}
-.acc-inner td.amt{color:#e11d48;font-weight:900;text-align:left}
-.acc-inner tfoot td{background:#efedfb;color:#3f3d56;font-weight:900;border-top:2px solid #e2e0f5;font-size:10.5px}
-#overlay{position:fixed;inset:0;background:rgba(233,237,248,.95);backdrop-filter:blur(6px);z-index:100;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}
-.spin{width:52px;height:52px;border-radius:50%;border:5px solid #e2e8f0;border-top-color:#4f46e5;animation:sp 1s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-#ovText{font-size:13px;font-weight:800;color:#4f46e5}
-.toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:#0f172a;color:#fff;border-radius:14px;padding:12px 22px;font-size:12.5px;font-weight:800;z-index:110;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92%;text-align:center}
-.day-picker{position:relative;display:inline-block}
-.day-btn{width:34px;height:34px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;display:grid;place-items:center;cursor:pointer;transition:.2s;font-size:13px;position:relative}
-.day-btn:hover{border-color:#c7d2fe;color:#4f46e5;background:#f5f8ff}
-.day-btn.on{border-color:#f59e0b;background:#fffbeb;color:#d97706;box-shadow:0 4px 12px rgba(245,158,11,.25)}
-.day-btn.on::after{content:'';position:absolute;top:-2px;inset-inline-end:-2px;width:8px;height:8px;background:#f59e0b;border-radius:50%;border:2px solid #fff}
-.day-pop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 16px 40px rgba(15,23,42,.18);padding:12px;z-index:50;width:260px;opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transition:all .25s cubic-bezier(.4,0,.2,1)}
-.day-pop.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.day-pop-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px dashed #e2e8f0;margin-bottom:8px}
-.day-pop-head span{font-size:11px;font-weight:800;color:#4f46e5}
-.day-pop-head button{border:none;background:#f1f5f9;color:#64748b;font-family:'Cairo';font-size:10px;font-weight:800;padding:4px 10px;border-radius:8px;cursor:pointer;transition:.2s}
-.day-pop-head button:hover{background:#fee2e2;color:#dc2626}
-.day-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:180px;overflow:auto}
-.day-cell{border:none;background:#f1f5f9;border-radius:9px;padding:7px 0;font-family:'Cairo';font-size:11px;font-weight:800;color:#334155;cursor:pointer;transition:.15s}
-.day-cell:hover{background:#e2e8f0}
-.day-cell.on{background:#f59e0b;color:#fff;box-shadow:0 3px 8px rgba(245,158,11,.4)}
-.day-pop-empty{grid-column:1/-1;text-align:center;font-size:11px;color:#94a3b8;padding:12px 0}
+:root {
+  --primary: #0a2540;
+  --primary-light: #1a3a5c;
+  --accent: #00d4aa;
+  --income: #00b894;
+  --expense: #e74c3c;
+  --withdraw: #f39c12;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #e9ecef;
+  --text: #212529;
+  --text-muted: #6c757d;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Cairo', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  padding: 16px 24px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.brand h1 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.brand small {
+  font-size: 11px;
+  color: #b0c4de;
+  display: block;
+}
+
+.user-info {
+  font-size: 13px;
+  color: #b0c4de;
+  text-align: left;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.period-section {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.period-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  color: var(--primary);
+  text-align: center;
+}
+
+.period-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.period-btn {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.period-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,212,170,0.15);
+}
+
+.period-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.period-btn .icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.date-picker {
+  display: none;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.date-picker.show {
+  display: flex;
+}
+
+.date-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.date-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.date-field input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.date-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dashboard {
+  display: none;
+}
+
+.dashboard.show {
+  display: block;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-right: 4px solid var(--accent);
+}
+
+.summary-card.income { border-right-color: var(--income); }
+.summary-card.expense { border-right-color: var(--expense); }
+.summary-card.withdraw { border-right-color: var(--withdraw); }
+
+.summary-card h3 {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.summary-card .amount {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  direction: ltr;
+  text-align: right;
+}
+
+.summary-card.income .amount { color: var(--income); }
+.summary-card.expense .amount { color: var(--expense); }
+.summary-card.withdraw .amount { color: var(--withdraw); }
+
+.summary-card .sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.main-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.option-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  border: 3px solid transparent;
+}
+
+.option-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.option-card.income { border-color: var(--income); }
+.option-card.expense { border-color: var(--expense); }
+
+.option-card .icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.option-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.option-card.income h2 { color: var(--income); }
+.option-card.expense h2 { color: var(--expense); }
+
+.option-card .total {
+  font-size: 18px;
+  font-weight: 700;
+  direction: ltr;
+  margin-top: 12px;
+}
+
+.sub-categories {
+  display: none;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.sub-categories.show {
+  display: block;
+}
+
+.sub-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.back-link {
+  font-size: 14px;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.back-link:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.sub-category {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right: 4px solid var(--accent);
+}
+
+.sub-category:hover {
+  background: #e9ecef;
+  transform: translateX(-4px);
+}
+
+.sub-category.income { border-right-color: var(--income); }
+.sub-category.expense { border-right-color: var(--expense); }
+.sub-category.withdraw { border-right-color: var(--withdraw); }
+
+.sub-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.sub-category-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sub-category-total {
+  font-size: 16px;
+  font-weight: 800;
+  direction: ltr;
+}
+
+.sub-category.income .sub-category-total { color: var(--income); }
+.sub-category.expense .sub-category-total { color: var(--expense); }
+.sub-category.withdraw .sub-category-total { color: var(--withdraw); }
+
+.sub-category-count {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.transactions-section {
+  display: none;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.transactions-section.show {
+  display: block;
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.transactions-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.back-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.back-btn:hover {
+  background: var(--primary-light);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.transactions-table thead {
+  background: var(--primary);
+  color: white;
+}
+
+.transactions-table th {
+  padding: 12px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transactions-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.transactions-table tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.transactions-table tr:hover {
+  background: #f8f9fa;
+}
+
+.transactions-table .amount {
+  font-weight: 700;
+  direction: ltr;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transactions-table .date {
+  direction: ltr;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.transactions-table .details {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transactions-total {
+  background: var(--primary);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  direction: ltr;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--primary);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  word-break: break-word;
+}
+
+.detail-value.income { color: var(--income); font-size: 18px; }
+.detail-value.expense { color: var(--expense); font-size: 18px; }
+.detail-value.withdraw { color: var(--withdraw); font-size: 18px; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--primary);
+  color: white;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 2000;
+  transition: transform 0.3s;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.error {
+  background: var(--expense);
+}
+
+@media (max-width: 768px) {
+  .main-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .container {
+    padding: 16px;
+  }
+  
+  .period-section {
+    padding: 20px;
+  }
+  
+  .transactions-table {
+    font-size: 11px;
+  }
+  
+  .transactions-table th,
+  .transactions-table td {
+    padding: 8px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
 <body>
 
-<div id="overlay"><div class="spin"></div><p id="ovText">جارٍ التحميل…</p></div>
-
-<header class="topbar">
-  <div class="brand">
-    <div class="logo"><i class="fa-solid fa-chart-line"></i></div>
-    <div><h1>نظام الحسابات المتكامل</h1><small>المستودع: AHMEDBRZAN/asbakk</small></div>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button id="btnRepo" class="btn btn-indigo"><i class="fa-solid fa-rotate"></i> تحديث من المستودع</button>
-    <button id="btnSave" class="btn btn-green"><i class="fa-solid fa-floppy-disk"></i> حفظ الملف</button>
+<header class="header">
+  <div class="header-content">
+    <div class="brand">
+      <div class="logo">💎</div>
+      <div>
+        <h1>نظام حسابات الجوهره</h1>
+        <small>الإصدار 4.0 — الدينار العراقي</small>
+      </div>
+    </div>
+    <div class="user-info">
+      <div id="fileStatus">جاري التحميل...</div>
+    </div>
   </div>
 </header>
 
-<main>
-  <section class="card">
-    <div class="card-head"><h2><i class="fa-solid fa-folder-open"></i> قائمة الملفات المحفوظة محلياً (الأساسية)</h2></div>
-    <div id="localList" class="file-list"><div class="empty">لا توجد ملفات محفوظة بعد — اضغط "تحديث من المستودع" ثم افتح ملفاً واحفظه</div></div>
-  </section>
+<div class="container">
+  <div class="loading" id="loadingView">
+    <div class="spinner"></div>
+    <p style="font-size: 16px; font-weight: 600;">جاري تحميل البيانات...</p>
+  </div>
 
-  <section class="card hidden" id="repoCard">
-    <div class="card-head"><h2><i class="fa-brands fa-github"></i> ملفات المستودع (اضغط فتح ثم حفظ)</h2></div>
-    <div id="repoList" class="file-list"></div>
-  </section>
+  <section class="period-section" id="periodSection" style="display: none;">
+    <h1 class="period-title">🗓️ اختر الفترة الزمنية</h1>
+    
+    <div class="period-grid">
+      <button class="period-btn" data-period="all">
+        <span class="icon">📊</span>
+        كامل الفترة
+      </button>
+      <button class="period-btn" data-period="today">
+        <span class="icon">📅</span>
+        اليوم
+      </button>
+      <button class="period-btn" data-period="month">
+        <span class="icon">📆</span>
+        الشهر الحالي
+      </button>
+      <button class="period-btn" data-period="custom">
+        <span class="icon">🎯</span>
+        فترة مخصصة
+      </button>
+    </div>
 
-  <section class="card hidden" id="filterCard">
-    <div class="filters">
-      <div class="f-group"><label>من تاريخ</label><input type="date" id="dFrom"></div>
-      <div class="f-group"><label>إلى تاريخ</label><input type="date" id="dTo"></div>
-      <button class="btn btn-indigo" id="btnApply"><i class="fa-solid fa-filter"></i> تطبيق</button>
-      <button class="btn btn-ghost" id="btnFull"><i class="fa-solid fa-calendar-days"></i> الشهر كامل</button>
-      <span class="chip" id="rangeChip"></span>
-      <span class="chip" id="fileChip" style="background:#ecfdf5;color:#059669"></span>
+    <div class="date-picker" id="datePicker">
+      <div class="date-field">
+        <label>من تاريخ:</label>
+        <input type="date" id="dateFrom">
+      </div>
+      <div class="date-field">
+        <label>إلى تاريخ:</label>
+        <input type="date" id="dateTo">
+      </div>
     </div>
   </section>
 
-  <section class="kpis hidden" id="kpis">
-    <div class="kpi" style="--c:#4f46e5"><div class="t"><span class="ic"><i class="fa-solid fa-bag-shopping"></i></span>إجمالي المبيعات</div><div class="v" id="kSales">0</div><div class="s" id="kSalesS"></div></div>
-    <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-rotate-left"></i></span>مردودات المبيعات</div><div class="v neg" id="kRet">0</div><div class="s" id="kRetS"></div></div>
-    <div class="kpi" style="--c:#d97706"><div class="t"><span class="ic"><i class="fa-solid fa-tags"></i></span>الحسم الممنوح</div><div class="v neg" id="kDisc">0</div><div class="s" id="kDiscS"></div></div>
-    <div class="kpi" style="--c:#0d9488"><div class="t"><span class="ic"><i class="fa-solid fa-wallet"></i></span>صافي المبيعات</div><div class="v" id="kNet">0</div><div class="s">الإجمالي − المردودات − الحسم</div></div>
-    <div class="kpi" style="--c:#ea580c"><div class="t"><span class="ic"><i class="fa-solid fa-boxes-stacked"></i></span>تكلفة البضاعة المباعة</div><div class="v" id="kCogs">0</div><div class="s">مدين − دائن</div></div>
-    <div class="kpi" style="--c:#7c3aed"><div class="t"><span class="ic"><i class="fa-solid fa-chart-simple"></i></span>مجمل الدخل</div><div class="v" id="kGross">0</div><div class="s">صافي المبيعات − التكلفة</div></div>
-    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-coins"></i></span>إيرادات مختلفة</div><div class="v pos" id="kOther">0</div><div class="s" id="kOtherS">من ورقة التكلفة</div></div>
-    <div class="kpi" style="--c:#e11d48"><div class="t"><span class="ic"><i class="fa-solid fa-receipt"></i></span>إجمالي المصاريف</div><div class="v neg" id="kExp">0</div><div class="s" id="kExpS"></div></div>
-    <div class="kpi" style="--c:#059669"><div class="t"><span class="ic"><i class="fa-solid fa-sack-dollar"></i></span>صافي الدخل</div><div class="v pos" id="kNetInc">0</div><div class="s">مجمل + إيرادات − مصاريف</div></div>
-  </section>
+  <div class="dashboard" id="dashboard">
+    <div class="summary-cards">
+      <div class="summary-card income">
+        <h3>إجمالي الإيرادات</h3>
+        <div class="amount" id="totalIncome">0</div>
+        <div class="sub" id="incomeCount">0 حركة</div>
+      </div>
+      <div class="summary-card expense">
+        <h3>إجمالي الصرفيات</h3>
+        <div class="amount" id="totalExpense">0</div>
+        <div class="sub" id="expenseCount">0 حركة</div>
+      </div>
+      <div class="summary-card withdraw">
+        <h3>سحب المبالغ</h3>
+        <div class="amount" id="totalWithdraw">0</div>
+        <div class="sub" id="withdrawCount">0 حركة</div>
+      </div>
+      <div class="summary-card">
+        <h3>الصافي</h3>
+        <div class="amount" id="netAmount" style="color: var(--primary);">0</div>
+        <div class="sub" id="periodLabel">كامل الفترة</div>
+      </div>
+    </div>
 
-  <div class="grid2">
-    <section class="card hidden" id="stmtCard">
-      <div class="card-head"><h2><i class="fa-solid fa-file-invoice-dollar"></i> قائمة الدخل</h2></div>
-      <div class="stmt" style="margin-top:10px">
-        <div class="row"><span>(+) إجمالي المبيعات</span><b class="pos" id="s1">0</b></div>
-        <div class="row"><span>(−) مردودات المبيعات</span><b class="neg" id="s2">0</b></div>
-        <div class="row"><span>(−) الحسم الممنوح</span><b class="neg" id="s3">0</b></div>
-        <div class="row"><span>(=) صافي المبيعات</span><b id="s4">0</b></div>
-        <div class="row"><span>(−) تكلفة البضاعة المباعة (مدين − دائن)</span><b class="neg" id="s5">0</b></div>
-        <div class="row"><span>(=) مجمل الدخل</span><b id="s6">0</b></div>
-        <div class="row"><span>(+) إيرادات مختلفة</span><b class="pos" id="s7">0</b></div>
-        <div class="row"><span>(=) إجمالي صافي الدخل بعد الإيرادات</span><b id="s8">0</b></div>
-        <div class="row"><span>(−) إجمالي المصاريف</span><b class="neg" id="s9">0</b></div>
-        <div class="total-btn"><span>صافي الدخل النهائي</span><b id="s10">0</b></div>
+    <div class="main-options">
+      <div class="option-card income" id="incomeCard">
+        <span class="icon">💰</span>
+        <h2>الإيرادات</h2>
+        <div class="total" id="incomeTotal">0 د.ع.</div>
       </div>
-    </section>
-    <section class="card hidden" id="chartCard" oncontextmenu="return false">
-      <div class="card-head">
-        <h2><i class="fa-solid fa-chart-column"></i> الحركة اليومية (مبيعات / مصاريف)</h2>
-        <div class="day-picker">
-          <button class="day-btn" id="dayBtn" title="اختر يوم"><i class="fa-regular fa-calendar"></i></button>
-          <div class="day-pop" id="dayPop">
-            <div class="day-pop-head">
-              <span>اختر يوماً محدداً</span>
-              <button id="dayClear">إلغاء</button>
-            </div>
-            <div class="day-grid" id="dayGrid"></div>
-          </div>
-        </div>
+      <div class="option-card expense" id="expenseCard">
+        <span class="icon">💸</span>
+        <h2>الصرفيات</h2>
+        <div class="total" id="expenseTotal">0 د.ع.</div>
       </div>
-      <p class="hint"><i class="fa-solid fa-hand-pointer"></i> انقر على عمود اليوم بالرسم أو اختر من الأيقونة 📅</p>
-      <div style="height:280px;margin-top:10px"><canvas id="chart"></canvas></div>
-    </section>
+    </div>
+
+    <div class="sub-categories" id="subCategories">
+      <div class="sub-title">
+        <span id="subTitle"></span>
+        <span class="back-link" id="backToMain">← رجوع للرئيسية</span>
+      </div>
+      <div id="subCategoriesList"></div>
+    </div>
+
+    <div class="transactions-section" id="transactionsSection">
+      <div class="transactions-header">
+        <h2 id="transactionsTitle"></h2>
+        <button class="back-btn" id="backBtn">← رجوع للتصنيفات</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>الاسم</th>
+              <th>التفاصيل</th>
+              <th>المبلغ</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsBody"></tbody>
+        </table>
+      </div>
+      <div class="transactions-total" id="transactionsTotal">
+        المجموع: 0 د.ع.
+      </div>
+    </div>
   </div>
+</div>
 
-  <section class="card hidden" id="expCard">
-    <div class="card-head"><h2><i class="fa-solid fa-layer-group"></i> تفاصيل المصاريف حسب الفئة (انقر للفتح)</h2></div>
-    <div id="expList"></div>
-  </section>
-</main>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">تفاصيل الحركة</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
 
-<div id="toast" class="toast hidden"></div>
+<div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const REPO='AHMEDBRZAN/asbakk';
-const $=s=>document.querySelector(s);
-const fmt=(n,d=0)=>(isFinite(n)?n:0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtShort=v=>v>=1e6?(v/1e6).toLocaleString('en-US',{maximumFractionDigits:1})+'M':v>=1e3?(v/1e3).toLocaleString('en-US',{maximumFractionDigits:0})+'K':v;
-const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const norm=s=>(s||'').replace(/\s+/g,'');
-function cleanName(s){return (s||'').replace(/[\u200E\u200F\u2066\u2067\u2068\u2069\u202A-\u202E\uFEFF]/g,'').trim();}
+const REPO = 'AHMEDBRZAN/asbakk';
+const FILE_NAME = 'تدقيق حسابات الجوهره.xlsx';
 
-const CATS=[["ايجار بناية","fa-building"],["كهرباء","fa-bolt"],["اشتراك مولد","fa-plug-circle-bolt"],["مصاريف مختلفة","fa-shapes"],["شراء ماء للمحل","fa-droplet"],["شراء قرطاسية متنوعة","fa-pen-ruler"],["شراء منظفات","fa-soap"],["شراء علاليك","fa-box-archive"],["مشتريات المحل","fa-cart-shopping"],["مكافئات تشجيعية","fa-gift"],["اجور نقل","fa-truck-fast"],["مشروبات ساخنة","fa-mug-hot"],["صيانة","fa-screwdriver-wrench"],["اعانة محتاجين","fa-hand-holding-heart"],["عمولة حوالات الشركات","fa-money-bill-transfer"],["زيادة ونقص صندوق","fa-scale-unbalanced"],["اجور الموظفين","fa-users"],["طعام الموظفين","fa-utensils"],["مصاريف تسويق وتطوير","fa-bullhorn"],["ايجار المخزن الخارجي","fa-warehouse"],["اجور توصيل البضاعة","fa-truck"],["اعلام ونشر الشركة","fa-rectangle-ad"]];
-const ALIAS={'طعامموظفين':'طعام الموظفين','اجورتوصيلبضاعة':'اجور توصيل البضاعة'};
+let allTransactions = [];
+let filteredTransactions = [];
+let currentPeriod = { start: null, end: null };
+let currentView = { type: null, category: null };
+let currentTransactionsList = [];
 
-const KNOWN_FILES=[
- '\u200E\u2068الشهر ال 6\u2069.xlsx','الشهر ال 6.xlsx',
- '\u200E\u2068الشهر 6 فقط\u2069.xlsx','الشهر 6 فقط.xlsx',
- '\u200E\u2068الشهر - 6 - فقط\u2069.xlsx','الشهر - 6 - فقط.xlsx','الشهر 6.xlsx'
-];
-const rawUrl=n=>'https://raw.githubusercontent.com/'+REPO+'/main/'+encodeURI(n);
-
-let RAW=null, CURRENT=null, CHART=null;
-let chartFrom=null, chartTo=null, selectedDay=null;
-let popCloseTimer=null;
-
-function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open('asbakk-db',1);q.onupgradeneeded=()=>{const db=q.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
-async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
-async function idbGet(id){const db=await idbOpen();return new Promise((res,rej)=>{const r=db.transaction('files','readonly').objectStore('files').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-async function idbPut(item){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(item);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
-async function idbDel(id){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
-
-function ov(t){$('#ovText').textContent=t;$('#overlay').classList.remove('hidden');}
-function ovHide(){$('#overlay').classList.add('hidden');}
-function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add('hidden'),2600);}
-function toNum(v){if(typeof v==='number')return v;if(v==null)return 0;const n=parseFloat(String(v).replace(/[,،\s]/g,''));return isFinite(n)?n:0;}
-function toDate(v){if(v instanceof Date)return v;if(typeof v==='number')return new Date(Math.round((v-25569)*864e5));const m=String(v).match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);const d=new Date(v);return isNaN(d)?null:d;}
-function rowsFrom(ws){if(!ws)return[];return XLSX.utils.sheet_to_json(ws,{defval:null}).map(r=>({date:toDate(r['التاريخ']),voucher:r['رقم السند'],type:r['النوع'],debit:toNum(r['مدين']),credit:toNum(r['دائن']),stmt:r['البيان']||'',acc:(r['اسم الحساب']||'').trim()})).filter(r=>r.date);}
-function wbToRAW(wb){
-  const find=k=>{const n=norm(k);let name=wb.SheetNames.find(s=>norm(s)===n);if(!name)name=wb.SheetNames.find(s=>norm(s).includes(n));return name?wb.Sheets[name]:null;};
-  const costRows=rowsFrom(find('تكلفة'));
-  return{sales:rowsFrom(find('المبيعات')),returns:rowsFrom(find('المردودات')),discounts:rowsFrom(find('الحسم')),
-    cogs:costRows.filter(r=>!norm(r.acc).includes('ايرادات')&&!norm(r.acc).includes('إيرادات')),
-    otherIncome:costRows.filter(r=>norm(r.acc).includes('ايرادات')||norm(r.acc).includes('إيرادات')),
-    expenses:rowsFrom(find('المصاريف'))};
-}
-function serializeRAW(){const o={};for(const k in RAW)o[k]=RAW[k].map(r=>[iso(r.date),r.voucher,r.type,r.debit,r.credit,r.stmt,r.acc]);return o;}
-function deserializeRAW(o){const m=r=>({date:toDate(r[0]),voucher:r[1],type:r[2],debit:r[3],credit:r[4],stmt:r[5],acc:r[6]});const o2={};for(const k in o)o2[k]=(o[k]||[]).map(m);return o2;}
-
-function computeStats(from,to){
-  const inR=r=>r.date>=from&&r.date<=to;
-  const S=RAW.sales.filter(inR),R=RAW.returns.filter(inR),D=RAW.discounts.filter(inR),C=RAW.cogs.filter(inR),E=RAW.expenses.filter(inR),OI=(RAW.otherIncome||[]).filter(inR);
-  const sum=(a,k)=>a.reduce((s,r)=>s+r[k],0);
-  const sales=sum(S,'credit'),ret=sum(R,'debit'),disc=sum(D,'debit')-sum(D,'credit');
-  const netSales=sales-ret-disc;
-  const cogs=sum(C,'debit')-sum(C,'credit');
-  const gross=netSales-cogs;
-  const otherIncome=sum(OI,'credit');
-  const lookup={};CATS.forEach(c=>lookup[norm(c[0])]=c[0]);
-  const catMap={};CATS.forEach(c=>catMap[c[0]]={name:c[0],icon:c[1],amt:0,rows:[]});
-  E.forEach(r=>{let key=ALIAS[norm(r.acc)]||lookup[norm(r.acc)];if(key&&catMap[key]){catMap[key].amt+=r.debit-r.credit;catMap[key].rows.push(r);}});
-  const expenses=CATS.reduce((s,c)=>s+catMap[c[0]].amt,0);
-  return{sales,ret,disc,netSales,cogs,gross,otherIncome,expenses,net:gross+otherIncome-expenses,catMap,counts:{s:S.length,r:R.length,d:D.length,c:C.length,e:E.length,oi:OI.length}};
-}
-function computeDaily(from,to){
-  const daily={};
-  RAW.sales.forEach(r=>{if(r.date>=from&&r.date<=to){const k=iso(r.date);(daily[k]=daily[k]||{s:0,e:0}).s+=r.credit;}});
-  RAW.expenses.forEach(r=>{if(r.date>=from&&r.date<=to){const k=iso(r.date);(daily[k]=daily[k]||{s:0,e:0}).e+=r.debit;}});
-  return daily;
-}
-function fullRange(){let min=null,max=null;for(const k in RAW)(RAW[k]||[]).forEach(r=>{if(!min||r.date<min)min=r.date;if(!max||r.date>max)max=r.date;});return[min,max];}
-function anim(el,val){const t0=performance.now();(function st(t){const p=Math.min(1,(t-t0)/800),e=1-Math.pow(1-p,3);el.textContent=fmt(val*e);if(p<1)requestAnimationFrame(st);})(t0);}
-
-function renderAll(){
-  if(!RAW||!chartFrom)return;
-  ['filterCard','kpis','stmtCard','chartCard','expCard'].forEach(id=>$('#'+id).classList.remove('hidden'));
-  const selKey=selectedDay?iso(selectedDay):null;
-  const st=computeStats(selectedDay||chartFrom,selectedDay||chartTo);
-  anim($('#kSales'),st.sales);$('#kSalesS').textContent=st.counts.s+' فاتورة';
-  anim($('#kRet'),st.ret);$('#kRetS').textContent=st.counts.r+' سند';
-  anim($('#kDisc'),st.disc);$('#kDiscS').textContent=st.counts.d+' سند';
-  anim($('#kNet'),st.netSales);anim($('#kCogs'),st.cogs);anim($('#kGross'),st.gross);
-  anim($('#kOther'),st.otherIncome);$('#kOtherS').textContent=st.counts.oi+' قيد إيرادات';
-  anim($('#kExp'),st.expenses);$('#kExpS').textContent=st.counts.e+' سند';
-  anim($('#kNetInc'),st.net);
-  $('#s1').textContent=fmt(st.sales);$('#s2').textContent=fmt(st.ret);$('#s3').textContent=fmt(st.disc);
-  $('#s4').textContent=fmt(st.netSales);$('#s5').textContent=fmt(st.cogs);$('#s6').textContent=fmt(st.gross);
-  $('#s7').textContent=fmt(st.otherIncome);$('#s8').textContent=fmt(st.gross+st.otherIncome);$('#s9').textContent=fmt(st.expenses);$('#s10').textContent=fmt(st.net);
-  const rc=$('#rangeChip');
-  if(selKey){rc.textContent='📅 يوم محدد: '+selKey;rc.classList.add('day');}
-  else{rc.textContent='الفترة: '+iso(chartFrom)+' ← '+iso(chartTo);rc.classList.remove('day');}
-  $('#fileChip').textContent='الملف: '+CURRENT.name;
-  renderChart(selKey);renderDayButtonState(selKey);
-  const box=$('#expList');box.innerHTML='';
-  CATS.map(c=>st.catMap[c[0]]).sort((a,b)=>b.amt-a.amt).forEach(c=>{
-    const sumD=c.rows.reduce((s,r)=>s+r.debit,0),sumC=c.rows.reduce((s,r)=>s+r.credit,0);
-    const el=document.createElement('div');el.className='acc-item';
-    el.innerHTML='<button class="acc-head"><span class="acc-ic"><i class="fa-solid '+c.icon+'"></i></span><span class="acc-name">'+c.name+'</span><span class="acc-count">'+c.rows.length+' سند</span><b class="acc-total">'+fmt(c.amt)+'</b><i class="fa-solid fa-chevron-down acc-chev"></i></button>'+
-    '<div class="acc-body"><div class="acc-inner"><div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>السند</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>'+
-    c.rows.map(r=>'<tr><td>'+iso(r.date)+'</td><td>'+r.voucher+'</td><td>'+r.stmt+'</td><td class="amt">'+fmt(r.debit-r.credit)+'</td></tr>').join('')+
-    '</tbody><tfoot><tr><td colspan="3">مجموع مدين: '+fmt(sumD)+' − مجموع دائن: '+fmt(sumC)+'</td><td class="amt">'+fmt(c.amt)+'</td></tr></tfoot></table></div></div></div>';
-    el.querySelector('.acc-head').onclick=()=>el.classList.toggle('open');
-    box.appendChild(el);
-  });
+function formatNumber(num) {
+  return Number(num || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function renderChart(selKey){
-  const daily=computeDaily(chartFrom,chartTo);
-  const days=Object.keys(daily).sort();
-  const labels=days.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];});
-  const barColors=days.map(d=>d===selKey?'#f59e0b':'#4f46e5');
-  if(CHART)CHART.destroy();
-  if(typeof Chart==='undefined')return;
-  CHART=new Chart($('#chart'),{data:{labels:labels,datasets:[
-    {type:'bar',label:'المبيعات',data:days.map(d=>daily[d].s),backgroundColor:barColors,borderRadius:3,barPercentage:.95,categoryPercentage:.85},
-    {type:'line',label:'المصاريف',data:days.map(d=>daily[d].e),borderColor:'#e11d48',backgroundColor:'#e11d48',borderWidth:1.5,pointRadius:2,tension:.3}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:false,
-      onClick:(evt,els)=>{if(els.length&&els[0].datasetIndex===0){toggleDay(days[els[0].index]);}},
-      onHover:(evt,els)=>{if(evt.native&&evt.native.target)evt.native.target.style.cursor=(els.length&&els[0].datasetIndex===0)?'pointer':'default';},
-      plugins:{legend:{labels:{font:{family:'Cairo',weight:700,size:10},boxWidth:12,boxHeight:12}},
-        tooltip:{titleFont:{family:'Cairo'},bodyFont:{family:'Cairo'},callbacks:{title:items=>'اليوم: '+days[items[0].dataIndex],label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}},
-      scales:{x:{grid:{display:false},ticks:{font:{family:'Cairo',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:10}},
-        y:{grid:{color:'#eef1f8'},ticks:{font:{family:'Cairo',size:9},callback:v=>fmtShort(v)}}}}});
-}
-function toggleDay(key){
-  if(selectedDay&&iso(selectedDay)===key){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');}
-  else{selectedDay=new Date(key+'T00:00:00');$('#dFrom').value=key;$('#dTo').value=key;toast('تم تحديد يوم: '+key);}
-  renderAll();
-}
-function apply(){
-  if(!RAW)return;
-  let f=new Date($('#dFrom').value+'T00:00:00'),t=new Date($('#dTo').value+'T23:59:59');
-  if(isNaN(f)||isNaN(t))return;
-  if(f>t)[f,t]=[t,f];
-  chartFrom=f;chartTo=t;selectedDay=null;renderAll();
-}
-function resetRange(){
-  const[mn,mx]=fullRange();if(!mn)return;
-  chartFrom=mn;chartTo=mx;selectedDay=null;
-  $('#dFrom').value=iso(mn);$('#dTo').value=iso(mx);renderAll();
-}
-function renderDayButtonState(selKey){
-  const btn=$('#dayBtn');
-  if(selKey){btn.classList.add('on');btn.title='اليوم المحدد: '+selKey;}
-  else{btn.classList.remove('on');btn.title='اختر يوم';}
-}
-function openDayPop(){
-  if(!chartFrom||!chartTo)return;
-  const days=Object.keys(computeDaily(chartFrom,chartTo)).sort();
-  const selKey=selectedDay?iso(selectedDay):null;
-  const grid=$('#dayGrid');grid.innerHTML='';
-  if(!days.length){grid.innerHTML='<div class="day-pop-empty">لا توجد أيام في الفترة الحالية</div>';}
-  else days.forEach(d=>{
-    const b=document.createElement('button');
-    b.className='day-cell'+(d===selKey?' on':'');
-    b.textContent=+d.split('-')[2];
-    b.onclick=e=>{e.stopPropagation();toggleDay(d);closeDayPop();};
-    grid.appendChild(b);
-  });
-  $('#dayPop').classList.add('open');
-  clearTimeout(popCloseTimer);popCloseTimer=setTimeout(closeDayPop,3000);
-}
-function closeDayPop(){$('#dayPop').classList.remove('open');clearTimeout(popCloseTimer);}
-$('#dayBtn').onclick=e=>{e.stopPropagation();const p=$('#dayPop');if(p.classList.contains('open'))closeDayPop();else openDayPop();};
-$('#dayClear').onclick=e=>{e.stopPropagation();if(selectedDay){selectedDay=null;$('#dFrom').value=iso(chartFrom);$('#dTo').value=iso(chartTo);toast('تم إلغاء تحديد اليوم');renderAll();}closeDayPop();};
-document.addEventListener('click',e=>{const p=$('#dayPop'),b=$('#dayBtn');if(p&&p.classList.contains('open')&&!p.contains(e.target)&&!b.contains(e.target))closeDayPop();});
-document.addEventListener('mouseover',e=>{const p=$('#dayPop');if(p&&p.classList.contains('open')&&p.contains(e.target)){clearTimeout(popCloseTimer);popCloseTimer=setTimeout(closeDayPop,3000);}});
-
-async function renderLocal(){
-  const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
-  const box=$('#localList');
-  if(!items.length){box.innerHTML='<div class="empty">لا توجد ملفات محفوظة بعد — اضغط "تحديث من المستودع" ثم افتح ملفاً واحفظه</div>';return;}
-  box.innerHTML='';
-  items.forEach(it=>{
-    const m=it.meta||{};
-    const el=document.createElement('div');el.className='file-item';
-    el.innerHTML='<div class="fi-icon"><i class="fa-solid fa-file-excel"></i></div>'+
-    '<div class="fi-info"><b>'+it.name+'</b><span>حُفظ: '+new Date(it.savedAt).toLocaleString('ar-IQ')+'</span>'+
-    '<div class="fi-mini"><em>سجلات: <b>'+((m.counts&&(m.counts.s+m.counts.r+m.counts.d+m.counts.c+m.counts.e+m.counts.oi))||0)+'</b></em><em>مبيعات: <b>'+fmt(m.sales)+'</b></em><em>تكلفة: <b>'+fmt(m.cogs)+'</b></em><em>إيرادات: <b>'+fmt(m.otherIncome)+'</b></em><em>صافي: <b>'+fmt(m.net)+'</b></em></div></div>'+
-    '<div class="fi-actions"><button class="btn btn-sm btn-ghost" data-open="'+it.id+'"><i class="fa-solid fa-folder-open"></i> فتح</button><button class="btn btn-sm btn-danger" data-del="'+it.id+'"><i class="fa-solid fa-trash"></i></button></div>';
-    box.appendChild(el);
-  });
-  box.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{ov('جارٍ فتح الملف…');const it=await idbGet(b.dataset.open);RAW=deserializeRAW(it.data);CURRENT={name:it.name};ovHide();resetRange();toast('تم فتح: '+it.name);window.scrollTo({top:0,behavior:'smooth'});});
-  box.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذا الملف من القائمة المحلية؟'))return;await idbDel(b.dataset.del);renderLocal();toast('تم الحذف');});
+function formatDate(iso) {
+  if (!iso) return '—';
+  const parts = iso.split('-');
+  return parts[2] + '-' + parts[1] + '-' + parts[0];
 }
 
-/* ✅ الطريقة 3: فحص مباشر بأسماء معروفة بدون API */
-async function probeKnown(){
-  const found=[];
-  for(const n of KNOWN_FILES){
-    try{
-      const r=await fetch(rawUrl(n),{method:'HEAD'});
-      if(r.ok)found.push({name:cleanName(n),download_url:rawUrl(n),size:0});
-    }catch(e){}
+function parseDate(value) {
+  if (value instanceof Date && !isNaN(value)) {
+    const y = value.getFullYear();
+    const m = String(value.getMonth() + 1).padStart(2, '0');
+    const d = String(value.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
   }
-  return found;
-}
-async function refreshRepo(){
-  ov('جارٍ الاتصال بالمستودع…');
-  let items=[],apiFailed=false;
-  try{
-    const r=await fetch('https://api.github.com/repos/'+REPO+'/contents/');
-    if(r.ok)items=(await r.json()).filter(i=>i.name.endsWith('.xlsx')).map(i=>({name:cleanName(i.name),download_url:i.download_url,size:i.size||0}));
-    else apiFailed=true;
-  }catch(e){apiFailed=true;}
-  if(!items.length){
-    try{
-      const r2=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');
-      if(r2.ok){const j=await r2.json();items=(j.tree||[]).filter(i=>i.path&&i.path.endsWith('.xlsx')).map(i=>({name:cleanName(i.path.split('/').pop()),download_url:rawUrl(i.path),size:i.size||0}));}
-      else apiFailed=true;
-    }catch(e){apiFailed=true;}
+  if (typeof value === 'number' && value > 20000) {
+    const date = new Date(Math.round((value - 25569) * 86400000));
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
   }
-  if(!items.length)items=await probeKnown();
-  const box=$('#repoList');$('#repoCard').classList.remove('hidden');
-  if(!items.length){
-    box.innerHTML='<div class="empty">'+(apiFailed?'تعذّر الاتصال بالمستودع (حد الطلبات) — أعد المحاولة بعد دقيقة':'لا توجد ملفات Excel في المستودع')+'</div>';
-    ovHide();return[];
-  }
-  box.innerHTML='';
-  items.forEach(f=>{
-    const el=document.createElement('div');el.className='file-item';
-    el.innerHTML='<div class="fi-icon repo"><i class="fa-brands fa-github"></i></div><div class="fi-info"><b>'+f.name+'</b><span>'+(f.size?(f.size/1048576).toFixed(2)+' MB':'')+'</span></div><div class="fi-actions"><button class="btn btn-sm btn-indigo" data-url="'+f.download_url+'" data-n="'+f.name+'"><i class="fa-solid fa-download"></i> فتح</button></div>';
-    box.appendChild(el);
-  });
-  box.querySelectorAll('[data-url]').forEach(b=>b.onclick=async()=>{ov('جارٍ تنزيل الملف من المستودع…');await openURL(b.dataset.url,b.dataset.n);});
-  ovHide();toast('تم تحديث قائمة المستودع: '+items.length+' ملف');
-  return items;
+  const str = String(value || '').trim();
+  if (!str) return null;
+  
+  const converted = str.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+  
+  let match = converted.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (match) return match[1] + '-' + match[2].padStart(2, '0') + '-' + match[3].padStart(2, '0');
+  
+  match = converted.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if (match) return match[3] + '-' + match[2].padStart(2, '0') + '-' + match[1].padStart(2, '0');
+  
+  const date = new Date(converted);
+  if (isNaN(date)) return null;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dd;
 }
-async function openURL(url,name){
-  try{
-    if(typeof XLSX==='undefined')throw new Error('مكتبة Excel غير محملة — حدّث الصفحة');
-    let buf=null;
-    const tries=[url,rawUrl(KNOWN_FILES[0]),rawUrl(KNOWN_FILES[1]),rawUrl(KNOWN_FILES[3])];
-    for(const u of tries){if(!u)continue;try{const r=await fetch(u);if(r.ok){buf=await r.arrayBuffer();break;}}catch(e){}}
-    if(!buf)throw new Error('تعذر التنزيل');
-    const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
-    RAW=wbToRAW(wb);CURRENT={name:cleanName(name)};
-    ovHide();resetRange();
-    toast('تم فتح الملف — اضغط "حفظ الملف" للاحتفاظ به محلياً');
-    window.scrollTo({top:0,behavior:'smooth'});
-  }catch(e){ovHide();toast('فشل فتح الملف: '+((e&&e.message)?e.message:'تحقق من الإنترنت'));}
-}
-$('#btnRepo').onclick=refreshRepo;
-$('#btnApply').onclick=apply;
-$('#btnFull').onclick=resetRange;
-$('#btnSave').onclick=async()=>{
-  if(!RAW||!CURRENT){toast('لا يوجد ملف مفتوح للحفظ');return;}
-  const[mn,mx]=fullRange();const st=computeStats(mn,mx);
-  const item={id:CURRENT.name,name:CURRENT.name,savedAt:new Date().toISOString(),data:serializeRAW(),
-    meta:{sales:st.sales,ret:st.ret,disc:st.disc,cogs:st.cogs,otherIncome:st.otherIncome,expenses:st.expenses,net:st.net,counts:st.counts}};
-  try{await idbPut(item);await renderLocal();toast('✔ تم حفظ "'+CURRENT.name+'" في قائمة الملفات');}
-  catch(e){toast('تعذّر الحفظ');}
-};
 
-(async function init(){
-  try{
-    const items=(await idbAll()).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
-    await renderLocal();
-    if(items.length){RAW=deserializeRAW(items[0].data);CURRENT={name:items[0].name};resetRange();}
-    else{const files=await refreshRepo();if(files&&files.length)await openURL(files[0].download_url,files[0].name);}
-  }catch(e){}
-  ovHide();
-})();
+function parseAmount(value) {
+  if (typeof value === 'number') return value;
+  const str = String(value || '').replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[^\d.\-]/g, '');
+  const num = parseFloat(str);
+  return isNaN(num) ? NaN : num;
+}
+
+function showToast(message, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() { toast.classList.remove('show'); }, 3000);
+}
+
+async function loadData() {
+  try {
+    const url = 'https://raw.githubusercontent.com/' + REPO + '/main/' + encodeURIComponent(FILE_NAME);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('فشل تحميل الملف');
+    
+    const buffer = await response.arrayBuffer();
+    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
+    
+    const sheetName = workbook.SheetNames[0];
+    const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: true });
+    
+    parseData(rawData);
+    document.getElementById('loadingView').style.display = 'none';
+    document.getElementById('periodSection').style.display = 'block';
+    document.getElementById('fileStatus').textContent = '✓ تم تحميل ' + allTransactions.length + ' حركة';
+  } catch (error) {
+    console.error(error);
+    showToast('فشل تحميل البيانات - تأكد من وجود الملف في المستودع', true);
+    document.getElementById('fileStatus').textContent = '✗ خطأ في التحميل';
+  }
+}
+
+function parseData(rawData) {
+  let headerRow = -1;
+  let headers = [];
+  
+  for (let r = 0; r < Math.min(30, rawData.length); r++) {
+    const row = rawData[r] || [];
+    let score = 0;
+    row.forEach(function(cell) {
+      const str = String(cell || '').trim();
+      if (str.indexOf('الوصل') >= 0) score++;
+      if (str.indexOf('التاريخ') >= 0) score++;
+      if (str.indexOf('النوع') >= 0 || str.indexOf('الصنف') >= 0) score++;
+      if (str.indexOf('الاسم') >= 0) score++;
+      if (str.indexOf('المبلغ') >= 0) score++;
+    });
+    if (score >= 3) {
+      headerRow = r;
+      headers = row.map(function(x) { return String(x || '').trim(); });
+      break;
+    }
+  }
+  
+  let colSeq = -1, colReceipt = -1, colDate = -1, colCat = -1, colName = -1, colDetails = -1, colExpense = -1, colIncome = -1;
+  
+  if (headerRow >= 0) {
+    headers.forEach(function(h, i) {
+      if (colSeq < 0 && /^ت$|تسلسل/.test(h)) colSeq = i;
+      if (colReceipt < 0 && /الوصل/.test(h)) colReceipt = i;
+      if (colDate < 0 && /التاريخ/.test(h)) colDate = i;
+      if (colCat < 0 && /النوع|الصنف/.test(h)) colCat = i;
+      if (colName < 0 && /الاسم/.test(h)) colName = i;
+      if (colDetails < 0 && /التفاصيل/.test(h)) colDetails = i;
+      if (colExpense < 0 && /المبلغ\s*الصرف|صرف/.test(h)) colExpense = i;
+      if (colIncome < 0 && /المبلغ\s*الايراد|ايراد/.test(h)) colIncome = i;
+    });
+  }
+  
+  for (let r = headerRow + 1; r < rawData.length; r++) {
+    const row = rawData[r] || [];
+    const cat = String(row[colCat] || '').trim();
+    const rawReceipt = String(row[colReceipt] || '').trim();
+    
+    if (!cat || cat.indexOf('النوع') >= 0 || cat.indexOf('الصنف') >= 0) continue;
+    if (rawReceipt.indexOf('الوصل') >= 0) continue;
+    
+    const name = String(row[colName] || '').trim();
+    if (/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(cat) || /اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(name)) continue;
+    
+    const expenseAmount = parseAmount(row[colExpense]);
+    const incomeAmount = parseAmount(row[colIncome]);
+    
+    let amount = NaN;
+    let type = '';
+    
+    if (!isNaN(incomeAmount) && incomeAmount > 0) {
+      amount = incomeAmount;
+      type = 'income';
+    } else if (!isNaN(expenseAmount) && expenseAmount > 0) {
+      amount = expenseAmount;
+      type = 'expense';
+    } else {
+      continue;
+    }
+    
+    const date = parseDate(row[colDate]);
+    if (!date) continue;
+    
+    const receiptMatch = rawReceipt.match(/\d{2,6}/);
+    const receipt = receiptMatch ? receiptMatch[0] : rawReceipt;
+    
+    let subCategory = '';
+    if (/سحب/.test(cat)) {
+      type = 'withdraw';
+      subCategory = 'سحب المبالغ';
+    } else if (/قبض/.test(cat)) {
+      subCategory = 'قبض المبالغ';
+    } else if (/تنازل/.test(cat)) {
+      subCategory = 'ايراد تنازل';
+    } else if (/دفعات\s*المستفيدين/.test(cat)) {
+      subCategory = 'دفعات المستفيدين';
+    } else if (/صرفيات\s*الشركة|شركة/.test(cat)) {
+      subCategory = 'صرفيات الشركة';
+    } else if (/صرفيات\s*الموقع|موقع/.test(cat)) {
+      subCategory = 'صرفيات الموقع';
+    } else if (/رواتب/.test(cat)) {
+      subCategory = 'رواتب الموظفين';
+    } else {
+      subCategory = cat;
+    }
+    
+    allTransactions.push({
+      seq: colSeq >= 0 ? String(row[colSeq] || '').trim() : String(r - headerRow),
+      receipt: receipt,
+      date: date,
+      category: subCategory,
+      type: type,
+      name: name || '—',
+      details: colDetails >= 0 ? String(row[colDetails] || '').trim() : '',
+      amount: amount
+    });
+  }
+  
+  allTransactions.sort(function(a, b) { return a.date.localeCompare(b.date); });
+}
+
+function filterTransactions() {
+  filteredTransactions = allTransactions.filter(function(tx) {
+    if (!currentPeriod.start || !currentPeriod.end) return true;
+    return tx.date >= currentPeriod.start && tx.date <= currentPeriod.end;
+  });
+}
+
+function calculateTotals() {
+  const income = filteredTransactions.filter(function(t) { return t.type === 'income'; });
+  const expense = filteredTransactions.filter(function(t) { return t.type === 'expense'; });
+  const withdraw = filteredTransactions.filter(function(t) { return t.type === 'withdraw'; });
+  
+  return {
+    income: { amount: income.reduce(function(s, t) { return s + t.amount; }, 0), count: income.length },
+    expense: { amount: expense.reduce(function(s, t) { return s + t.amount; }, 0), count: expense.length },
+    withdraw: { amount: withdraw.reduce(function(s, t) { return s + t.amount; }, 0), count: withdraw.length }
+  };
+}
+
+function updateDashboard() {
+  const totals = calculateTotals();
+  
+  document.getElementById('totalIncome').textContent = formatNumber(totals.income.amount);
+  document.getElementById('totalExpense').textContent = formatNumber(totals.expense.amount);
+  document.getElementById('totalWithdraw').textContent = formatNumber(totals.withdraw.amount);
+  
+  const net = totals.income.amount - totals.expense.amount - totals.withdraw.amount;
+  const netEl = document.getElementById('netAmount');
+  netEl.textContent = formatNumber(net);
+  netEl.style.color = net >= 0 ? 'var(--income)' : 'var(--expense)';
+  
+  document.getElementById('incomeCount').textContent = totals.income.count + ' حركة';
+  document.getElementById('expenseCount').textContent = totals.expense.count + ' حركة';
+  document.getElementById('withdrawCount').textContent = totals.withdraw.count + ' حركة';
+  
+  document.getElementById('incomeTotal').textContent = formatNumber(totals.income.amount) + ' د.ع.';
+  document.getElementById('expenseTotal').textContent = formatNumber(totals.expense.amount + totals.withdraw.amount) + ' د.ع.';
+  
+  let periodLabel = 'كامل الفترة';
+  if (currentPeriod.start && currentPeriod.end) {
+    if (currentPeriod.start === currentPeriod.end) {
+      periodLabel = 'اليوم: ' + formatDate(currentPeriod.start);
+    } else {
+      periodLabel = 'من ' + formatDate(currentPeriod.start) + ' إلى ' + formatDate(currentPeriod.end);
+    }
+  }
+  document.getElementById('periodLabel').textContent = periodLabel;
+}
+
+function showSubCategories(type) {
+  currentView.type = type;
+  
+  const titles = { income: '💰 الإيرادات', expense: '💸 الصرفيات' };
+  document.getElementById('subTitle').textContent = titles[type];
+  
+  const categories = {};
+  filteredTransactions.filter(function(t) { return t.type === type; }).forEach(function(t) {
+    if (!categories[t.category]) {
+      categories[t.category] = { amount: 0, count: 0 };
+    }
+    categories[t.category].amount += t.amount;
+    categories[t.category].count++;
+  });
+  
+  const list = document.getElementById('subCategoriesList');
+  list.innerHTML = '';
+  
+  const sorted = Object.keys(categories).sort(function(a, b) {
+    return categories[b].amount - categories[a].amount;
+  });
+  
+  if (sorted.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد حركات في هذه الفترة</div>';
+  } else {
+    sorted.forEach(function(cat) {
+      const div = document.createElement('div');
+      div.className = 'sub-category ' + type;
+      div.onclick = function() { showTransactions(cat, type); };
+      div.innerHTML = '<div class="sub-category-header">' +
+        '<h3>' + cat + '</h3>' +
+        '<div class="sub-category-total">' + formatNumber(categories[cat].amount) + ' د.ع.</div>' +
+        '</div>' +
+        '<div class="sub-category-count">' + categories[cat].count + ' حركة</div>';
+      list.appendChild(div);
+    });
+  }
+  
+  document.getElementById('subCategories').classList.add('show');
+  document.getElementById('transactionsSection').classList.remove('show');
+}
+
+function showTransactions(category, type) {
+  currentView.category = category;
+  
+  const transactions = filteredTransactions.filter(function(t) {
+    return t.category === category && t.type === type;
+  });
+  
+  currentTransactionsList = transactions;
+  
+  document.getElementById('transactionsTitle').textContent = category;
+  
+  const tbody = document.getElementById('transactionsBody');
+  tbody.innerHTML = '';
+  
+  if (transactions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد حركات</td></tr>';
+  } else {
+    transactions.forEach(function(tx, i) {
+      const tr = document.createElement('tr');
+      tr.onclick = function() { showTransactionDetails(i); };
+      tr.innerHTML = '<td class="date">' + formatDate(tx.date) + '</td>' +
+        '<td>' + tx.name + '</td>' +
+        '<td class="details">' + (tx.details || '—') + '</td>' +
+        '<td class="amount">' + formatNumber(tx.amount) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+  
+  const total = transactions.reduce(function(s, t) { return s + t.amount; }, 0);
+  document.getElementById('transactionsTotal').textContent = 'المجموع: ' + formatNumber(total) + ' د.ع.';
+  
+  document.getElementById('subCategories').classList.remove('show');
+  document.getElementById('transactionsSection').classList.add('show');
+  document.getElementById('transactionsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showTransactionDetails(index) {
+  const tx = currentTransactionsList[index];
+  if (!tx) return;
+  
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '<div class="detail-row">' +
+    '<span class="detail-label">رقم الوصل:</span>' +
+    '<span class="detail-value">' + (tx.receipt || '—') + '</span>' +
+    '</div>' +
+    '<div class="detail-row">' +
+    '<span class="detail-label">التاريخ:</span>' +
+    '<span class="detail-value">' + formatDate(tx.date) + '</span>' +
+    '</div>' +
+    '<div class="detail-row">' +
+    '<span class="detail-label">النوع:</span>' +
+    '<span class="detail-value">' + tx.category + '</span>' +
+    '</div>' +
+    '<div class="detail-row">' +
+    '<span class="detail-label">الاسم:</span>' +
+    '<span class="detail-value">' + (tx.name || '—') + '</span>' +
+    '</div>' +
+    '<div class="detail-row">' +
+    '<span class="detail-label">التفاصيل:</span>' +
+    '<span class="detail-value">' + (tx.details || '—') + '</span>' +
+    '</div>' +
+    '<div class="detail-row">' +
+    '<span class="detail-label">المبلغ:</span>' +
+    '<span class="detail-value ' + tx.type + '">' + formatNumber(tx.amount) + ' د.ع.</span>' +
+    '</div>';
+  
+  document.getElementById('modalTitle').textContent = '📋 تفاصيل الحركة';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+document.querySelectorAll('.period-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.period-btn').forEach(function(b) { b.classList.remove('active'); });
+    this.classList.add('active');
+    
+    const period = this.dataset.period;
+    const datePicker = document.getElementById('datePicker');
+    
+    if (period === 'custom') {
+      datePicker.classList.add('show');
+    } else {
+      datePicker.classList.remove('show');
+      
+      const today = new Date();
+      const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      
+      if (period === 'today') {
+        currentPeriod = { start: todayStr, end: todayStr };
+      } else if (period === 'month') {
+        const firstDay = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-01';
+        currentPeriod = { start: firstDay, end: todayStr };
+      } else {
+        currentPeriod = { start: null, end: null };
+      }
+      
+      filterTransactions();
+      updateDashboard();
+      document.getElementById('dashboard').classList.add('show');
+      document.getElementById('subCategories').classList.remove('show');
+      document.getElementById('transactionsSection').classList.remove('show');
+    }
+  });
+});
+
+document.getElementById('dateFrom').addEventListener('change', function() {
+  currentPeriod.start = this.value;
+  if (currentPeriod.start && currentPeriod.end) {
+    filterTransactions();
+    updateDashboard();
+    document.getElementById('dashboard').classList.add('show');
+    document.getElementById('subCategories').classList.remove('show');
+    document.getElementById('transactionsSection').classList.remove('show');
+  }
+});
+
+document.getElementById('dateTo').addEventListener('change', function() {
+  currentPeriod.end = this.value;
+  if (currentPeriod.start && currentPeriod.end) {
+    if (currentPeriod.end < currentPeriod.start) {
+      const temp = currentPeriod.start;
+      currentPeriod.start = currentPeriod.end;
+      currentPeriod.end = temp;
+      document.getElementById('dateFrom').value = currentPeriod.start;
+      document.getElementById('dateTo').value = currentPeriod.end;
+    }
+    filterTransactions();
+    updateDashboard();
+    document.getElementById('dashboard').classList.add('show');
+    document.getElementById('subCategories').classList.remove('show');
+    document.getElementById('transactionsSection').classList.remove('show');
+  }
+});
+
+document.getElementById('incomeCard').addEventListener('click', function() {
+  showSubCategories('income');
+});
+
+document.getElementById('expenseCard').addEventListener('click', function() {
+  showSubCategories('expense');
+});
+
+document.getElementById('backBtn').addEventListener('click', function() {
+  document.getElementById('transactionsSection').classList.remove('show');
+  document.getElementById('subCategories').classList.add('show');
+});
+
+document.getElementById('backToMain').addEventListener('click', function() {
+  document.getElementById('subCategories').classList.remove('show');
+  document.getElementById('transactionsSection').classList.remove('show');
+});
+
+document.getElementById('modalClose').addEventListener('click', function() {
+  document.getElementById('modalOverlay').classList.remove('show');
+});
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.remove('show');
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('modalOverlay').classList.remove('show');
+  }
+});
+
+loadData();
 </script>
 </body>
 </html>
