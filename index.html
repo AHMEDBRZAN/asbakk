@@ -109,12 +109,13 @@ input[type=file]{display:none}
 .cal-day.sel{background:var(--grn);color:#fff}
 
 .sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
-.s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh);transition:.2s;user-select:none;-webkit-user-select:none}
 .s-card .sl{font-size:10.5px;color:var(--mut);font-weight:600;margin-bottom:3px}
 .s-card .sv{font-family:'Changa';font-size:15px;font-weight:800;direction:ltr}
 .s-card.si .sv{color:var(--grn)}
 .s-card.so .sv{color:var(--red)}
 .s-card.sn .sv{color:var(--blue)}
+.s-card.lp{animation:pulse .6s infinite;border-color:var(--grn-br)}
 
 .sec-t{font-family:'Changa';font-size:15px;font-weight:700;color:var(--dark);margin:16px 0 10px;display:flex;align-items:center;gap:7px}
 .sec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
@@ -176,6 +177,39 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 
 .empty{text-align:center;padding:40px 16px;color:var(--mut)}
 .empty p{font-size:13px;font-weight:500}
+
+/* ═══ وضع المدير ═══ */
+.admin-box{width:min(460px,100%);max-height:90vh}
+.pwd-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:11px;font-family:'Changa';font-size:20px;font-weight:700;text-align:center;letter-spacing:8px;margin-bottom:14px;background:var(--bg);color:var(--dark);transition:.2s}
+.pwd-input:focus{outline:none;border-color:var(--blue);background:var(--blue-bg)}
+.pwd-input.err{border-color:var(--red);background:var(--red-bg);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.admin-hint{font-size:11px;color:var(--mut);text-align:center;margin-bottom:10px}
+.admin-btn{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.admin-btn:hover{background:#1d5bc4}
+.admin-btn:active{transform:scale(.98)}
+.admin-btn:disabled{opacity:.5;cursor:not-allowed}
+.admin-btn.sec{background:var(--bg);color:var(--dark);border:1.5px solid var(--border)}
+.admin-btn.sec:hover{background:var(--border)}
+.admin-btn.danger{background:var(--red)}
+.admin-btn.danger:hover{background:#c03030}
+.admin-grid{display:grid;gap:10px;margin-bottom:14px}
+.admin-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px}
+.admin-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-1px)}
+.admin-card:active{transform:scale(.98)}
+.admin-card .ic{width:44px;height:44px;border-radius:10px;background:var(--card);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.admin-card .tx b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
+.admin-card .tx span{font-size:11px;color:var(--mut)}
+.tok-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'IBM Plex Sans Arabic';font-size:12.5px;background:var(--bg);color:var(--dark);margin-bottom:12px;direction:ltr}
+.tok-input:focus{outline:none;border-color:var(--blue)}
+.tok-info{font-size:10.5px;color:var(--mut);margin-bottom:10px;padding:8px 10px;background:var(--blue-bg);border-radius:8px;border:1px solid var(--blue-br);line-height:1.6}
+.tok-info a{color:var(--blue);font-weight:600}
+.prog-box{margin-top:10px;display:none}
+.prog-box.vis{display:block}
+.prog-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--grn));border-radius:99px;transition:width .3s;width:0%}
+.prog-txt{font-size:11px;color:var(--mut);text-align:center;font-weight:600}
+.admin-status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 8px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);font-weight:700;margin-right:8px}
 
 @media(max-width:420px){.sum-row{grid-template-columns:1fr}.months-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -270,6 +304,60 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 <div class="m-bd" id="detB"></div>
 </div></div>
 
+<!-- ═══ نافذة طلب الرمز السري ═══ -->
+<div class="m-ov" id="pwdOv"><div class="m-box admin-box">
+<div class="m-hd"><h3>🔐 وضع المدير</h3><button class="m-x" id="pwdX">✕</button></div>
+<div class="m-bd">
+<div class="admin-hint">أدخل الرمز السري للوصول إلى أدوات الإدارة</div>
+<input type="password" class="pwd-input" id="pwdInput" placeholder="••••" maxlength="10" inputmode="numeric" autocomplete="off">
+<button class="admin-btn" id="pwdOk">دخول ←</button>
+</div>
+</div></div>
+
+<!-- ═══ نافذة لوحة المدير ═══ -->
+<div class="m-ov" id="admOv"><div class="m-box admin-box">
+<div class="m-hd">
+<h3>⚙️ لوحة الإدارة</h3>
+<button class="m-x" id="admX">✕</button>
+</div>
+<div class="m-bd">
+<div class="admin-hint">
+<span class="admin-status">● متصل</span>
+مستودع: <b style="color:var(--dark)">AHMEDBRZAN/asbakk</b>
+</div>
+
+<div class="admin-grid">
+<div class="admin-card" id="admUpload">
+<div class="ic">📂</div>
+<div class="tx"><b>رفع ملف Excel جديد</b><span>استبدال ملف الحسابات في المستودع</span></div>
+</div>
+<div class="admin-card" id="admUpdate">
+<div class="ic">💻</div>
+<div class="tx"><b>تحديث كود index.html</b><span>رفع نسخة جديدة من كود التطبيق</span></div>
+</div>
+</div>
+
+<div class="admin-hint" style="margin-top:6px">GitHub Token (يُحفظ محلياً):</div>
+<input type="password" class="tok-input" id="tokInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+<div class="tok-info">
+💡 لإنشاء Token: اذهب إلى 
+<a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Developer → Personal access tokens</a>
+ومنح صلاحية <b>repo</b>
+</div>
+
+<div class="admin-grid" style="margin-top:10px">
+<button class="admin-btn sec" id="admLogout">🚪 خروج من وضع المدير</button>
+</div>
+
+<div class="prog-box" id="progBox">
+<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+<div class="prog-txt" id="progTxt">جاري الرفع...</div>
+</div>
+</div>
+</div></div>
+
+<input type="file" id="admFileInput" accept=".xlsx,.xlsm,.xls" style="display:none">
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -278,7 +366,13 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 "use strict";
 
 var REPO="AHMEDBRZAN/asbakk";
+var XLSX_FILE="تدقيق حسابات الجوهره.xlsx";
+var HTML_FILE="index.html";
+var BRANCH="main";
+var ADMIN_PWD="97";
 var TX=[],PER={mode:"all",from:null,to:null},CUR=null;
+var IS_ADMIN=localStorage.getItem("js_admin")==="1";
+var GH_TOKEN=localStorage.getItem("js_gh_token")||"";
 
 function $(s){return document.querySelector(s)}
 function $$(s){return[].slice.call(document.querySelectorAll(s))}
@@ -288,7 +382,7 @@ function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]
 function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var _tt=null;
-function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},2800)}
+function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},3500)}
 
 var FILE_NAME="تدقيق حسابات الجوهره.xlsx";
 var LOAD_ATTEMPTS=0;
@@ -504,6 +598,7 @@ function catInfo(cat){
   if(/دفعات\s*المستفيدين/.test(cat))return{g:"in",k:"benef",l:"دفعات المستفيدين",i:"🏠"};
   if(/قبض/.test(cat))return{g:"in",k:"receipt",l:"قبض المبالغ",i:"💰"};
   if(/تنازل/.test(cat))return{g:"in",k:"transfer",l:"ايراد تنازل",i:"📄"};
+  if(/ايراد\s*دفعة\s*كهرباء|دفعة\s*كهرباء/.test(cat))return{g:"in",k:"elec",l:"ايراد دفعة كهرباء",i:"⚡"};
   if(/سحب/.test(cat))return{g:"out",k:"withdraw",l:"سحب المبالغ",i:"🏦"};
   if(/صرفيات\s*الشركة/.test(cat))return{g:"out",k:"company",l:"صرفيات الشركة",i:"🏢"};
   if(/صرفيات\s*الموقع/.test(cat))return{g:"out",k:"site",l:"صرفيات الموقع",i:"🏗️"};
@@ -523,7 +618,6 @@ function parse(buf){
   var ws=wb.Sheets[wb.SheetNames[0]];
   var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true})||[];
 
-  /* ═══ اكتشاف صف العناوين ═══ */
   var HR=-1,HD=[];
   for(var r=0;r<Math.min(30,raw.length);r++){
     var row=raw[r]||[],sc=0;
@@ -532,9 +626,6 @@ function parse(buf){
     if(sc>=3){HR=r;HD=row.map(function(x){return String(x==null?"":x).trim()});break}
   }
 
-  /* ═══ تحديد الأعمدة ═══
-     مبلغ الصرفيات / المبلغ الصرف  ← عمود الصرفيات
-     مبلغ إيرادات / المبلغ الايراد ← عمود الإيرادات */
   var iQ=-1,iR=-1,iD=-1,iC=-1,iN=-1,iDt=-1,iAO=-1,iAI=-1;
   if(HR>=0){for(var i=0;i<HD.length;i++){var h=HD[i];
     if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
@@ -557,11 +648,9 @@ function parse(buf){
     var name=iN>=0?String(rw[iN]==null?"":rw[iN]).trim():"";
     if(/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(cat)||/اجمالي|إجمالي|مجموع|المجموع|total|رصيد/.test(name))continue;
 
-    /* المبلغ من العمودين الرسميين */
     var aO=iAO>=0?bigNum(rw[iAO]):NaN;
     var aIn=iAI>=0?bigNum(rw[iAI]):NaN;
 
-    /* الملاحظات: نصوص خلايا المبلغ + العمود الإضافي */
     var notes=[];
     var aoT=iAO>=0?String(rw[iAO]==null?"":rw[iAO]).trim():"";
     if(aoT&&isNaN(bigNum(aoT)))notes.push(aoT);
@@ -574,7 +663,6 @@ function parse(buf){
 
     var ci=catInfo(cat);
 
-    /* القاعدة: الإيرادات من مبلغ إيرادات فقط — الصرفيات من مبلغ الصرفيات فقط */
     var amt;
     if(ci.g==="in"){amt=aIn;}
     else{amt=aO;}
@@ -735,9 +823,12 @@ function showDash(){
   nav("#scrDash","لوحة الحسابات");
 
   $("#sumRow").innerHTML=
-    '<div class="s-card si"><div class="sl">الإيرادات</div><div class="sv">'+money(tIn)+'</div></div>'+
+    '<div class="s-card si" id="sumAll"><div class="sl">الإيرادات</div><div class="sv">'+money(tIn)+'</div></div>'+
     '<div class="s-card so"><div class="sl">الصرفيات</div><div class="sv">'+money(tOut)+'</div></div>'+
     '<div class="s-card sn"><div class="sl">الصافي</div><div class="sv">'+money(tIn-tOut)+'</div></div>';
+
+  /* تفعيل الضغط المطول على بطاقة الإيرادات لوضع المدير */
+  bindLongPress($("#sumAll"));
 
   var cats={};
   rows.forEach(function(t){
@@ -797,7 +888,264 @@ function openDet(t){
 }
 $("#detX").onclick=function(){$("#detOv").classList.remove("vis")};
 $("#detOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
-document.addEventListener("keydown",function(e){if(e.key==="Escape")$("#detOv").classList.remove("vis")});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){
+  $("#detOv").classList.remove("vis");
+  $("#pwdOv").classList.remove("vis");
+  $("#admOv").classList.remove("vis");
+}});
+
+/* ════════════════════════════════════════════════
+   وضع المدير - Long Press + GitHub API
+   ════════════════════════════════════════════════ */
+
+var pressTimer=null,presTarget=null;
+function bindLongPress(el){
+  if(!el)return;
+  function start(e){
+    if(!IS_ADMIN){
+      presTarget=el;
+      el.classList.add("lp");
+      pressTimer=setTimeout(function(){
+        el.classList.remove("lp");
+        openPwdModal();
+      },600);
+    }
+  }
+  function cancel(){
+    clearTimeout(pressTimer);
+    if(presTarget)presTarget.classList.remove("lp");
+  }
+  el.addEventListener("mousedown",start);
+  el.addEventListener("touchstart",start,{passive:true});
+  el.addEventListener("mouseup",cancel);
+  el.addEventListener("mouseleave",cancel);
+  el.addEventListener("touchend",cancel);
+  el.addEventListener("touchcancel",cancel);
+}
+
+function openPwdModal(){
+  $("#pwdInput").value="";
+  $("#pwdInput").classList.remove("err");
+  $("#pwdOv").classList.add("vis");
+  setTimeout(function(){$("#pwdInput").focus()},200);
+}
+$("#pwdX").onclick=function(){$("#pwdOv").classList.remove("vis")};
+$("#pwdOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
+
+$("#pwdOk").onclick=checkPwd;
+$("#pwdInput").addEventListener("keydown",function(e){
+  if(e.key==="Enter")checkPwd();
+});
+function checkPwd(){
+  var v=$("#pwdInput").value.trim();
+  if(v===ADMIN_PWD){
+    IS_ADMIN=true;
+    localStorage.setItem("js_admin","1");
+    $("#pwdOv").classList.remove("vis");
+    openAdminPanel();
+    toast("✓ مرحباً أيها المدير",0);
+  }else{
+    $("#pwdInput").classList.add("err");
+    toast("✗ الرمز غير صحيح",1);
+    setTimeout(function(){$("#pwdInput").classList.remove("err")},400);
+    $("#pwdInput").value="";
+  }
+}
+
+function openAdminPanel(){
+  $("#tokInput").value=GH_TOKEN;
+  $("#progBox").classList.remove("vis");
+  $("#admOv").classList.add("vis");
+}
+$("#admX").onclick=function(){$("#admOv").classList.remove("vis")};
+$("#admOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
+
+$("#admLogout").onclick=function(){
+  IS_ADMIN=false;
+  localStorage.removeItem("js_admin");
+  $("#admOv").classList.remove("vis");
+  toast("تم الخروج من وضع المدير",0);
+};
+
+$("#tokInput").addEventListener("change",function(){
+  GH_TOKEN=this.value.trim();
+  if(GH_TOKEN){
+    localStorage.setItem("js_gh_token",GH_TOKEN);
+    toast("✓ تم حفظ التوكن",0);
+  }else{
+    localStorage.removeItem("js_gh_token");
+  }
+});
+
+/* ═══ GitHub API Functions ═══ */
+
+function ghHeaders(){
+  return{
+    "Authorization":"Bearer "+GH_TOKEN,
+    "Accept":"application/vnd.github.v3+json",
+    "Content-Type":"application/json",
+    "X-GitHub-Api-Version":"2022-11-28"
+  };
+}
+
+function ghGet(path){
+  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{
+    method:"GET",headers:ghHeaders()
+  }).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  });
+}
+
+function ghPut(path,content,sha,msg){
+  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{
+    method:"PUT",
+    headers:ghHeaders(),
+    body:JSON.stringify({
+      message:msg,
+      content:content,
+      branch:BRANCH,
+      sha:sha
+    })
+  }).then(function(r){
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.message||"HTTP "+r.status)});
+    return r.json();
+  });
+}
+
+function arrayBufferToBase64(buf){
+  var bytes=new Uint8Array(buf);
+  var bin="";
+  for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+function setProgress(pct,txt){
+  $("#progBox").classList.add("vis");
+  $("#progFill").style.width=pct+"%";
+  if(txt)$("#progTxt").textContent=txt;
+}
+function hideProgress(){
+  $("#progBox").classList.remove("vis");
+}
+
+function ensureToken(){
+  var t=$("#tokInput").value.trim();
+  if(t){
+    GH_TOKEN=t;
+    localStorage.setItem("js_gh_token",t);
+  }
+  if(!GH_TOKEN){
+    toast("⚠ يرجى إدخال GitHub Token أولاً",1);
+    return false;
+  }
+  return true;
+}
+
+/* ═══ رفع ملف Excel ═══ */
+$("#admUpload").onclick=function(){
+  if(!ensureToken())return;
+  if(!confirm("هل تريد رفع ملف Excel جديد واستبدال الملف الحالي في المستودع؟"))return;
+  $("#admFileInput").click();
+};
+
+$("#admFileInput").addEventListener("change",function(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  uploadExcel(file);
+  e.target.value="";
+});
+
+function uploadExcel(file){
+  setProgress(10,"جاري قراءة الملف...");
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    setProgress(30,"جاري فحص الملف الحالي...");
+    var b64=arrayBufferToBase64(ev.target.result);
+    
+    ghGet(encodeURIComponent(XLSX_FILE))
+      .then(function(info){
+        setProgress(50,"جاري الرفع إلى GitHub...");
+        return ghPut(
+          encodeURIComponent(XLSX_FILE),
+          b64,
+          info.sha,
+          "📂 تحديث ملف الحسابات: "+file.name
+        );
+      })
+      .catch(function(err){
+        if(err.message&&err.message.indexOf("404")>=0){
+          setProgress(50,"جاري إنشاء الملف لأول مرة...");
+          return ghPut(
+            encodeURIComponent(XLSX_FILE),
+            b64,
+            null,
+            "📂 إنشاء ملف الحسابات: "+file.name
+          );
+        }
+        throw err;
+      })
+      .then(function(){
+        setProgress(100,"✓ تم الرفع بنجاح!");
+        toast("✓ تم رفع الملف إلى GitHub — سيتم التحديث خلال ثوانٍ",0);
+        
+        setTimeout(function(){
+          hideProgress();
+          $("#admOv").classList.remove("vis");
+          LOAD_ATTEMPTS=0;
+          loadFile();
+        },1500);
+      })
+      .catch(function(err){
+        hideProgress();
+        console.error(err);
+        toast("✗ فشل الرفع: "+err.message,1);
+      });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ═══ تحديث كود index.html ═══ */
+$("#admUpdate").onclick=function(){
+  if(!ensureToken())return;
+  if(!confirm("هل تريد رفع كود index.html الحالي إلى المستودع؟"))return;
+  updateIndexHtml();
+};
+
+function updateIndexHtml(){
+  setProgress(20,"جاري تجهيز الكود...");
+  var html=document.documentElement.outerHTML;
+  var b64=btoa(unescape(encodeURIComponent(html)));
+  
+  setProgress(40,"جاري فحص الملف الحالي...");
+  ghGet(HTML_FILE)
+    .then(function(info){
+      setProgress(60,"جاري الرفع إلى GitHub...");
+      return ghPut(
+        HTML_FILE,
+        b64,
+        info.sha,
+        "💻 تحديث كود index.html"
+      );
+    })
+    .catch(function(err){
+      if(err.message&&err.message.indexOf("404")>=0){
+        setProgress(60,"جاري إنشاء الملف لأول مرة...");
+        return ghPut(HTML_FILE,b64,null,"💻 إنشاء index.html");
+      }
+      throw err;
+    })
+    .then(function(){
+      setProgress(100,"✓ تم تحديث الكود بنجاح!");
+      toast("✓ تم تحديث index.html في GitHub",0);
+      setTimeout(hideProgress,2000);
+    })
+    .catch(function(err){
+      hideProgress();
+      console.error(err);
+      toast("✗ فشل التحديث: "+err.message,1);
+    });
+}
 
 loadFile();
 })();
