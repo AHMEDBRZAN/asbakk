@@ -1,58 +1,53 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
-">
-<me<head>
-<meta charset="UTF-
-8ta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-;800&family=IBM+Plex+Sans+Ara<title>حسابات الجوهرة</title>
-<link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;70
-0bic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>حسابات الجوهرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
 --bg:#f5f6fa;--card:#fff;--border:#e4e8f1;
--bg:#fef9ec;--gold-br:#f5dfa5;
---blue:#2b6de--dark:#1b2437;--text:#2c3a4f;--mut:#7e8da3;
+--dark:#1b2437;--text:#2c3a4f;--mut:#7e8da3;
 --grn:#0d9668;--grn-bg:#eafaf3;--grn-br:#a3e8cd;
 --red:#d63c3c;--red-bg:#fdf0f0;--red-br:#f5c2c2;
---gold:#c88a17;--gol
-d0;--blue-bg:#edf4fe;--blue-br:#b8d4f8;
+--gold:#c88a17;--gold-bg:#fef9ec;--gold-br:#f5dfa5;
+--blue:#2b6de0;--blue-bg:#edf4fe;--blue-br:#b8d4f8;
 --purp:#7440d4;--purp-bg:#f4f0fd;--purp-br:#d5c6f5;
 --r:14px;--sh:0 2px 16px rgba(27,36,55,.05)
 }
 html{touch-action:manipulation}
 body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-frames pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes shake{0%,100%{transform:transl@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes popIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
-@ke
-yateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
 .loading{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:999;transition:opacity .4s,visibility .4s}
 .loading.done{opacity:0;visibility:hidden}
 .ld-box{text-align:center;max-width:360px;padding:20px}
 .ld-ring{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--grn);border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 16px}
-t-size:36px;margin-bottom:8px}
-.upload-panel p{font-size:12.5px;color:var(--.ld-box p{font-size:13px;color:var(--mut);font-weight:500;margin-bottom:6px}
+.ld-box p{font-size:13px;color:var(--mut);font-weight:500;margin-bottom:6px}
 .ld-status{font-size:11px;color:var(--grn);font-weight:600;animation:pulse 1.5s infinite}
 .ld-error{color:var(--red);font-weight:600;font-size:12px;margin-top:10px}
 .upload-panel{background:var(--card);border:2px dashed var(--border);border-radius:14px;padding:24px 20px;margin-top:16px;text-align:center;display:none}
 .upload-panel.vis{display:block;animation:fadeUp .3s}
-.upload-panel .ico{fo
-nmut);margin-bottom:14px}
+.upload-panel .ico{font-size:36px;margin-bottom:8px}
+.upload-panel p{font-size:12.5px;color:var(--mut);margin-bottom:14px}
 .upload-btn{display:inline-block;padding:11px 22px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer}
 input[type=file]{display:none}
 .retry-btn{margin-top:10px;padding:9px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;font-family:'Changa';font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer}
 
 .hdr{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60;padding:0 16px;box-shadow:0 1px 6px rgba(0,0,0,.03)}
-isplay:flex}
-.hdr-refresh{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);.hdr-in{max-width:640px;margin:auto;height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hdr-in{max-width:640px;margin:auto;height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .hdr h1{font-family:'Changa';font-size:17px;font-weight:700;color:var(--dark);white-space:nowrap}
 .hdr-badge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);white-space:nowrap}
 .hdr-back{display:none;align-items:center;gap:4px;background:none;border:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--mut);cursor:pointer;padding:6px 10px;border-radius:8px}
-.hdr-back.vis{
-dcursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut)}
+.hdr-back.vis{display:flex}
+.hdr-refresh{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut)}
 .hdr-refresh.spin .r-ico{animation:spin .8s linear}
 
 .wrap{max-width:640px;margin:auto;padding:18px 16px 50px}
@@ -64,7 +59,7 @@ dcursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut)}
 .p-card .sub{font-size:12.5px;color:var(--mut);margin-bottom:20px}
 .p-opts{display:grid;gap:8px}
 .p-opt{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;transition:.15s;background:var(--card)}
--size:11.5px;font-weight:700;color:var(--mut);margin:10px 0 .p-opt.sel{border-color:var(--grn);background:var(--grn-bg)}
+.p-opt.sel{border-color:var(--grn);background:var(--grn-bg)}
 .p-opt .pi{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--bg);flex-shrink:0}
 .p-opt.sel .pi{background:var(--grn);color:#fff}
 .p-opt .pt b{display:block;font-size:13.5px;font-weight:600}
@@ -74,8 +69,7 @@ dcursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut)}
 .btn-go{width:100%;margin-top:18px;padding:13px;background:var(--grn);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:15.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 14px rgba(13,150,104,.2)}
 .p-info{margin-top:12px;text-align:center;font-size:11.5px;color:var(--mut)}
 
-.pick-lbl{fon
-t6px}
+.pick-lbl{font-size:11.5px;font-weight:700;color:var(--mut);margin:10px 0 6px}
 .pick-lbl:first-child{margin-top:0}
 .years-row{display:flex;gap:6px;flex-wrap:wrap}
 .yr-btn{padding:8px 18px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer}
@@ -85,7 +79,7 @@ t6px}
 .mo-btn.sel{background:var(--grn);border-color:var(--grn);color:#fff}
 .mo-btn.off{opacity:.4}
 .mo-btn .dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--grn)}
-r(--bg);cursor:pointer;font-size:.mo-btn.sel .dot{background:#fff}
+.mo-btn.sel .dot{background:#fff}
 
 .range-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .range-btn{padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center}
@@ -94,8 +88,7 @@ r(--bg);cursor:pointer;font-size:.mo-btn.sel .dot{background:#fff}
 .cal-panel{margin-top:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);padding:10px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-head .t{font-family:'Changa';font-size:14px;font-weight:700;direction:ltr}
-.cal-nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:v
-a13px;color:var(--mut)}
+.cal-nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:13px;color:var(--mut)}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-day{padding:9px 0;border:none;border-radius:8px;background:transparent;font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer}
 .cal-day.inr{background:var(--grn-bg);color:var(--grn)}
@@ -108,7 +101,7 @@ a13px;color:var(--mut)}
 .s-card .sv{font-family:'Changa';font-size:15px;font-weight:800;direction:ltr}
 .s-card.si .sv{color:var(--grn)}
 .s-card.so .sv{color:var(--red)}
-var(--red-bg)}.c-card.co .c-tot{c.s-card.sn .sv{color:var(--blue)}
+.s-card.sn .sv{color:var(--blue)}
 
 .sec-t{font-family:'Changa';font-size:15px;font-weight:700;color:var(--dark);margin:16px 0 10px;display:flex;align-items:center;gap:7px}
 .sec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
@@ -121,8 +114,7 @@ var(--red-bg)}.c-card.co .c-tot{c.s-card.sn .sv{color:var(--blue)}
 .c-info span{font-size:11px;color:var(--mut)}
 .c-tot{font-family:'Changa';font-size:14px;font-weight:800;direction:ltr;white-space:nowrap}
 .c-card.ci .c-ico{background:var(--grn-bg)}.c-card.ci .c-tot{color:var(--grn)}
-.c-card.co .c-ico{background
-:olor:var(--red)}
+.c-card.co .c-ico{background:var(--red-bg)}.c-card.co .c-tot{color:var(--red)}
 .c-card.cw .c-ico{background:var(--gold-bg)}.c-card.cw .c-tot{color:var(--gold)}
 .c-card.cs .c-ico{background:var(--purp-bg)}.c-card.cs .c-tot{color:var(--purp)}
 
@@ -135,8 +127,7 @@ thead{background:var(--dark)}
 thead th{color:#fff;font-size:11px;font-weight:600;padding:11px 8px;text-align:center;white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--border);cursor:pointer}
 tbody tr:nth-child(even){background:#fafbfe}
-0px 60px rgba(0,0,0,.18)}
-.m-hd{padding:1tbody tr:active{background:var(--grn-bg)}
+tbody tr:active{background:var(--grn-bg)}
 tbody td{padding:11px 8px;font-size:12.5px;text-align:center;vertical-align:middle}
 td.td-name{text-align:right;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .td-amt{font-family:'Changa';font-weight:700;font-size:13px;direction:ltr;white-space:nowrap}
@@ -147,8 +138,8 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 
 .m-ov{position:fixed;inset:0;background:rgba(27,36,55,.45);backdrop-filter:blur(3px);z-index:100;display:none;place-items:center;padding:16px}
 .m-ov.vis{display:grid}
-.m-box{background:var(--card);border-radius:18px;width:min(420px,100%);max-height:85vh;overflow:auto;animation:popIn .25s;box-shadow:0 
-26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:2}
+.m-box{background:var(--card);border-radius:18px;width:min(420px,100%);max-height:85vh;overflow:auto;animation:popIn .25s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.m-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:2}
 .m-hd h3{font-family:'Changa';font-size:15px;font-weight:700}
 .m-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:13px;color:var(--mut)}
 .m-bd{padding:18px}
@@ -159,19 +150,19 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 .d-row .dv.ltr{direction:ltr;font-family:'Changa';font-weight:700}
 .d-amt-box{text-align:center;padding:18px 0 6px;margin-top:10px;border-top:2px dashed var(--border)}
 .d-amt-box .lbl{font-size:11.5px;color:var(--mut);margin-bottom:5px}
-or:pointer;display:flex;align-items:center;gap:12px}
-.admin-card:active{transform:.d-amt-box .big{font-family:'Changa';font-size:26px;font-weight:800;direction:ltr}
+.d-amt-box .big{font-family:'Changa';font-size:26px;font-weight:800;direction:ltr}
 
 .admin-box{width:min(460px,100%)}
 .pwd-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:11px;font-family:'Changa';font-size:20px;font-weight:700;text-align:center;letter-spacing:8px;margin-bottom:14px;background:var(--bg);color:var(--dark)}
+.pwd-input:focus{outline:none;border-color:var(--blue)}
 .pwd-input.err{border-color:var(--red);background:var(--red-bg);animation:shake .4s}
 .admin-hint{font-size:11px;color:var(--mut);text-align:center;margin-bottom:10px}
 .admin-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .admin-btn:active{transform:scale(.98)}
 .admin-btn.sec{background:var(--bg);color:var(--dark);border:1.5px solid var(--border)}
 .admin-grid{display:grid;gap:10px;margin-bottom:12px}
-.admin-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;cur
-sscale(.98)}
+.admin-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px}
+.admin-card:active{transform:scale(.98)}
 .admin-card .ic{width:44px;height:44px;border-radius:10px;background:var(--card);display:grid;place-items:center;font-size:20px;flex-shrink:0}
 .admin-card .tx b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
 .admin-card .tx span{font-size:11px;color:var(--mut)}
@@ -182,8 +173,7 @@ sscale(.98)}
 .code-area.vis{display:block}
 .code-input{width:100%;height:110px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:monospace;font-size:10.5px;padding:10px;direction:ltr;margin-bottom:8px;resize:vertical}
 .admin-status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 8px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);font-weight:700}
-
-<div class="ld-error" id="ldErr" style.prog-box{margin-top:12px;display:none}
+.prog-box{margin-top:12px;display:none}
 .prog-box.vis{display:block}
 .prog-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--grn));border-radius:99px;transition:width .3s;width:0%}
@@ -203,8 +193,8 @@ sscale(.98)}
 <div class="ld-box">
 <div class="ld-ring" id="ldRing"></div>
 <p id="ldText">جاري تحميل بيانات الحسابات…</p>
-<div class="ld-status" id="ldStatus">جاري الاتصال بالمستودع</div
->="display:none"></div>
+<div class="ld-status" id="ldStatus">جاري الاتصال بالمستودع</div>
+<div class="ld-error" id="ldErr" style="display:none"></div>
 <div class="upload-panel" id="uploadPanel">
 <div class="ico">📂</div>
 <p>تعذر تحميل الملف تلقائياً<br>يمكنك رفع ملف Excel يدوياً</p>
@@ -233,11 +223,7 @@ sscale(.98)}
 <div class="p-opts">
 <div class="p-opt sel" data-m="all"><div class="pi">📋</div><div class="pt"><b>كامل الفترة</b><span>جميع الحركات المسجلة</span></div></div>
 <div class="p-opt" data-m="month"><div class="pi">📅</div><div class="pt"><b>حسب الشهر</b><span>اختر السنة والشهر بالأرقام</span></div></div>
-ts" id="outCats"></div>
-</div>
-
-<div class="scr" id="scrTx">
-<div class="tx-top"><h2 id="txTitle"></h2><span class="tx-badge" id="txBadge<div class="p-opt" data-m="custom"><div class="pi">🎯</div><div class="pt"><b>فترة مخصصة</b><span>من تاريخ — إلى تاريخ</span></div></div>
+<div class="p-opt" data-m="custom"><div class="pi">🎯</div><div class="pt"><b>فترة مخصصة</b><span>من تاريخ — إلى تاريخ</span></div></div>
 </div>
 <div class="extra" id="exMonth">
 <div class="pick-lbl">السنة</div>
@@ -269,8 +255,11 @@ ts" id="outCats"></div>
 <div class="sec-t"><span class="sec-dot" style="background:var(--grn)"></span>الإيرادات</div>
 <div class="cats" id="inCats"></div>
 <div class="sec-t"><span class="sec-dot" style="background:var(--red)"></span>الصرفيات</div>
-<div class="c
-a"></span></div>
+<div class="cats" id="outCats"></div>
+</div>
+
+<div class="scr" id="scrTx">
+<div class="tx-top"><h2 id="txTitle"></h2><span class="tx-badge" id="txBadge"></span></div>
 <div class="tbl-wrap"><table>
 <thead><tr><th style="width:80px">التاريخ</th><th>الاسم</th><th style="width:120px">المبلغ</th></tr></thead>
 <tbody id="txBody"></tbody>
@@ -300,12 +289,7 @@ a"></span></div>
 <div class="admin-hint"><span class="admin-status">● متصل</span> مستودع: <b style="color:var(--dark)">AHMEDBRZAN/asbakk</b></div>
 <div class="admin-grid">
 <div class="admin-card" id="admUpload"><div class="ic">📂</div><div class="tx"><b>رفع ملف Excel جديد</b><span>استبدال ملف الحسابات في المستودع</span></div></div>
-/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
-(function(){
-"use strict";
-var REPO="AHMEDBRZAN/asbakk";
-var TX=[],PER={mode:"all",from:null,to:null},CUR=nu<div class="admin-card" id="admCode"><div class="ic">💻</div><div class="tx"><b>تحديث كود index.html</b><span>الصق الكود الجديد أو اختر ملف HTML</span></div></div>
+<div class="admin-card" id="admCode"><div class="ic">💻</div><div class="tx"><b>تحديث كود index.html</b><span>الصق الكود الجديد أو اختر ملف HTML</span></div></div>
 </div>
 <div class="code-area" id="codeArea">
 <div class="pick-lbl">الكود الجديد:</div>
@@ -327,8 +311,13 @@ var TX=[],PER={mode:"all",from:null,to:null},CUR=nu<div class="admin-card" id="a
 <input type="file" id="htmlFileInput" accept=".html,.htm" style="display:none">
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/aja
-xll;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+"use strict";
+var REPO="AHMEDBRZAN/asbakk";
+var ADMIN_PWD="97";
+var TX=[],PER={mode:"all",from:null,to:null},CUR=null;
 var IS_ADMIN=localStorage.getItem("js_admin")==="1";
 var GH_TOKEN=localStorage.getItem("js_gh_token")||"";
 
@@ -337,6 +326,8 @@ function $$(s){return[].slice.call(document.querySelectorAll(s))}
 function pad(n){return String(n).padStart(2,"0")}
 function money(n){return(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0})}
 function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]+"-"+p[0]}
+/* ═══ التاريخ بتوقيت UTC فقط — لا يتأثر بجهاز المستخدم ═══ */
+function dstr(d){return d.getUTCFullYear()+"-"+String(d.getUTCMonth()+1).padStart(2,"0")+"-"+String(d.getUTCDate()).padStart(2,"0")}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var _tt=null;
 function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},3200)}
@@ -354,10 +345,7 @@ function loadViaAPI(){
   .then(function(r){if(!r.ok)throw new Error("API: "+r.status);return r.json()})
   .then(function(items){
     var f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)&&/جوهره/i.test(x.name)});
-le(){
-  LOAD_ATTEMPTS++;
-  setStatus("جاري الاتصال بالمستودع…");
-  $("#ldRing    if(!f)f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)});
+    if(!f)f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)});
     if(!f)throw new Error("لم يتم العثور على ملف Excel");
     setStatus("تم العثور على الملف — جاري التحميل…");
     return fetch(f.download_url);
@@ -388,8 +376,10 @@ function loadViaProxy(){
   }
   return tryP(0);
 }
-function loadF
-i").style.display="";$("#ldStatus").style.display="";$("#ldErr").style.display="none";
+function loadFile(){
+  LOAD_ATTEMPTS++;
+  setStatus("جاري الاتصال بالمستودع…");
+  $("#ldRing").style.display="";$("#ldStatus").style.display="";$("#ldErr").style.display="none";
   $("#uploadPanel").classList.remove("vis");
   $("#ldText").textContent="جاري تحميل بيانات الحسابات…";$("#ldText").style.color="var(--mut)";
   loadViaAPI()
@@ -418,7 +408,7 @@ $("#refreshBtn").addEventListener("click",function(){
   var btn=this;btn.classList.add("spin");btn.disabled=true;toast("جاري تحديث البيانات…");
   LOAD_ATTEMPTS=0;
   loadViaAPI().catch(function(){return loadDirect("main")})
-0-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u066  .then(function(buf){parse(buf);toast("✓ تم التحديث — "+TX.length+" حركة",0);
+  .then(function(buf){parse(buf);toast("✓ تم التحديث — "+TX.length+" حركة",0);
     var cur=$(".scr.on").id;
     if(cur==="scrDash")showDash();else if(cur==="scrTx"&&CUR)openTx(CUR.k);else initPeriod();
   })
@@ -426,39 +416,19 @@ $("#refreshBtn").addEventListener("click",function(){
   .finally(function(){btn.classList.remove("spin");btn.disabled=false});
 });
 
-/* ═════════════════════════════════════════
-   تحويل تواريخ Excel — بدون منطقة زمنية نهائياً
-   ═════════════════════════════════════════ */
-function serialToISO(v){
-  var z=Math.floor(v)+719468;
-  var era=Math.floor((z>=0?z:z-146096)/146097);
-  var doe=z-era*146097;
-  var yoe=Math.floor((doe-Math.floor(doe/1460)+Math.floor(doe/36524)-Math.floor(doe/146096))/365);
-  var y=yoe+era*400;
-  var doy=doe-(365*yoe+Math.floor(yoe/4)-Math.floor(yoe/100));
-  var mp=Math.floor((5*doy+2)/153);
-  var d=doy-Math.floor((153*mp+2)/5)+1;
-  var m=mp+(mp<10?3:-9);
-  if(m<=2)y++;
-  return y+"-"+pad(m)+"-"+pad(d);
-}
+/* ═══ تحليل التاريخ — بدون منطقة زمنية نهائياً ═══ */
 function parseDate(v){
   if(v==null||v==="")return null;
-  /* رقم تسلسلي من Excel → حساب رياضي مباشر */
-  if(typeof v==="number"&&v>20000)return serialToISO(v);
-  if(v instanceof Date){
-    if(isNaN(v))return null;
-    return serialToISO(Math.round(v.getTime()/86400000)+25569);
-  }
+  /* رقم خام (Serial) من Excel → تحويل رياضي UTC */
+  if(typeof v==="number")return v>20000?dstr(new Date(Math.round((v-25569)*864e5))):null;
+  if(v instanceof Date&&!isNaN(v))return dstr(v);
   var s=String(v).trim();if(!s)return null;
   s=s.replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)});
-  var m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);if(m)return m[1]+"-"+pad(+m[2])+"-"+pad(+m[3]);
-  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m)return m[3]+"-"+pad(+m[2])+"-"+pad(+m[1]);
-  var d=new Date(s);if(isNaN(d))return null;
-  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  var m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);if(m)return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m)return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+  var d=new Date(s);return isNaN(d)?null:dstr(d);
 }
-function parseAmt(v){if(typeof v==="number")return v;var s=String(v==null?"":v).replace(/[\u06
-67\u0668\u0669".indexOf(d)}).replace(/[^\d.\-]/g,"");return parseFloat(s)||NaN}
+function parseAmt(v){if(typeof v==="number")return v;var s=String(v==null?"":v).replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)}).replace(/[^\d.\-]/g,"");return parseFloat(s)||NaN}
 function bigNum(v){var s=String(v==null?"":v);if(!/\d[\d,]{3,}/.test(s))return NaN;var n=parseAmt(s);return n>0?n:NaN}
 
 function catInfo(cat){
@@ -482,7 +452,7 @@ function isExcluded(cat,note){
 
 function parse(buf){
   TX=[];
-  /* بدون cellDates — نقرأ الأرقام الخام ونحولها حسابياً */
+  /* ═══ بدون cellDates — نقرأ الأرقام الخام ونتحكم بالتاريخ بأنفسنا ═══ */
   var wb=XLSX.read(new Uint8Array(buf),{type:"array"});
   var ws=wb.Sheets[wb.SheetNames[0]];
   var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true})||[];
@@ -495,7 +465,7 @@ function parse(buf){
   }
   var iQ=-1,iR=-1,iD=-1,iC=-1,iN=-1,iDt=-1,iAO=-1,iAI=-1;
   if(HR>=0){for(var i=0;i<HD.length;i++){var h=HD[i];
-mt:amt,g:ci.g,k:ci.k,l:ci.l,i:ci.i});    if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
+    if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
     if(iR<0&&/الوصل/.test(h))iR=i;
     if(iD<0&&/التاريخ/.test(h))iD=i;
     if(iC<0&&/النوع|الصنف/.test(h))iC=i;
@@ -540,8 +510,8 @@ mt:amt,g:ci.g,k:ci.k,l:ci.l,i:ci.i});    if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i
     TX.push({seq:iQ>=0?String(rw[iQ]==null?"":rw[iQ]).trim():String(rr-HR),
       receipt:rec,date:date,cat:cat,name:name,
       det:iDt>=0?String(rw[iDt]==null?"":rw[iDt]).trim():"",
-      note:note,
-a  }
+      note:note,amt:amt,g:ci.g,k:ci.k,l:ci.l,i:ci.i});
+  }
   if(!TX.length)throw new Error("لا توجد حركات صالحة في الملف");
 }
 
@@ -578,8 +548,7 @@ function renderCal(){
     var iso=CAL.y+"-"+pad(CAL.m)+"-"+pad(d),cls="cal-day";
     if(CSEL.from&&CSEL.to&&iso>CSEL.from&&iso<CSEL.to)cls+=" inr";
     if(iso===CSEL.from||iso===CSEL.to)cls+=" sel";
-.from&&d<PER.from)return false;if(PER.to&&d>PER.to)return false;return true}
-fu    h+='<button type="button" class="'+cls+'" data-d="'+iso+'">'+d+'</button>';
+    h+='<button type="button" class="'+cls+'" data-d="'+iso+'">'+d+'</button>';
   }
   $("#calDays").innerHTML=h;
 }
@@ -621,8 +590,8 @@ $("#btnGo").onclick=function(){
   }else{PER.from=null;PER.to=null}
   showDash();
 };
-function inPer(d){if(!PER.from&&!PER.to)return true;if(PE
-Rnction filt(){return TX.filter(function(t){return inPer(t.date)})}
+function inPer(d){if(!PER.from&&!PER.to)return true;if(PER.from&&d<PER.from)return false;if(PER.to&&d>PER.to)return false;return true}
+function filt(){return TX.filter(function(t){return inPer(t.date)})}
 function perLabel(){
   if(PER.mode==="all")return"كامل الفترة";
   if(PER.mode==="month")return MSEL.m+"/"+MSEL.y;
@@ -663,8 +632,7 @@ function showDash(){
     var c=cats[k];
     var cls=c.k==="withdraw"?"cw":c.k==="salary"?"cs":c.g==="in"?"ci":"co";
     var card='<div class="c-card '+cls+'" data-k="'+c.k+'"><div class="c-ico">'+c.i+'</div><div class="c-info"><h3>'+c.l+'</h3><span>'+c.n+' حركة</span></div><div class="c-tot">'+money(c.tot)+'</div></div>';
-div>';
-  h+='<div class="d-row"><span class=    if(c.g==="in")inH+=card;else outH+=card;
+    if(c.g==="in")inH+=card;else outH+=card;
   });
   $("#inCats").innerHTML=inH||'<div class="empty"><p>لا إيرادات في هذه الفترة</p></div>';
   $("#outCats").innerHTML=outH||'<div class="empty"><p>لا صرفيات في هذه الفترة</p></div>';
@@ -697,8 +665,8 @@ function openDet(t){
   h+='<div class="d-row"><span class="dl">رقم الوصل</span><span class="dv ltr">'+esc(t.receipt||"—")+'</span></div>';
   h+='<div class="d-row"><span class="dl">التسلسل</span><span class="dv ltr">'+esc(t.seq||"—")+'</span></div>';
   h+='<div class="d-row"><span class="dl">التاريخ</span><span class="dv ltr">'+fmtD(t.date)+'</span></div>';
-  h+='<div class="d-row"><span class="dl">النوع / الصنف</span><span class="dv">'+esc(t.cat)+'</span><
-/"dl">الاسم</span><span class="dv">'+esc(t.name)+'</span></div>';
+  h+='<div class="d-row"><span class="dl">النوع / الصنف</span><span class="dv">'+esc(t.cat)+'</span></div>';
+  h+='<div class="d-row"><span class="dl">الاسم</span><span class="dv">'+esc(t.name)+'</span></div>';
   if(t.det)h+='<div class="d-row"><span class="dl">التفاصيل</span><span class="dv">'+esc(t.det)+'</span></div>';
   if(t.note)h+='<div class="d-row"><span class="dl">ملاحظات</span><span class="dv">'+esc(t.note)+'</span></div>';
   h+='<div class="d-amt-box"><div class="lbl">المبلغ</div><div class="big" style="color:'+col+'">'+money(t.amt)+' د.ع.</div></div>';
@@ -730,14 +698,12 @@ $("#pwdOv").addEventListener("click",function(e){if(e.target===this)this.classLi
 $("#pwdOk").onclick=checkPwd;
 $("#pwdInput").addEventListener("keydown",function(e){if(e.key==="Enter")checkPwd()});
 function checkPwd(){
-  if($("#pwdInput").value.trim()==="97"){
+  if($("#pwdInput").value.trim()===ADMIN_PWD){
     IS_ADMIN=true;localStorage.setItem("js_admin","1");
     $("#pwdOv").classList.remove("vis");openAdmin();toast("✓ مرحباً أيها المدير",0);
   }else{
     $("#pwdInput").classList.add("err");toast("✗ الرمز غير صحيح",1);
-unction hideProgress(){$("#progBox").classList.remove("vis")}
-
-$("#admUpload").onclick=function    setTimeout(function(){$("#pwdInput").classList.remove("err");$("#pwdInput").value=""},450);
+    setTimeout(function(){$("#pwdInput").classList.remove("err");$("#pwdInput").value=""},450);
   }
 }
 function openAdmin(){$("#tokInput").value=GH_TOKEN;$("#codeArea").classList.remove("vis");$("#progBox").classList.remove("vis");$("#admOv").classList.add("vis")}
@@ -752,25 +718,20 @@ function ensureToken(){
   toast("⚠ أدخل GitHub Token أولاً",1);$("#tokInput").focus();return false;
 }
 function ghHeaders(){return{"Authorization":"Bearer "+GH_TOKEN,"Accept":"application/vnd.github.v3+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}}
-function ghGet(path){
-  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{headers:ghHeaders()})
-  .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()});
-}
+function ghGet(path){return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{headers:ghHeaders()}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})}
 function ghPut(path,b64,sha,msg){
   var body={message:msg,content:b64,branch:"main"};
   if(sha)body.sha=sha;
   return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{method:"PUT",headers:ghHeaders(),body:JSON.stringify(body)})
   .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message||"HTTP "+r.status)});return r.json()});
 }
-function ab2b64(buf){
-  var bytes=new Uint8Array(buf),bin="",CH=0x8000;
-  for(var i=0;i<bytes.length;i+=CH){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH))}
-  return btoa(bin);
-}
+function ab2b64(buf){var bytes=new Uint8Array(buf),bin="",CH=0x8000;for(var i=0;i<bytes.length;i+=CH){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH))}return btoa(bin)}
 function setProgress(p,txt){$("#progBox").classList.add("vis");$("#progFill").style.width=p+"%";if(txt)$("#progTxt").textContent=txt}
-f(){if(!ensureToken())return;$("#admFileInput").click()};
+function hideProgress(){$("#progBox").classList.remove("vis")}
+
+$("#admUpload").onclick=function(){if(!ensureToken())return;$("#admFileInput").click()};
 $("#admFileInput").addEventListener("change",function(e){
-ress();console.error(err);toast("✗ فشل التحدي  var file=e.target.files[0];if(!file)return;
+  var file=e.target.files[0];if(!file)return;
   setProgress(10,"جاري قراءة الملف…");
   var rd=new FileReader();
   rd.onload=function(ev){
@@ -780,9 +741,8 @@ ress();console.error(err);toast("✗ فشل التحدي  var file=e.target.file
     .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
     .then(function(items){
       var f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)});
-      var path=f?f.path:FILE_NAME,sha=f?f.sha:null;
       setProgress(60,"جاري الرفع إلى GitHub…");
-      return ghPut(encodeURIComponent(path),b64,sha,"📂 تحديث ملف الحسابات");
+      return ghPut(encodeURIComponent(f?f.path:FILE_NAME),b64,f?f.sha:null,"📂 تحديث ملف الحسابات");
     })
     .then(function(){
       setProgress(100,"✓ تم الرفع بنجاح!");toast("✓ تم رفع الملف — جاري التحديث…",0);
@@ -809,13 +769,9 @@ $("#codeUpload").onclick=function(){
   var b64=btoa(unescape(encodeURIComponent(code)));
   ghGet("index.html")
   .then(function(info){setProgress(60,"جاري الرفع…");return ghPut("index.html",b64,info.sha,"💻 تحديث كود index.html")})
-  .catch(function(err){
-    if(err&&err.message&&err.message.indexOf("404")>=0){setProgress(60,"جاري الإنشاء…");return ghPut("index.html",b64,null,"💻 إنشاء index.html")}
-    throw err;
-  })
+  .catch(function(err){if(err&&err.message&&err.message.indexOf("404")>=0){setProgress(60,"جاري الإنشاء…");return ghPut("index.html",b64,null,"💻 إنشاء index.html")}throw err})
   .then(function(){setProgress(100,"✓ تم تحديث الكود بنجاح!");toast("✓ تم تحديث index.html — أعد تحميل الصفحة",0);setTimeout(hideProgress,2500)})
-  .catch(function(err){hidePro
-gث: "+err.message,1)});
+  .catch(function(err){hideProgress();console.error(err);toast("✗ فشل التحديث: "+err.message,1)});
 };
 
 loadFile();
