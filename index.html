@@ -24,6 +24,7 @@ body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes popIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
 .loading{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:999;transition:opacity .4s,visibility .4s}
 .loading.done{opacity:0;visibility:hidden}
@@ -32,28 +33,21 @@ body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg
 .ld-box p{font-size:13px;color:var(--mut);font-weight:500;margin-bottom:6px}
 .ld-status{font-size:11px;color:var(--grn);font-weight:600;animation:pulse 1.5s infinite}
 .ld-error{color:var(--red);font-weight:600;font-size:12px;margin-top:10px}
-
 .upload-panel{background:var(--card);border:2px dashed var(--border);border-radius:14px;padding:24px 20px;margin-top:16px;text-align:center;display:none}
 .upload-panel.vis{display:block;animation:fadeUp .3s}
 .upload-panel .ico{font-size:36px;margin-bottom:8px}
 .upload-panel p{font-size:12.5px;color:var(--mut);margin-bottom:14px}
-.upload-btn{display:inline-block;padding:11px 22px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
-.upload-btn:hover{background:#1d5bc4}
-.upload-btn:active{transform:scale(.97)}
+.upload-btn{display:inline-block;padding:11px 22px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer}
 input[type=file]{display:none}
 .retry-btn{margin-top:10px;padding:9px 18px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;font-family:'Changa';font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer}
-.retry-btn:hover{border-color:var(--blue);color:var(--blue)}
 
 .hdr{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60;padding:0 16px;box-shadow:0 1px 6px rgba(0,0,0,.03)}
 .hdr-in{max-width:640px;margin:auto;height:54px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .hdr h1{font-family:'Changa';font-size:17px;font-weight:700;color:var(--dark);white-space:nowrap}
 .hdr-badge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);white-space:nowrap}
 .hdr-back{display:none;align-items:center;gap:4px;background:none;border:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--mut);cursor:pointer;padding:6px 10px;border-radius:8px}
-.hdr-back:hover{background:var(--bg);color:var(--dark)}
 .hdr-back.vis{display:flex}
-.hdr-refresh{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut);transition:.15s}
-.hdr-refresh:hover{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-br)}
-.hdr-refresh:active{transform:scale(.95)}
+.hdr-refresh{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:14px;color:var(--mut)}
 .hdr-refresh.spin .r-ico{animation:spin .8s linear}
 
 .wrap{max-width:640px;margin:auto;padding:18px 16px 50px}
@@ -65,63 +59,54 @@ input[type=file]{display:none}
 .p-card .sub{font-size:12.5px;color:var(--mut);margin-bottom:20px}
 .p-opts{display:grid;gap:8px}
 .p-opt{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;transition:.15s;background:var(--card)}
-.p-opt:hover{border-color:var(--grn);background:var(--grn-bg)}
 .p-opt.sel{border-color:var(--grn);background:var(--grn-bg)}
-.p-opt .pi{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--bg);flex-shrink:0;transition:.15s}
+.p-opt .pi{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--bg);flex-shrink:0}
 .p-opt.sel .pi{background:var(--grn);color:#fff}
 .p-opt .pt b{display:block;font-size:13.5px;font-weight:600}
 .p-opt .pt span{font-size:11px;color:var(--mut)}
 .extra{display:none;margin-top:14px;animation:fadeUp .25s}
 .extra.vis{display:block}
-.btn-go{width:100%;margin-top:18px;padding:13px;background:var(--grn);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:15.5px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 3px 14px rgba(13,150,104,.2)}
-.btn-go:hover{background:#0b8158}
-.btn-go:active{transform:scale(.98)}
+.btn-go{width:100%;margin-top:18px;padding:13px;background:var(--grn);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:15.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 14px rgba(13,150,104,.2)}
 .p-info{margin-top:12px;text-align:center;font-size:11.5px;color:var(--mut)}
 
 .pick-lbl{font-size:11.5px;font-weight:700;color:var(--mut);margin:10px 0 6px}
 .pick-lbl:first-child{margin-top:0}
 .years-row{display:flex;gap:6px;flex-wrap:wrap}
-.yr-btn{padding:8px 18px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer;transition:.12s}
-.yr-btn:hover{border-color:var(--grn)}
+.yr-btn{padding:8px 18px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer}
 .yr-btn.sel{background:var(--grn);border-color:var(--grn);color:#fff}
 .months-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.mo-btn{position:relative;padding:10px 0 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--card);font-family:'Changa';font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer;transition:.12s}
-.mo-btn:hover{border-color:var(--grn)}
+.mo-btn{position:relative;padding:10px 0 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--card);font-family:'Changa';font-size:13.5px;font-weight:700;color:var(--text);cursor:pointer}
 .mo-btn.sel{background:var(--grn);border-color:var(--grn);color:#fff}
 .mo-btn.off{opacity:.4}
 .mo-btn .dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--grn)}
 .mo-btn.sel .dot{background:#fff}
 
 .range-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.range-btn{padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center;transition:.12s}
+.range-btn{padding:11px 8px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font:inherit;font-size:12.5px;font-weight:700;color:var(--mut);cursor:pointer;text-align:center}
 .range-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
 .range-btn.filled{border-color:var(--grn-br);color:var(--grn);background:var(--grn-bg)}
-.range-btn.active.filled{border-color:var(--grn)}
-.cal-panel{margin-top:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);padding:10px;animation:fadeUp .25s}
+.cal-panel{margin-top:10px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);padding:10px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .cal-head .t{font-family:'Changa';font-size:14px;font-weight:700;direction:ltr}
-.cal-nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:13px;color:var(--mut);transition:.12s}
-.cal-nav:hover{color:var(--grn);border-color:var(--grn)}
+.cal-nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:13px;color:var(--mut)}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-day{padding:9px 0;border:none;border-radius:8px;background:transparent;font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer;transition:.1s}
-.cal-day:hover{background:var(--bg)}
+.cal-day{padding:9px 0;border:none;border-radius:8px;background:transparent;font-family:'Changa';font-size:13px;font-weight:700;color:var(--text);cursor:pointer}
 .cal-day.inr{background:var(--grn-bg);color:var(--grn)}
 .cal-day.sel{background:var(--grn);color:#fff}
 
-.sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
-.s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh);transition:.2s;user-select:none;-webkit-user-select:none}
+.sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;user-select:none;-webkit-user-select:none}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
+.s-card.lp{animation:pulse .6s infinite;border-color:var(--grn-br)}
 .s-card .sl{font-size:10.5px;color:var(--mut);font-weight:600;margin-bottom:3px}
 .s-card .sv{font-family:'Changa';font-size:15px;font-weight:800;direction:ltr}
 .s-card.si .sv{color:var(--grn)}
 .s-card.so .sv{color:var(--red)}
 .s-card.sn .sv{color:var(--blue)}
-.s-card.lp{animation:pulse .6s infinite;border-color:var(--grn-br)}
 
 .sec-t{font-family:'Changa';font-size:15px;font-weight:700;color:var(--dark);margin:16px 0 10px;display:flex;align-items:center;gap:7px}
 .sec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .cats{display:grid;gap:8px}
 .c-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;box-shadow:var(--sh)}
-.c-card:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(27,36,55,.09)}
 .c-card:active{transform:scale(.98)}
 .c-ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
 .c-info{flex:1;min-width:0}
@@ -140,10 +125,8 @@ input[type=file]{display:none}
 table{width:100%;border-collapse:collapse}
 thead{background:var(--dark)}
 thead th{color:#fff;font-size:11px;font-weight:600;padding:11px 8px;text-align:center;white-space:nowrap}
-tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
-tbody tr:last-child{border-bottom:none}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer}
 tbody tr:nth-child(even){background:#fafbfe}
-tbody tr:hover{background:var(--blue-bg)}
 tbody tr:active{background:var(--grn-bg)}
 tbody td{padding:11px 8px;font-size:12.5px;text-align:center;vertical-align:middle}
 td.td-name{text-align:right;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -155,11 +138,10 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 
 .m-ov{position:fixed;inset:0;background:rgba(27,36,55,.45);backdrop-filter:blur(3px);z-index:100;display:none;place-items:center;padding:16px}
 .m-ov.vis{display:grid}
-.m-box{background:var(--card);border-radius:18px;width:min(420px,100%);max-height:82vh;overflow:auto;animation:popIn .25s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.m-box{background:var(--card);border-radius:18px;width:min(420px,100%);max-height:85vh;overflow:auto;animation:popIn .25s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
 .m-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0;z-index:2}
 .m-hd h3{font-family:'Changa';font-size:15px;font-weight:700}
-.m-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:13px;color:var(--mut);transition:.15s}
-.m-x:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-br)}
+.m-x{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;display:grid;place-items:center;font-size:13px;color:var(--mut)}
 .m-bd{padding:18px}
 .d-row{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);gap:10px}
 .d-row:last-child{border-bottom:none}
@@ -170,47 +152,40 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 .d-amt-box .lbl{font-size:11.5px;color:var(--mut);margin-bottom:5px}
 .d-amt-box .big{font-family:'Changa';font-size:26px;font-weight:800;direction:ltr}
 
-.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,70px);background:var(--dark);color:#fff;padding:11px 18px;border-radius:11px;font-size:12.5px;font-weight:600;z-index:200;transition:.3s;opacity:0;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:90vw;text-align:center}
-.toast.vis{transform:translate(-50%,0);opacity:1}
-.toast.err{background:var(--red)}
-.toast.ok{background:var(--grn)}
-
-.empty{text-align:center;padding:40px 16px;color:var(--mut)}
-.empty p{font-size:13px;font-weight:500}
-
 /* ═══ وضع المدير ═══ */
-.admin-box{width:min(460px,100%);max-height:90vh}
-.pwd-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:11px;font-family:'Changa';font-size:20px;font-weight:700;text-align:center;letter-spacing:8px;margin-bottom:14px;background:var(--bg);color:var(--dark);transition:.2s}
-.pwd-input:focus{outline:none;border-color:var(--blue);background:var(--blue-bg)}
+.admin-box{width:min(460px,100%)}
+.pwd-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:11px;font-family:'Changa';font-size:20px;font-weight:700;text-align:center;letter-spacing:8px;margin-bottom:14px;background:var(--bg);color:var(--dark)}
+.pwd-input:focus{outline:none;border-color:var(--blue)}
 .pwd-input.err{border-color:var(--red);background:var(--red-bg);animation:shake .4s}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .admin-hint{font-size:11px;color:var(--mut);text-align:center;margin-bottom:10px}
-.admin-btn{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.admin-btn:hover{background:#1d5bc4}
+.admin-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:11px;font-family:'Changa';font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .admin-btn:active{transform:scale(.98)}
-.admin-btn:disabled{opacity:.5;cursor:not-allowed}
 .admin-btn.sec{background:var(--bg);color:var(--dark);border:1.5px solid var(--border)}
-.admin-btn.sec:hover{background:var(--border)}
-.admin-btn.danger{background:var(--red)}
-.admin-btn.danger:hover{background:#c03030}
-.admin-grid{display:grid;gap:10px;margin-bottom:14px}
-.admin-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px}
-.admin-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-1px)}
+.admin-grid{display:grid;gap:10px;margin-bottom:12px}
+.admin-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:.15s}
 .admin-card:active{transform:scale(.98)}
 .admin-card .ic{width:44px;height:44px;border-radius:10px;background:var(--card);display:grid;place-items:center;font-size:20px;flex-shrink:0}
 .admin-card .tx b{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px}
 .admin-card .tx span{font-size:11px;color:var(--mut)}
-.tok-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'IBM Plex Sans Arabic';font-size:12.5px;background:var(--bg);color:var(--dark);margin-bottom:12px;direction:ltr}
+.tok-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:12.5px;background:var(--bg);color:var(--dark);margin-bottom:10px;direction:ltr}
 .tok-input:focus{outline:none;border-color:var(--blue)}
-.tok-info{font-size:10.5px;color:var(--mut);margin-bottom:10px;padding:8px 10px;background:var(--blue-bg);border-radius:8px;border:1px solid var(--blue-br);line-height:1.6}
+.tok-info{font-size:10.5px;color:var(--mut);margin-bottom:12px;padding:8px 10px;background:var(--blue-bg);border-radius:8px;border:1px solid var(--blue-br);line-height:1.7}
 .tok-info a{color:var(--blue);font-weight:600}
-.prog-box{margin-top:10px;display:none}
+.code-area{display:none;margin-bottom:12px}
+.code-area.vis{display:block}
+.code-input{width:100%;height:110px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);font-family:monospace;font-size:10.5px;padding:10px;direction:ltr;margin-bottom:8px;resize:vertical}
+.admin-status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 8px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);font-weight:700}
+.prog-box{margin-top:12px;display:none}
 .prog-box.vis{display:block}
 .prog-bar{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--grn));border-radius:99px;transition:width .3s;width:0%}
 .prog-txt{font-size:11px;color:var(--mut);text-align:center;font-weight:600}
-.admin-status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 8px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);font-weight:700;margin-right:8px}
 
+.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,70px);background:var(--dark);color:#fff;padding:11px 18px;border-radius:11px;font-size:12.5px;font-weight:600;z-index:200;transition:.3s;opacity:0;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:90vw;text-align:center}
+.toast.vis{transform:translate(-50%,0);opacity:1}
+.toast.err{background:var(--red)}
+.toast.ok{background:var(--grn)}
+.empty{text-align:center;padding:40px 16px;color:var(--mut)}
 @media(max-width:420px){.sum-row{grid-template-columns:1fr}.months-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
@@ -252,14 +227,12 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 <div class="p-opt" data-m="month"><div class="pi">📅</div><div class="pt"><b>حسب الشهر</b><span>اختر السنة والشهر بالأرقام</span></div></div>
 <div class="p-opt" data-m="custom"><div class="pi">🎯</div><div class="pt"><b>فترة مخصصة</b><span>من تاريخ — إلى تاريخ</span></div></div>
 </div>
-
 <div class="extra" id="exMonth">
 <div class="pick-lbl">السنة</div>
 <div class="years-row" id="yearsRow"></div>
 <div class="pick-lbl">الشهر</div>
 <div class="months-grid" id="monthsGrid"></div>
 </div>
-
 <div class="extra" id="exCustom">
 <div class="range-fields">
 <button type="button" class="range-btn active" id="fromBtn">من تاريخ</button>
@@ -274,7 +247,6 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 <div class="cal-days" id="calDays"></div>
 </div>
 </div>
-
 <button class="btn-go" id="btnGo">عرض الحسابات ←</button>
 <div class="p-info" id="pInfo"></div>
 </div>
@@ -304,7 +276,6 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 <div class="m-bd" id="detB"></div>
 </div></div>
 
-<!-- ═══ نافذة طلب الرمز السري ═══ -->
 <div class="m-ov" id="pwdOv"><div class="m-box admin-box">
 <div class="m-hd"><h3>🔐 وضع المدير</h3><button class="m-x" id="pwdX">✕</button></div>
 <div class="m-bd">
@@ -314,60 +285,39 @@ tfoot td{padding:12px 8px;font-weight:800;font-size:12.5px;text-align:center;bor
 </div>
 </div></div>
 
-<!-- ═══ نافذة لوحة المدير ═══ -->
 <div class="m-ov" id="admOv"><div class="m-box admin-box">
-<div class="m-hd">
-<h3>⚙️ لوحة الإدارة</h3>
-<button class="m-x" id="admX">✕</button>
-</div>
+<div class="m-hd"><h3>⚙️ لوحة الإدارة</h3><button class="m-x" id="admX">✕</button></div>
 <div class="m-bd">
-<div class="admin-hint">
-<span class="admin-status">● متصل</span>
-مستودع: <b style="color:var(--dark)">AHMEDBRZAN/asbakk</b>
-</div>
-
+<div class="admin-hint"><span class="admin-status">● متصل</span> مستودع: <b style="color:var(--dark)">AHMEDBRZAN/asbakk</b></div>
 <div class="admin-grid">
-<div class="admin-card" id="admUpload">
-<div class="ic">📂</div>
-<div class="tx"><b>رفع ملف Excel جديد</b><span>استبدال ملف الحسابات في المستودع</span></div>
+<div class="admin-card" id="admUpload"><div class="ic">📂</div><div class="tx"><b>رفع ملف Excel جديد</b><span>استبدال ملف الحسابات في المستودع</span></div></div>
+<div class="admin-card" id="admCode"><div class="ic">💻</div><div class="tx"><b>تحديث كود index.html</b><span>الصق الكود الجديد أو اختر ملف HTML</span></div></div>
 </div>
-<div class="admin-card" id="admUpdate">
-<div class="ic">💻</div>
-<div class="tx"><b>تحديث كود index.html</b><span>رفع نسخة جديدة من كود التطبيق</span></div>
+<div class="code-area" id="codeArea">
+<div class="pick-lbl">الكود الجديد:</div>
+<textarea class="code-input" id="codeInput" placeholder="<!DOCTYPE html> …"></textarea>
+<div class="admin-grid" style="grid-template-columns:1fr 1fr">
+<label class="admin-btn sec" for="htmlFileInput" style="cursor:pointer">📄 ملف HTML</label>
+<button class="admin-btn" id="codeUpload">⬆ رفع الكود</button>
 </div>
 </div>
-
-<div class="admin-hint" style="margin-top:6px">GitHub Token (يُحفظ محلياً):</div>
-<input type="password" class="tok-input" id="tokInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-<div class="tok-info">
-💡 لإنشاء Token: اذهب إلى 
-<a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Developer → Personal access tokens</a>
-ومنح صلاحية <b>repo</b>
-</div>
-
-<div class="admin-grid" style="margin-top:10px">
+<div class="pick-lbl">GitHub Token (يُحفظ محلياً):</div>
+<input type="password" class="tok-input" id="tokInput" placeholder="ghp_xxxxxxxxxxxxxxxx" autocomplete="off">
+<div class="tok-info">💡 لإنشاء Token: افتح <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Developer → Personal access tokens</a> ومنح صلاحية <b>repo</b></div>
 <button class="admin-btn sec" id="admLogout">🚪 خروج من وضع المدير</button>
-</div>
-
-<div class="prog-box" id="progBox">
-<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-<div class="prog-txt" id="progTxt">جاري الرفع...</div>
-</div>
+<div class="prog-box" id="progBox"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-txt" id="progTxt">جاري الرفع...</div></div>
 </div>
 </div></div>
 
 <input type="file" id="admFileInput" accept=".xlsx,.xlsm,.xls" style="display:none">
-
+<input type="file" id="htmlFileInput" accept=".html,.htm" style="display:none">
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
 "use strict";
-
 var REPO="AHMEDBRZAN/asbakk";
-var XLSX_FILE="تدقيق حسابات الجوهره.xlsx";
-var HTML_FILE="index.html";
 var BRANCH="main";
 var ADMIN_PWD="97";
 var TX=[],PER={mode:"all",from:null,to:null},CUR=null;
@@ -379,206 +329,94 @@ function $$(s){return[].slice.call(document.querySelectorAll(s))}
 function pad(n){return String(n).padStart(2,"0")}
 function money(n){return(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0})}
 function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]+"-"+p[0]}
-function dstr(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+/* دالة التاريخ بتوقيت UTC — تمنع انزلاق اليوم */
+function dstr(d){return d.getUTCFullYear()+"-"+String(d.getUTCMonth()+1).padStart(2,"0")+"-"+String(d.getUTCDate()).padStart(2,"0")}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var _tt=null;
-function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},3500)}
+function toast(m,e){var t=$("#toast");t.textContent=m;t.className="toast vis "+(e?"err":e===0?"ok":"");clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("vis")},3200)}
 
 var FILE_NAME="تدقيق حسابات الجوهره.xlsx";
-var LOAD_ATTEMPTS=0;
-var MAX_ATTEMPTS=3;
+var LOAD_ATTEMPTS=0,MAX_ATTEMPTS=3;
 
-function setStatus(msg,color){
-  var s=$("#ldStatus");
-  if(s){s.textContent=msg;s.style.color=color||"var(--grn)"}
-}
-function setError(msg){
-  var e=$("#ldErr");
-  if(e){e.textContent=msg;e.style.display="block"}
-}
-function showUpload(){
-  $("#uploadPanel").classList.add("vis");
-  $("#ldRing").style.display="none";
-  $("#ldStatus").style.display="none";
-  $("#ldText").textContent="تعذر التحميل التلقائي";
-  $("#ldText").style.color="var(--red)";
-}
+function setStatus(msg,color){var s=$("#ldStatus");if(s){s.textContent=msg;s.style.color=color||"var(--grn)"}}
+function setError(msg){var e=$("#ldErr");if(e){e.textContent=msg;e.style.display="block"}}
+function showUpload(){$("#uploadPanel").classList.add("vis");$("#ldRing").style.display="none";$("#ldStatus").style.display="none";$("#ldText").textContent="تعذر التحميل التلقائي";$("#ldText").style.color="var(--red)"}
 
 function loadViaAPI(){
   setStatus("جاري البحث عن الملف عبر API…","#2b6de0");
-  return fetch("https://api.github.com/repos/"+REPO+"/contents",{
-    headers:{"Accept":"application/vnd.github.v3+json"}
-  })
-  .then(function(r){
-    if(!r.ok)throw new Error("API: "+r.status);
-    return r.json();
-  })
+  return fetch("https://api.github.com/repos/"+REPO+"/contents",{headers:{"Accept":"application/vnd.github.v3+json"}})
+  .then(function(r){if(!r.ok)throw new Error("API: "+r.status);return r.json()})
   .then(function(items){
-    var f=items.find(function(x){
-      return x.name && /\.xlsx?$/i.test(x.name) && /جوهره|الجوهره/i.test(x.name);
-    });
-    if(!f){
-      f=items.find(function(x){return x.name && /\.xlsx?$/i.test(x.name)});
-    }
+    var f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)&&/جوهره/i.test(x.name)});
+    if(!f)f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)});
     if(!f)throw new Error("لم يتم العثور على ملف Excel");
-    setStatus("تم العثور على: "+f.name+" — جاري التحميل…");
+    setStatus("تم العثور على الملف — جاري التحميل…");
     return fetch(f.download_url);
   })
-  .then(function(r){
-    if(!r.ok)throw new Error("Download: "+r.status);
-    return r.arrayBuffer();
-  });
+  .then(function(r){if(!r.ok)throw new Error("Download: "+r.status);return r.arrayBuffer()});
 }
-
 function loadDirect(branch){
   setStatus("جاري المحاولة عبر "+branch+"…","#2b6de0");
   var base="https://raw.githubusercontent.com/"+REPO+"/"+branch+"/";
-  var urls=[
-    base+encodeURIComponent(FILE_NAME),
+  var urls=[base+encodeURIComponent(FILE_NAME),
     base+"%E2%80%8E%E2%81%A8%D8%AA%D8%AF%D9%82%D9%8A%D9%82%20%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AC%D9%88%D9%87%D8%B1%D9%87%E2%81%A9.xlsx",
-    base+"%D8%AA%D8%AF%D9%82%D9%8A%D9%82%20%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AC%D9%88%D9%87%D8%B1%D9%87.xlsx"
-  ];
+    base+"%D8%AA%D8%AF%D9%82%D9%8A%D9%82%20%D8%AD%D8%B3%D8%A7%D8%A8%D8%A7%D8%AA%20%D8%A7%D9%84%D8%AC%D9%88%D9%87%D8%B1%D9%87.xlsx"];
   function tryUrl(i){
-    if(i>=urls.length)throw new Error("All URLs failed for "+branch);
-    return fetch(urls[i]).then(function(r){
-      if(!r.ok)throw new Error("URL "+i+": "+r.status);
-      return r.arrayBuffer();
-    }).catch(function(e){
-      if(i+1<urls.length)return tryUrl(i+1);
-      throw e;
-    });
+    if(i>=urls.length)throw new Error("URLs failed");
+    return fetch(urls[i]).then(function(r){if(!r.ok)throw new Error("URL "+r.status);return r.arrayBuffer()})
+    .catch(function(e){if(i+1<urls.length)return tryUrl(i+1);throw e});
   }
   return tryUrl(0);
 }
-
 function loadViaProxy(){
   setStatus("جاري استخدام خادم بديل…","#c88a17");
-  var proxies=[
-    "https://corsproxy.io/?url=",
-    "https://api.allorigins.win/raw?url="
-  ];
-  var targetUrl="https://raw.githubusercontent.com/"+REPO+"/main/"+encodeURIComponent(FILE_NAME);
-  function tryProxy(i){
-    if(i>=proxies.length)throw new Error("All proxies failed");
-    return fetch(proxies[i]+encodeURIComponent(targetUrl)).then(function(r){
-      if(!r.ok)throw new Error("Proxy "+i+": "+r.status);
-      return r.arrayBuffer();
-    }).catch(function(e){
-      if(i+1<proxies.length)return tryProxy(i+1);
-      throw e;
-    });
+  var proxies=["https://corsproxy.io/?url=","https://api.allorigins.win/raw?url="];
+  var target="https://raw.githubusercontent.com/"+REPO+"/main/"+encodeURIComponent(FILE_NAME);
+  function tryP(i){
+    if(i>=proxies.length)throw new Error("Proxies failed");
+    return fetch(proxies[i]+encodeURIComponent(target)).then(function(r){if(!r.ok)throw new Error("Proxy "+r.status);return r.arrayBuffer()})
+    .catch(function(e){if(i+1<proxies.length)return tryP(i+1);throw e});
   }
-  return tryProxy(0);
+  return tryP(0);
 }
-
 function loadFile(){
   LOAD_ATTEMPTS++;
   setStatus("جاري الاتصال بالمستودع…");
-  $("#ldRing").style.display="";
-  $("#ldStatus").style.display="";
-  $("#ldErr").style.display="none";
+  $("#ldRing").style.display="";$("#ldStatus").style.display="";$("#ldErr").style.display="none";
   $("#uploadPanel").classList.remove("vis");
-  $("#ldText").textContent="جاري تحميل بيانات الحسابات…";
-  $("#ldText").style.color="var(--mut)";
-
+  $("#ldText").textContent="جاري تحميل بيانات الحسابات…";$("#ldText").style.color="var(--mut)";
   loadViaAPI()
-    .catch(function(e1){
-      console.warn("API failed:",e1.message);
-      setStatus("فشل API — جاري المحاولة المباشرة…","#c88a17");
-      return loadDirect("main");
-    })
-    .catch(function(e2){
-      console.warn("main failed:",e2.message);
-      return loadDirect("master");
-    })
-    .catch(function(e3){
-      console.warn("master failed:",e3.message);
-      setStatus("جاري المحاولة عبر بديل…","#c88a17");
-      return loadViaProxy();
-    })
-    .then(function(buf){
-      parse(buf);
-      onDataReady();
-    })
-    .catch(function(finalErr){
-      console.error("All methods failed:",finalErr);
-      if(LOAD_ATTEMPTS<MAX_ATTEMPTS){
-        setError("المحاولة "+LOAD_ATTEMPTS+" فشلت — جاري إعادة المحاولة…");
-        setTimeout(loadFile,1500);
-      } else {
-        setError("تعذر تحميل الملف بعد "+MAX_ATTEMPTS+" محاولات");
-        showUpload();
-      }
-    });
+  .catch(function(){return loadDirect("main")})
+  .catch(function(){return loadDirect("master")})
+  .catch(function(){return loadViaProxy()})
+  .then(function(buf){parse(buf);onDataReady()})
+  .catch(function(err){
+    console.error(err);
+    if(LOAD_ATTEMPTS<MAX_ATTEMPTS){setError("المحاولة "+LOAD_ATTEMPTS+" فشلت — إعادة المحاولة…");setTimeout(loadFile,1500)}
+    else{setError("تعذر تحميل الملف بعد "+MAX_ATTEMPTS+" محاولات");showUpload()}
+  });
 }
-
 $("#fileInput").addEventListener("change",function(e){
-  var file=e.target.files[0];
-  if(!file)return;
-  $("#ldText").textContent="جاري قراءة الملف…";
-  $("#ldText").style.color="var(--mut)";
-  $("#ldRing").style.display="";
-  $("#ldStatus").style.display="";
-  $("#ldStatus").textContent="جاري تحليل: "+file.name;
-  $("#uploadPanel").classList.remove("vis");
-  $("#ldErr").style.display="none";
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    try{
-      parse(ev.target.result);
-      onDataReady();
-      toast("✓ تم تحميل "+TX.length+" حركة من الملف المحلي",0);
-    }catch(err){
-      console.error(err);
-      setError("خطأ في قراءة الملف: "+err.message);
-      showUpload();
-    }
-  };
-  reader.onerror=function(){
-    setError("فشل قراءة الملف");
-    showUpload();
-  };
-  reader.readAsArrayBuffer(file);
+  var file=e.target.files[0];if(!file)return;
+  $("#ldText").textContent="جاري قراءة الملف…";$("#ldRing").style.display="";$("#ldStatus").style.display="";
+  $("#ldStatus").textContent="جاري تحليل: "+file.name;$("#uploadPanel").classList.remove("vis");$("#ldErr").style.display="none";
+  var rd=new FileReader();
+  rd.onload=function(ev){try{parse(ev.target.result);onDataReady();toast("✓ تم تحميل "+TX.length+" حركة من الملف المحلي",0)}catch(err){setError("خطأ في قراءة الملف");showUpload()}};
+  rd.onerror=function(){setError("فشل قراءة الملف");showUpload()};
+  rd.readAsArrayBuffer(file);
 });
-
-$("#retryBtn").addEventListener("click",function(){
-  LOAD_ATTEMPTS=0;
-  loadFile();
-});
-
-function onDataReady(){
-  $("#ldScr").classList.add("done");
-  $("#hdr").style.display="";
-  $("#appWrap").style.display="";
-  toast("✓ تم تحميل "+TX.length+" حركة بنجاح",0);
-  initPeriod();
-}
-
+$("#retryBtn").addEventListener("click",function(){LOAD_ATTEMPTS=0;loadFile()});
+function onDataReady(){$("#ldScr").classList.add("done");$("#hdr").style.display="";$("#appWrap").style.display="";toast("✓ تم تحميل "+TX.length+" حركة بنجاح",0);initPeriod()}
 $("#refreshBtn").addEventListener("click",function(){
-  var btn=this;
-  btn.classList.add("spin");
-  btn.disabled=true;
-  toast("جاري تحديث البيانات…");
+  var btn=this;btn.classList.add("spin");btn.disabled=true;toast("جاري تحديث البيانات…");
   LOAD_ATTEMPTS=0;
-  loadViaAPI()
-    .catch(function(){return loadDirect("main")})
-    .catch(function(){return loadDirect("master")})
-    .then(function(buf){
-      parse(buf);
-      toast("✓ تم التحديث — "+TX.length+" حركة",0);
-      var cur=$(".scr.on").id;
-      if(cur==="scrDash")showDash();
-      else if(cur==="scrTx"&&CUR)openTx(CUR.k);
-      else if(cur==="scrPeriod")initPeriod();
-    })
-    .catch(function(e){
-      toast("فشل التحديث — تحقق من الاتصال",1);
-      console.error(e);
-    })
-    .finally(function(){
-      btn.classList.remove("spin");
-      btn.disabled=false;
-    });
+  loadViaAPI().catch(function(){return loadDirect("main")})
+  .then(function(buf){parse(buf);toast("✓ تم التحديث — "+TX.length+" حركة",0);
+    var cur=$(".scr.on").id;
+    if(cur==="scrDash")showDash();else if(cur==="scrTx"&&CUR)openTx(CUR.k);else initPeriod();
+  })
+  .catch(function(){toast("فشل التحديث — تحقق من الاتصال",1)})
+  .finally(function(){btn.classList.remove("spin");btn.disabled=false});
 });
 
 function parseDate(v){
@@ -588,7 +426,7 @@ function parseDate(v){
   s=s.replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)});
   var m=s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);if(m)return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
   m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m)return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
-  var d=new Date(s);return isNaN(d)?null:dstr(d)
+  var d=new Date(s);return isNaN(d)?null:dstr(d);
 }
 function parseAmt(v){if(typeof v==="number")return v;var s=String(v==null?"":v).replace(/[\u0660-\u0669]/g,function(d){return"\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669".indexOf(d)}).replace(/[^\d.\-]/g,"");return parseFloat(s)||NaN}
 function bigNum(v){var s=String(v==null?"":v);if(!/\d[\d,]{3,}/.test(s))return NaN;var n=parseAmt(s);return n>0?n:NaN}
@@ -598,7 +436,7 @@ function catInfo(cat){
   if(/دفعات\s*المستفيدين/.test(cat))return{g:"in",k:"benef",l:"دفعات المستفيدين",i:"🏠"};
   if(/قبض/.test(cat))return{g:"in",k:"receipt",l:"قبض المبالغ",i:"💰"};
   if(/تنازل/.test(cat))return{g:"in",k:"transfer",l:"ايراد تنازل",i:"📄"};
-  if(/ايراد\s*دفعة\s*كهرباء|دفعة\s*كهرباء/.test(cat))return{g:"in",k:"elec",l:"ايراد دفعة كهرباء",i:"⚡"};
+  if(/دفعة\s*كهرباء/.test(cat))return{g:"in",k:"elec",l:"ايراد دفعة كهرباء",i:"⚡"};
   if(/سحب/.test(cat))return{g:"out",k:"withdraw",l:"سحب المبالغ",i:"🏦"};
   if(/صرفيات\s*الشركة/.test(cat))return{g:"out",k:"company",l:"صرفيات الشركة",i:"🏢"};
   if(/صرفيات\s*الموقع/.test(cat))return{g:"out",k:"site",l:"صرفيات الموقع",i:"🏗️"};
@@ -617,7 +455,6 @@ function parse(buf){
   var wb=XLSX.read(new Uint8Array(buf),{type:"array",cellDates:true});
   var ws=wb.Sheets[wb.SheetNames[0]];
   var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true})||[];
-
   var HR=-1,HD=[];
   for(var r=0;r<Math.min(30,raw.length);r++){
     var row=raw[r]||[],sc=0;
@@ -625,7 +462,6 @@ function parse(buf){
       if(/الوصل/.test(v))sc++;if(/التاريخ/.test(v))sc++;if(/النوع|الصنف/.test(v))sc++;if(/الاسم/.test(v))sc++;if(/مبلغ|المبلغ/.test(v))sc++}
     if(sc>=3){HR=r;HD=row.map(function(x){return String(x==null?"":x).trim()});break}
   }
-
   var iQ=-1,iR=-1,iD=-1,iC=-1,iN=-1,iDt=-1,iAO=-1,iAI=-1;
   if(HR>=0){for(var i=0;i<HD.length;i++){var h=HD[i];
     if(iQ<0&&/^ت$|تسلسل/.test(h))iQ=i;
@@ -650,22 +486,19 @@ function parse(buf){
 
     var aO=iAO>=0?bigNum(rw[iAO]):NaN;
     var aIn=iAI>=0?bigNum(rw[iAI]):NaN;
-
     var notes=[];
     var aoT=iAO>=0?String(rw[iAO]==null?"":rw[iAO]).trim():"";
     if(aoT&&isNaN(bigNum(aoT)))notes.push(aoT);
     var aiT=iAI>=0?String(rw[iAI]==null?"":rw[iAI]).trim():"";
     if(aiT&&isNaN(bigNum(aiT)))notes.push(aiT);
     var slice=rw.slice(Math.max(iAO>=0?iAO:0,iAI>=0?iAI:0)+1);
-    for(var s2=0;s2<slice.length;s2++){var cs=String(slice[s2]==null?"":slice[s2]).trim();if(!cs)continue;
-      if(isNaN(bigNum(cs)))notes.push(cs)}
+    for(var s2=0;s2<slice.length;s2++){var cs=String(slice[s2]==null?"":slice[s2]).trim();if(!cs)continue;if(isNaN(bigNum(cs)))notes.push(cs)}
     var note=notes.join(" ");
 
     var ci=catInfo(cat);
-
+    /* القاعدة: الإيرادات من عمود الإيرادات فقط — الصرفيات من عمود الصرفيات فقط */
     var amt;
-    if(ci.g==="in"){amt=aIn;}
-    else{amt=aO;}
+    if(ci.g==="in"){amt=aIn}else{amt=aO}
     if(isNaN(amt)||amt<=0)continue;
     if(isExcluded(cat,note))continue;
 
@@ -682,7 +515,7 @@ function parse(buf){
   if(!TX.length)throw new Error("لا توجد حركات صالحة في الملف");
 }
 
-/* ═══ منتقي الفترة (أرقام) ═══ */
+/* ═══ منتقي الفترة ═══ */
 var MSEL={y:null,m:null},AVAIL={y:[],m:[]};
 var CAL={y:2026,m:1,target:"from"};
 var CSEL={from:null,to:null};
@@ -691,48 +524,28 @@ function initPeriod(){
   var dates=TX.map(function(t){return t.date}).filter(Boolean).sort();
   var ys={},ms={};
   dates.forEach(function(d){ys[d.slice(0,4)]=1;ms[d.slice(0,7)]=1});
-  AVAIL.y=Object.keys(ys).sort();
-  AVAIL.m=Object.keys(ms).sort();
+  AVAIL.y=Object.keys(ys).sort();AVAIL.m=Object.keys(ms).sort();
   MSEL.y=AVAIL.y[AVAIL.y.length-1]||"2026";
   var lm=AVAIL.m[AVAIL.m.length-1];
   MSEL.m=lm?+lm.slice(5,7):1;
-  CAL.y=lm?+lm.slice(0,4):+MSEL.y;
-  CAL.m=lm?+lm.slice(5,7):1;
+  CAL.y=lm?+lm.slice(0,4):+MSEL.y;CAL.m=lm?+lm.slice(5,7):1;
   renderYears();renderMonths();renderCal();updateRange();
   $("#pInfo").textContent="إجمالي الحركات: "+TX.length+" حركة · آخر تاريخ: "+(dates.length?fmtD(dates[dates.length-1]):"—");
 }
-
-function renderYears(){
-  $("#yearsRow").innerHTML=AVAIL.y.map(function(y){
-    return'<button type="button" class="yr-btn'+(y===MSEL.y?' sel':'')+'" data-y="'+y+'">'+y+'</button>'
-  }).join('');
-}
-$("#yearsRow").addEventListener("click",function(e){
-  var b=e.target.closest("[data-y]");if(!b)return;
-  MSEL.y=b.getAttribute("data-y");renderYears();renderMonths();
-});
-
+function renderYears(){$("#yearsRow").innerHTML=AVAIL.y.map(function(y){return'<button type="button" class="yr-btn'+(y===MSEL.y?' sel':'')+'" data-y="'+y+'">'+y+'</button>'}).join('')}
+$("#yearsRow").addEventListener("click",function(e){var b=e.target.closest("[data-y]");if(!b)return;MSEL.y=b.getAttribute("data-y");renderYears();renderMonths()});
 function renderMonths(){
-  var has={};
-  AVAIL.m.forEach(function(m){if(m.slice(0,4)===MSEL.y)has[+m.slice(5,7)]=1});
+  var has={};AVAIL.m.forEach(function(m){if(m.slice(0,4)===MSEL.y)has[+m.slice(5,7)]=1});
   var h="";
-  for(var i=1;i<=12;i++){
-    h+='<button type="button" class="mo-btn'+(i===+MSEL.m?' sel':'')+(has[i]?'':' off')+'" data-m="'+i+'">'+i+(has[i]?'<span class="dot"></span>':'')+'</button>';
-  }
+  for(var i=1;i<=12;i++){h+='<button type="button" class="mo-btn'+(i===+MSEL.m?' sel':'')+(has[i]?'':' off')+'" data-m="'+i+'">'+i+(has[i]?'<span class="dot"></span>':'')+'</button>'}
   $("#monthsGrid").innerHTML=h;
 }
-$("#monthsGrid").addEventListener("click",function(e){
-  var b=e.target.closest("[data-m]");if(!b)return;
-  MSEL.m=+b.getAttribute("data-m");renderMonths();
-});
-
+$("#monthsGrid").addEventListener("click",function(e){var b=e.target.closest("[data-m]");if(!b)return;MSEL.m=+b.getAttribute("data-m");renderMonths()});
 function renderCal(){
   $("#calTitle").textContent=CAL.y+"/"+pad(CAL.m);
-  var n=new Date(+CAL.y,CAL.m,0).getDate();
-  var h="";
+  var n=new Date(+CAL.y,CAL.m,0).getDate(),h="";
   for(var d=1;d<=n;d++){
-    var iso=CAL.y+"-"+pad(CAL.m)+"-"+pad(d);
-    var cls="cal-day";
+    var iso=CAL.y+"-"+pad(CAL.m)+"-"+pad(d),cls="cal-day";
     if(CSEL.from&&CSEL.to&&iso>CSEL.from&&iso<CSEL.to)cls+=" inr";
     if(iso===CSEL.from||iso===CSEL.to)cls+=" sel";
     h+='<button type="button" class="'+cls+'" data-d="'+iso+'">'+d+'</button>';
@@ -744,8 +557,7 @@ $("#calNext").onclick=function(){CAL.m++;if(CAL.m>12){CAL.m=1;CAL.y++}renderCal(
 $("#calDays").addEventListener("click",function(e){
   var b=e.target.closest("[data-d]");if(!b)return;
   var iso=b.getAttribute("data-d");
-  if(CAL.target==="from"){CSEL.from=iso;CAL.target="to";}
-  else{CSEL.to=iso;CAL.target="from";}
+  if(CAL.target==="from"){CSEL.from=iso;CAL.target="to"}else{CSEL.to=iso;CAL.target="from"}
   if(CSEL.from&&CSEL.to&&CSEL.from>CSEL.to){var t=CSEL.from;CSEL.from=CSEL.to;CSEL.to=t}
   updateRange();renderCal();
 });
@@ -755,19 +567,15 @@ function updateRange(){
   var f=$("#fromBtn"),t=$("#toBtn");
   f.textContent=CSEL.from?"من: "+fmtD(CSEL.from):"من تاريخ";
   t.textContent=CSEL.to?"إلى: "+fmtD(CSEL.to):"إلى تاريخ";
-  f.classList.toggle("active",CAL.target==="from");
-  t.classList.toggle("active",CAL.target==="to");
-  f.classList.toggle("filled",!!CSEL.from);
-  t.classList.toggle("filled",!!CSEL.to);
+  f.classList.toggle("active",CAL.target==="from");t.classList.toggle("active",CAL.target==="to");
+  f.classList.toggle("filled",!!CSEL.from);t.classList.toggle("filled",!!CSEL.to);
 }
-
 $$(".p-opt").forEach(function(o){o.onclick=function(){
   $$(".p-opt").forEach(function(x){x.classList.remove("sel")});o.classList.add("sel");
   var m=o.dataset.m;
   $("#exMonth").classList.toggle("vis",m==="month");
   $("#exCustom").classList.toggle("vis",m==="custom");
 }});
-
 $("#btnGo").onclick=function(){
   var sel=$(".p-opt.sel"),mode=sel?sel.dataset.m:"all";
   PER.mode=mode;
@@ -782,13 +590,7 @@ $("#btnGo").onclick=function(){
   }else{PER.from=null;PER.to=null}
   showDash();
 };
-
-function inPer(d){
-  if(!PER.from&&!PER.to)return true;
-  if(PER.from&&d<PER.from)return false;
-  if(PER.to&&d>PER.to)return false;
-  return true
-}
+function inPer(d){if(!PER.from&&!PER.to)return true;if(PER.from&&d<PER.from)return false;if(PER.to&&d>PER.to)return false;return true}
 function filt(){return TX.filter(function(t){return inPer(t.date)})}
 function perLabel(){
   if(PER.mode==="all")return"كامل الفترة";
@@ -800,16 +602,13 @@ var stack=[];
 function nav(id,title){
   stack.push({s:$(".scr.on").id,t:$("#hdrTitle").textContent});
   $$(".scr").forEach(function(s){s.classList.remove("on")});
-  $(id).classList.add("on");
-  $("#hdrTitle").textContent=title;
-  $("#backBtn").classList.add("vis");
+  $(id).classList.add("on");$("#hdrTitle").textContent=title;$("#backBtn").classList.add("vis");
 }
 $("#backBtn").onclick=function(){
   if(!stack.length)return;
   var p=stack.pop();
   $$(".scr").forEach(function(s){s.classList.remove("on")});
-  $("#"+p.s).classList.add("on");
-  $("#hdrTitle").textContent=p.t;
+  $("#"+p.s).classList.add("on");$("#hdrTitle").textContent=p.t;
   if(!stack.length)$("#backBtn").classList.remove("vis");
   if(p.s==="scrPeriod")$("#hdrBadge").textContent="2026";
 };
@@ -821,21 +620,13 @@ function showDash(){
   rows.forEach(function(t){if(t.g==="in")tIn+=t.amt;else tOut+=t.amt});
   $("#hdrBadge").textContent=perLabel();
   nav("#scrDash","لوحة الحسابات");
-
   $("#sumRow").innerHTML=
-    '<div class="s-card si" id="sumAll"><div class="sl">الإيرادات</div><div class="sv">'+money(tIn)+'</div></div>'+
+    '<div class="s-card si"><div class="sl">الإيرادات</div><div class="sv">'+money(tIn)+'</div></div>'+
     '<div class="s-card so"><div class="sl">الصرفيات</div><div class="sv">'+money(tOut)+'</div></div>'+
     '<div class="s-card sn"><div class="sl">الصافي</div><div class="sv">'+money(tIn-tOut)+'</div></div>';
-
-  /* تفعيل الضغط المطول على بطاقة الإيرادات لوضع المدير */
-  bindLongPress($("#sumAll"));
-
+  bindLongPress($("#sumRow"));
   var cats={};
-  rows.forEach(function(t){
-    if(!cats[t.k])cats[t.k]={k:t.k,l:t.l,i:t.i,g:t.g,tot:0,n:0};
-    cats[t.k].tot+=t.amt;cats[t.k].n++;
-  });
-
+  rows.forEach(function(t){if(!cats[t.k])cats[t.k]={k:t.k,l:t.l,i:t.i,g:t.g,tot:0,n:0};cats[t.k].tot+=t.amt;cats[t.k].n++});
   var inH="",outH="";
   Object.keys(cats).sort(function(a,b){return cats[a].g===cats[b].g?cats[b].tot-cats[a].tot:0}).forEach(function(k){
     var c=cats[k];
@@ -857,7 +648,6 @@ function openTx(key){
   nav("#scrTx",f.l);
   $("#txTitle").innerHTML=f.i+" "+f.l;
   $("#txBadge").textContent=rows.length+" حركة";
-
   var acls=f.k==="withdraw"?"aw":f.k==="salary"?"as":f.g==="in"?"ai":"ao";
   $("#txBody").innerHTML=rows.map(function(t,i){
     return'<tr data-i="'+i+'"><td style="direction:ltr;font-size:11px">'+fmtD(t.date)+'</td><td class="td-name">'+esc(t.name)+'</td><td><span class="td-amt '+acls+'">'+money(t.amt)+'</span></td></tr>'
@@ -865,10 +655,7 @@ function openTx(key){
   $("#txTotal").textContent=money(tot)+" د.ع.";
   $("#txTotal").style.color=acls==="ai"?"var(--grn)":acls==="aw"?"var(--gold)":acls==="as"?"var(--purp)":"var(--red)";
 }
-$("#txBody").addEventListener("click",function(e){
-  var tr=e.target.closest("tr[data-i]");
-  if(tr&&CUR)openDet(CUR.rows[+tr.dataset.i]);
-});
+$("#txBody").addEventListener("click",function(e){var tr=e.target.closest("tr[data-i]");if(tr&&CUR)openDet(CUR.rows[+tr.dataset.i])});
 
 function openDet(t){
   if(!t)return;
@@ -888,264 +675,142 @@ function openDet(t){
 }
 $("#detX").onclick=function(){$("#detOv").classList.remove("vis")};
 $("#detOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
-document.addEventListener("keydown",function(e){if(e.key==="Escape"){
-  $("#detOv").classList.remove("vis");
-  $("#pwdOv").classList.remove("vis");
-  $("#admOv").classList.remove("vis");
-}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){$("#detOv").classList.remove("vis");$("#pwdOv").classList.remove("vis");$("#admOv").classList.remove("vis")}});
 
-/* ════════════════════════════════════════════════
-   وضع المدير - Long Press + GitHub API
-   ════════════════════════════════════════════════ */
-
-var pressTimer=null,presTarget=null;
+/* ════════════════════════════════════
+   وضع المدير — ضغط مطول + رمز 97
+   ════════════════════════════════════ */
+var pressTimer=null;
 function bindLongPress(el){
-  if(!el)return;
-  function start(e){
-    if(!IS_ADMIN){
-      presTarget=el;
-      el.classList.add("lp");
-      pressTimer=setTimeout(function(){
-        el.classList.remove("lp");
-        openPwdModal();
-      },600);
-    }
-  }
-  function cancel(){
-    clearTimeout(pressTimer);
-    if(presTarget)presTarget.classList.remove("lp");
-  }
+  if(!el||el._lp)return;el._lp=true;
+  function start(){el.classList.add("lp");pressTimer=setTimeout(function(){el.classList.remove("lp");openPwd()},600)}
+  function cancel(){clearTimeout(pressTimer);el.classList.remove("lp")}
   el.addEventListener("mousedown",start);
   el.addEventListener("touchstart",start,{passive:true});
-  el.addEventListener("mouseup",cancel);
-  el.addEventListener("mouseleave",cancel);
-  el.addEventListener("touchend",cancel);
-  el.addEventListener("touchcancel",cancel);
+  ["mouseup","mouseleave","touchend","touchcancel"].forEach(function(ev){el.addEventListener(ev,cancel)});
 }
-
-function openPwdModal(){
-  $("#pwdInput").value="";
-  $("#pwdInput").classList.remove("err");
+function openPwd(){
+  if(IS_ADMIN){openAdmin();return}
+  $("#pwdInput").value="";$("#pwdInput").classList.remove("err");
   $("#pwdOv").classList.add("vis");
   setTimeout(function(){$("#pwdInput").focus()},200);
 }
 $("#pwdX").onclick=function(){$("#pwdOv").classList.remove("vis")};
 $("#pwdOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
-
 $("#pwdOk").onclick=checkPwd;
-$("#pwdInput").addEventListener("keydown",function(e){
-  if(e.key==="Enter")checkPwd();
-});
+$("#pwdInput").addEventListener("keydown",function(e){if(e.key==="Enter")checkPwd()});
 function checkPwd(){
-  var v=$("#pwdInput").value.trim();
-  if(v===ADMIN_PWD){
-    IS_ADMIN=true;
-    localStorage.setItem("js_admin","1");
+  if($("#pwdInput").value.trim()===ADMIN_PWD){
+    IS_ADMIN=true;localStorage.setItem("js_admin","1");
     $("#pwdOv").classList.remove("vis");
-    openAdminPanel();
-    toast("✓ مرحباً أيها المدير",0);
+    openAdmin();toast("✓ مرحباً أيها المدير",0);
   }else{
-    $("#pwdInput").classList.add("err");
-    toast("✗ الرمز غير صحيح",1);
-    setTimeout(function(){$("#pwdInput").classList.remove("err")},400);
-    $("#pwdInput").value="";
+    $("#pwdInput").classList.add("err");toast("✗ الرمز غير صحيح",1);
+    setTimeout(function(){$("#pwdInput").classList.remove("err");$("#pwdInput").value=""},450);
   }
 }
-
-function openAdminPanel(){
+function openAdmin(){
   $("#tokInput").value=GH_TOKEN;
+  $("#codeArea").classList.remove("vis");
   $("#progBox").classList.remove("vis");
   $("#admOv").classList.add("vis");
 }
 $("#admX").onclick=function(){$("#admOv").classList.remove("vis")};
 $("#admOv").addEventListener("click",function(e){if(e.target===this)this.classList.remove("vis")});
-
 $("#admLogout").onclick=function(){
-  IS_ADMIN=false;
-  localStorage.removeItem("js_admin");
-  $("#admOv").classList.remove("vis");
-  toast("تم الخروج من وضع المدير",0);
+  IS_ADMIN=false;localStorage.removeItem("js_admin");
+  $("#admOv").classList.remove("vis");toast("تم الخروج من وضع المدير",0);
 };
-
+$("#admCode").onclick=function(){$("#codeArea").classList.toggle("vis")};
 $("#tokInput").addEventListener("change",function(){
   GH_TOKEN=this.value.trim();
-  if(GH_TOKEN){
-    localStorage.setItem("js_gh_token",GH_TOKEN);
-    toast("✓ تم حفظ التوكن",0);
-  }else{
-    localStorage.removeItem("js_gh_token");
-  }
+  if(GH_TOKEN)localStorage.setItem("js_gh_token",GH_TOKEN);else localStorage.removeItem("js_gh_token");
 });
-
-/* ═══ GitHub API Functions ═══ */
-
-function ghHeaders(){
-  return{
-    "Authorization":"Bearer "+GH_TOKEN,
-    "Accept":"application/vnd.github.v3+json",
-    "Content-Type":"application/json",
-    "X-GitHub-Api-Version":"2022-11-28"
-  };
-}
-
-function ghGet(path){
-  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{
-    method:"GET",headers:ghHeaders()
-  }).then(function(r){
-    if(!r.ok)throw new Error("HTTP "+r.status);
-    return r.json();
-  });
-}
-
-function ghPut(path,content,sha,msg){
-  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{
-    method:"PUT",
-    headers:ghHeaders(),
-    body:JSON.stringify({
-      message:msg,
-      content:content,
-      branch:BRANCH,
-      sha:sha
-    })
-  }).then(function(r){
-    if(!r.ok)return r.json().then(function(e){throw new Error(e.message||"HTTP "+r.status)});
-    return r.json();
-  });
-}
-
-function arrayBufferToBase64(buf){
-  var bytes=new Uint8Array(buf);
-  var bin="";
-  for(var i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
-  return btoa(bin);
-}
-
-function setProgress(pct,txt){
-  $("#progBox").classList.add("vis");
-  $("#progFill").style.width=pct+"%";
-  if(txt)$("#progTxt").textContent=txt;
-}
-function hideProgress(){
-  $("#progBox").classList.remove("vis");
-}
-
 function ensureToken(){
   var t=$("#tokInput").value.trim();
-  if(t){
-    GH_TOKEN=t;
-    localStorage.setItem("js_gh_token",t);
-  }
-  if(!GH_TOKEN){
-    toast("⚠ يرجى إدخال GitHub Token أولاً",1);
-    return false;
-  }
-  return true;
+  if(t){GH_TOKEN=t;localStorage.setItem("js_gh_token",t);return true}
+  toast("⚠ أدخل GitHub Token أولاً",1);$("#tokInput").focus();return false;
 }
+function ghHeaders(){return{"Authorization":"Bearer "+GH_TOKEN,"Accept":"application/vnd.github.v3+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}}
+function ghGet(path){
+  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{headers:ghHeaders()})
+  .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()});
+}
+function ghPut(path,b64,sha,msg){
+  var body={message:msg,content:b64,branch:BRANCH};
+  if(sha)body.sha=sha;
+  return fetch("https://api.github.com/repos/"+REPO+"/contents/"+path,{method:"PUT",headers:ghHeaders(),body:JSON.stringify(body)})
+  .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message||"HTTP "+r.status)});return r.json()});
+}
+function ab2b64(buf){
+  var bytes=new Uint8Array(buf),bin="",CH=0x8000;
+  for(var i=0;i<bytes.length;i+=CH){
+    bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+CH));
+  }
+  return btoa(bin);
+}
+function setProgress(p,txt){$("#progBox").classList.add("vis");$("#progFill").style.width=p+"%";if(txt)$("#progTxt").textContent=txt}
+function hideProgress(){$("#progBox").classList.remove("vis")}
 
-/* ═══ رفع ملف Excel ═══ */
+/* رفع ملف Excel */
 $("#admUpload").onclick=function(){
   if(!ensureToken())return;
-  if(!confirm("هل تريد رفع ملف Excel جديد واستبدال الملف الحالي في المستودع؟"))return;
   $("#admFileInput").click();
 };
-
 $("#admFileInput").addEventListener("change",function(e){
-  var file=e.target.files[0];
-  if(!file)return;
-  uploadExcel(file);
+  var file=e.target.files[0];if(!file)return;
+  setProgress(10,"جاري قراءة الملف…");
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    var b64=ab2b64(ev.target.result);
+    setProgress(30,"جاري فحص الملف الحالي…");
+    fetch("https://api.github.com/repos/"+REPO+"/contents",{headers:ghHeaders()})
+    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+    .then(function(items){
+      var f=items.find(function(x){return x.name&&/\.xlsx?$/i.test(x.name)});
+      var path=f?f.path:FILE_NAME,sha=f?f.sha:null;
+      setProgress(60,"جاري الرفع إلى GitHub…");
+      return ghPut(encodeURIComponent(path),b64,sha,"📂 تحديث ملف الحسابات");
+    })
+    .then(function(){
+      setProgress(100,"✓ تم الرفع بنجاح!");
+      toast("✓ تم رفع الملف — جاري التحديث…",0);
+      setTimeout(function(){hideProgress();$("#admOv").classList.remove("vis");LOAD_ATTEMPTS=0;loadFile()},1500);
+    })
+    .catch(function(err){hideProgress();console.error(err);toast("✗ فشل الرفع: "+err.message,1)});
+  };
+  rd.readAsArrayBuffer(file);
   e.target.value="";
 });
 
-function uploadExcel(file){
-  setProgress(10,"جاري قراءة الملف...");
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    setProgress(30,"جاري فحص الملف الحالي...");
-    var b64=arrayBufferToBase64(ev.target.result);
-    
-    ghGet(encodeURIComponent(XLSX_FILE))
-      .then(function(info){
-        setProgress(50,"جاري الرفع إلى GitHub...");
-        return ghPut(
-          encodeURIComponent(XLSX_FILE),
-          b64,
-          info.sha,
-          "📂 تحديث ملف الحسابات: "+file.name
-        );
-      })
-      .catch(function(err){
-        if(err.message&&err.message.indexOf("404")>=0){
-          setProgress(50,"جاري إنشاء الملف لأول مرة...");
-          return ghPut(
-            encodeURIComponent(XLSX_FILE),
-            b64,
-            null,
-            "📂 إنشاء ملف الحسابات: "+file.name
-          );
-        }
-        throw err;
-      })
-      .then(function(){
-        setProgress(100,"✓ تم الرفع بنجاح!");
-        toast("✓ تم رفع الملف إلى GitHub — سيتم التحديث خلال ثوانٍ",0);
-        
-        setTimeout(function(){
-          hideProgress();
-          $("#admOv").classList.remove("vis");
-          LOAD_ATTEMPTS=0;
-          loadFile();
-        },1500);
-      })
-      .catch(function(err){
-        hideProgress();
-        console.error(err);
-        toast("✗ فشل الرفع: "+err.message,1);
-      });
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-/* ═══ تحديث كود index.html ═══ */
-$("#admUpdate").onclick=function(){
+/* رفع كود index.html */
+$("#htmlFileInput").addEventListener("change",function(e){
+  var file=e.target.files[0];if(!file)return;
+  var rd=new FileReader();
+  rd.onload=function(ev){$("#codeInput").value=ev.target.result;toast("تم تحميل الكود من الملف",0)};
+  rd.readAsText(file);
+  e.target.value="";
+});
+$("#codeUpload").onclick=function(){
   if(!ensureToken())return;
-  if(!confirm("هل تريد رفع كود index.html الحالي إلى المستودع؟"))return;
-  updateIndexHtml();
+  var code=$("#codeInput").value.trim();
+  if(code.length<300||code.indexOf("<html")<0){toast("⚠ الكود غير صالح — الصق كود HTML كامل",1);return}
+  if(!confirm("سيتم استبدال index.html في المستودع بالكود الجديد. متابعة؟"))return;
+  setProgress(30,"جاري فحص index.html…");
+  var b64=btoa(unescape(encodeURIComponent(code)));
+  ghGet("index.html")
+  .then(function(info){setProgress(60,"جاري الرفع…");return ghPut("index.html",b64,info.sha,"💻 تحديث كود index.html")})
+  .catch(function(err){
+    if(err&&err.message&&err.message.indexOf("404")>=0){setProgress(60,"جاري الإنشاء…");return ghPut("index.html",b64,null,"💻 إنشاء index.html")}
+    throw err;
+  })
+  .then(function(){
+    setProgress(100,"✓ تم تحديث الكود بنجاح!");
+    toast("✓ تم تحديث index.html — أعد تحميل الصفحة",0);
+    setTimeout(hideProgress,2500);
+  })
+  .catch(function(err){hideProgress();console.error(err);toast("✗ فشل التحديث: "+err.message,1)});
 };
-
-function updateIndexHtml(){
-  setProgress(20,"جاري تجهيز الكود...");
-  var html=document.documentElement.outerHTML;
-  var b64=btoa(unescape(encodeURIComponent(html)));
-  
-  setProgress(40,"جاري فحص الملف الحالي...");
-  ghGet(HTML_FILE)
-    .then(function(info){
-      setProgress(60,"جاري الرفع إلى GitHub...");
-      return ghPut(
-        HTML_FILE,
-        b64,
-        info.sha,
-        "💻 تحديث كود index.html"
-      );
-    })
-    .catch(function(err){
-      if(err.message&&err.message.indexOf("404")>=0){
-        setProgress(60,"جاري إنشاء الملف لأول مرة...");
-        return ghPut(HTML_FILE,b64,null,"💻 إنشاء index.html");
-      }
-      throw err;
-    })
-    .then(function(){
-      setProgress(100,"✓ تم تحديث الكود بنجاح!");
-      toast("✓ تم تحديث index.html في GitHub",0);
-      setTimeout(hideProgress,2000);
-    })
-    .catch(function(err){
-      hideProgress();
-      console.error(err);
-      toast("✗ فشل التحديث: "+err.message,1);
-    });
-}
 
 loadFile();
 })();
