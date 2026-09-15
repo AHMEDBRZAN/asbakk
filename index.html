@@ -46,7 +46,7 @@ input[type=file]{display:none}
 .hdr{background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:80;padding:0 16px;box-shadow:0 1px 8px rgba(22,35,58,.05)}
 .hdr-in{width:100%;max-width:640px;margin:auto;height:var(--hdrH);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .hdr h1{font-family:'Changa';font-size:18px;font-weight:800;color:var(--dark);white-space:nowrap;letter-spacing:.2px}
-.hdr-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);white-space:nowrap}
+.hdr-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-br);white-space:nowrap;direction:ltr}
 .hdr-back{display:none;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--border);font-family:'Changa';font-size:14px;font-weight:700;color:var(--dark);cursor:pointer;padding:10px 16px;border-radius:11px;flex-shrink:0;box-shadow:var(--sh);transition:.15s}
 .hdr-back:active{transform:scale(.96);background:var(--bg)}
 .hdr-back.vis{display:flex}
@@ -134,7 +134,6 @@ input[type=file]{display:none}
 .tx-badge{font-size:11px;background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:99px;color:var(--mut);font-weight:700;box-shadow:var(--sh)}
 .tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:clip;box-shadow:var(--sh)}
 table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
-/* أعمدة: تاريخ مضغوط، تفاصيل أصغر، مبلغ أوسع */
 col.col-d{width:88px}
 col.col-a{width:142px}
 thead th{position:sticky;top:var(--hdrH);z-index:50;background:var(--dark);color:#fff;font-size:12px;font-weight:700;padding:13px 4px;text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.3px;box-shadow:0 2px 8px rgba(22,35,58,.12)}
@@ -142,11 +141,12 @@ tbody tr{cursor:pointer}
 tbody tr:nth-child(even) td{background:#f8fafc}
 tbody tr:active td{background:var(--grn-bg)}
 tbody td{padding:12px 5px;font-size:13px;text-align:center;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid var(--border);color:var(--text)}
-td.td-date{direction:ltr;font-size:11.5px;color:var(--mut);font-weight:500;padding:12px 3px}
+/* التاريخ: سنة/شهر/يوم → السنة يسار، اليوم يمين */
+td.td-date{direction:ltr;font-size:11.5px;color:var(--mut);font-weight:500;padding:12px 3px;font-variant-numeric:tabular-nums}
 td.td-name{text-align:center;font-weight:700;color:var(--dark)}
 .td-amt{font-family:'Changa';font-weight:800;direction:ltr;font-size:clamp(12px,3.9vw,14.5px);letter-spacing:.2px;font-variant-numeric:tabular-nums}
 .td-amt.ai{color:var(--grn)}.td-amt.ao{color:var(--red)}.td-amt.aw{color:var(--gold)}.td-amt.as{color:var(--purp)}
-/* ═══ المجموع الكلي — ثابت أسفل الشاشة ويظهر بالكامل ═══ */
+/* ═══ المجموع الكلي — ثابت أسفل الشاشة ═══ */
 tfoot td{position:sticky;bottom:0;z-index:40;background:#f8fafc;padding:12px 3px;text-align:center;white-space:nowrap;overflow:hidden;border-top:2px solid var(--border);box-shadow:0 -4px 14px rgba(22,35,58,.08)}
 .ft-lbl{font-family:'Changa';font-weight:800;font-size:13.5px;color:var(--dark);letter-spacing:.2px}
 .ft-in{display:inline-flex;align-items:baseline;gap:4px;direction:ltr;justify-content:center;max-width:100%}
@@ -344,7 +344,8 @@ function $(s){return document.querySelector(s)}
 function $$(s){return[].slice.call(document.querySelectorAll(s))}
 function pad(n){return String(n).padStart(2,"0")}
 function money(n){return(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0})}
-function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[2]+"-"+p[1]+"-"+p[0]}
+/* ═══ تنسيق التاريخ: السنة يسار / الشهر وسط / اليوم يمين ═══ */
+function fmtD(iso){if(!iso)return"—";var p=iso.split("-");return p[0]+"-"+p[1]+"-"+p[2]}
 function dstr(d){return d.getUTCFullYear()+"-"+String(d.getUTCMonth()+1).padStart(2,"0")+"-"+String(d.getUTCDate()).padStart(2,"0")}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var _tt=null;
@@ -608,7 +609,7 @@ function inPer(d){if(!PER.from&&!PER.to)return true;if(PER.from&&d<PER.from)retu
 function filt(){return TX.filter(function(t){return inPer(t.date)})}
 function perLabel(){
   if(PER.mode==="all")return"كامل الفترة";
-  if(PER.mode==="month")return MSEL.m+"/"+MSEL.y;
+  if(PER.mode==="month")return MSEL.y+"/"+pad(MSEL.m);
   return(PER.from?fmtD(PER.from):"…")+" — "+(PER.to?fmtD(PER.to):"…")
 }
 
